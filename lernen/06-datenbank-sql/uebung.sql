@@ -1,6 +1,6 @@
 -- Einheit 06 – SQL-Übungen auf der echten Datenbank planeten_erdbeben
 -- Schreibe deine Abfrage unter die Aufgabe (ohne -- davor). Aufgaben ohne Abfrage werden übersprungen.
--- Prüfen: node --test lernen/06-datenbank-sql/sql.test.js
+-- Prüfen: node --test lernen/06-datenbank-sql/sql-praxis.test.js
 -- Die Spaltennamen sind egal, verglichen werden die Werte und ihre Reihenfolge.
 
 -- Aufgabe 1: Wie viele echte Erdbeben (kind = 'earthquake') sind gespeichert?

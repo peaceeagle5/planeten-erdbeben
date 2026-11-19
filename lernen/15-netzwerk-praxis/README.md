@@ -43,7 +43,7 @@ Anzahl Hosts = 2<sup>(32 − Präfix)</sup> − 2. Die zwei fehlenden Adressen s
 133 liegt im Block 128–191:
 `192.168.100.133/26` → Netz `192.168.100.128`, Broadcast `192.168.100.191`, Hosts `.129` bis `.190` (62 Stück).
 
-Allgemein: Blockgröße = 256 − (letzte Zahl der Maske ≠ 255). Bei 255.255.255.192 → 256 − 192 = 64.
+Allgemein: **Blockgröße = 256 − die erste Zahl der Maske, die nicht 255 ist.** Bei 255.255.255.192 → 256 − 192 = 64.
 
 ## 4. Im selben Netz?
 

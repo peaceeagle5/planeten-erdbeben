@@ -8,6 +8,7 @@
 | `PlanetenErdbeben-Lernpaket.zip` | Quellcode, Lerneinheiten, Docker-Umgebung und Anleitung `ERSTE-SCHRITTE.md` |
 | `Planeten-Erdbeben.pptx` | Präsentation für den Beamer (17 Folien, mit Sprechernotizen) |
 | `Setup-Assistent-erklaert.pdf` | Handout: was der Setup-Assistent macht und was nicht (2 Seiten) |
+| `Lerneinheiten-Inhaltsuebersicht.pdf` | alle 16 Lerneinheiten und die zwei Lernwege für Anwendungsentwicklung und Systemintegration (3 Seiten) |
 
 Der Setup-Assistent richtet Datenbank, Node-RED und Grafana automatisch ein. Für eine Workstation oder zu Hause
 startet die Docker-Umgebung aus dem Lernpaket alle drei Dienste (`docker compose up -d`), danach im Assistenten

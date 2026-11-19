@@ -29,6 +29,7 @@ jobs:
           echo "Neuester Release: $TAG"
           gh release upload "$TAG" --clobber \
             praesentation/Planeten-Erdbeben.pptx \
-            praesentation/Setup-Assistent-erklaert.pdf
+            praesentation/Setup-Assistent-erklaert.pdf \
+            praesentation/Lerneinheiten-Inhaltsuebersicht.pdf
           gh release edit "$TAG" --notes-file .github/release-notes.md
           gh release view "$TAG" --json assets --jq '.assets[].name'
