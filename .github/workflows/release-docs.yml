@@ -1,0 +1,34 @@
+# Hängt Präsentation und Handout an den neuesten Release an (ersetzt ältere Fassungen)
+# und aktualisiert dessen Beschreibung aus .github/release-notes.md.
+# Läuft automatisch, wenn sich etwas in praesentation/ ändert, oder per Knopf "Run workflow".
+name: Dokumente zum Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'praesentation/**'
+      - '.github/release-notes.md'
+      - '.github/workflows/release-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  upload:
+    name: Dokumente anhängen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Neuesten Release finden und Dateien hochladen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=$(gh release view --json tagName --jq .tagName)
+          echo "Neuester Release: $TAG"
+          gh release upload "$TAG" --clobber \
+            praesentation/Planeten-Erdbeben.pptx \
+            praesentation/Setup-Assistent-erklaert.pdf
+          gh release edit "$TAG" --notes-file .github/release-notes.md
+          gh release view "$TAG" --json assets --jq '.assets[].name'

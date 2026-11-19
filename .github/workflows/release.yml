@@ -85,4 +85,6 @@ jobs:
             dist/planeten-erdbeben-setup-windows-x64.exe \
             dist/planeten-erdbeben-setup-linux-x64 \
             dist/planeten-erdbeben-setup-linux-arm64 \
-            dist/PlanetenErdbeben-Lernpaket.zip
+            dist/PlanetenErdbeben-Lernpaket.zip \
+            praesentation/Planeten-Erdbeben.pptx \
+            praesentation/Setup-Assistent-erklaert.pdf
