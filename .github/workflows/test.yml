@@ -5,6 +5,7 @@ name: Tests
 
 on:
   push:
+    branches: ['**'] # nicht bei Tags: Releases testet release.yml selbst
   pull_request:
   workflow_dispatch:
 

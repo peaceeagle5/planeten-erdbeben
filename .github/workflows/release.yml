@@ -1,0 +1,88 @@
+# Veröffentlicht einen Release mit den Setup-Programmen und dem Lernpaket.
+# Auslöser: eine Versionsmarke (Tag), z. B.
+#   git tag v1.1.0 && git push origin v1.1.0
+# Ablauf: bauen (Linux) → testen (Linux + Windows) → nur wenn alles grün ist: Release anlegen.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # nötig, um den Release anzulegen
+
+jobs:
+  build:
+    name: Bauen und testen (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '26'
+          cache: npm
+      - run: npm ci
+      - name: Lerneinheiten (Musterlösungen)
+        run: npm run lernen
+        env:
+          LOESUNG: '1'
+      - name: Setup-Programme bauen
+        run: npm run build-setup
+      - name: Linux-Programm starten und prüfen
+        run: |
+          sudo apt-get install -y -qq libatomic1
+          node tools/smoke-test.js dist/planeten-erdbeben-setup-linux-x64
+      - name: Lernpaket packen
+        run: node tools/lernpaket.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-dateien
+          path: |
+            dist/planeten-erdbeben-setup-windows-x64.exe
+            dist/planeten-erdbeben-setup-linux-x64
+            dist/planeten-erdbeben-setup-linux-arm64
+            dist/PlanetenErdbeben-Lernpaket.zip
+
+  windows:
+    name: Windows
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Lerneinheiten unter Windows (Musterlösungen)
+        run: npm run lernen
+        env:
+          LOESUNG: '1'
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-dateien
+          path: dist
+      - name: Setup-Programm (.exe) starten und prüfen
+        run: node tools/smoke-test.js dist/planeten-erdbeben-setup-windows-x64.exe
+
+  publish:
+    name: Release veröffentlichen
+    needs: [build, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-dateien
+          path: dist
+      - name: Release anlegen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Planeten & Erdbeben $GITHUB_REF_NAME" \
+            --notes-file .github/release-notes.md \
+            dist/planeten-erdbeben-setup-windows-x64.exe \
+            dist/planeten-erdbeben-setup-linux-x64 \
+            dist/planeten-erdbeben-setup-linux-arm64 \
+            dist/PlanetenErdbeben-Lernpaket.zip
