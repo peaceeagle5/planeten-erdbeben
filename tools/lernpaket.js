@@ -1,0 +1,11 @@
+// Learning package: project source + learning units + Docker environment, without setup executables.
+//
+//   node tools/lernpaket.js      -> dist/PlanetenErdbeben-Lernpaket.zip
+const { buildPackage, SOURCES, GITIGNORE } = require('./paket');
+
+buildPackage({
+  name: 'PlanetenErdbeben-Lernpaket',
+  out: 'dist/PlanetenErdbeben-Lernpaket.zip',
+  include: [...SOURCES, 'lernen'],
+  gitignore: GITIGNORE,
+});

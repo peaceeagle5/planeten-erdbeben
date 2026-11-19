@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planeten &amp; Erdbeben – Setup</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --text: #1c2330; --muted: #5d6778; --line: #d9dde4;
+    --accent: #3b5bdb; --accent-text: #ffffff; --ok: #2b8a3e; --warn: #c77700; --err: #c92a2a;
+    --ok-bg: #ebfbee; --warn-bg: #fff4e6; --err-bg: #fff5f5; --input: #ffffff; --code: #eef0f4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151b; --card: #1b2029; --text: #e4e7ec; --muted: #9aa3b2; --line: #2e3542;
+      --accent: #5c7cfa; --accent-text: #ffffff; --ok: #51cf66; --warn: #fcc419; --err: #ff6b6b;
+      --ok-bg: #14281a; --warn-bg: #2b2210; --err-bg: #2d1515; --input: #12151b; --code: #252b36;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 820px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .lead { color: var(--muted); margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 17px; margin: 0; display: flex; align-items: center; gap: 10px; }
+  .card h2 .num { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-text); font-size: 14px; flex: none; }
+  .card .hint { color: var(--muted); font-size: 13.5px; margin: 6px 0 12px; }
+  .head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .toggle { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); cursor: pointer; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px 14px; }
+  label.f { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); }
+  input[type=text], input[type=password], input[type=number], select {
+    font: inherit; color: var(--text); background: var(--input); border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; width: 100%;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .big input { font-size: 18px; padding: 10px 12px; }
+  button { font: inherit; border-radius: 6px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--card); color: var(--text); }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; padding: 11px 20px; font-size: 16px; }
+  button:disabled { opacity: .55; cursor: default; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  .msg { font-size: 14px; border-radius: 6px; padding: 8px 10px; margin-top: 10px; display: none; }
+  .msg.ok { display: block; background: var(--ok-bg); color: var(--ok); }
+  .msg.err { display: block; background: var(--err-bg); color: var(--err); }
+  .msg.warn { display: block; background: var(--warn-bg); color: var(--warn); }
+  .msg.info { display: block; background: var(--code); color: var(--muted); }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 13.5px; }
+  .disabled-card .body { opacity: .45; pointer-events: none; }
+  .steps { list-style: none; padding: 0; margin: 12px 0 0; }
+  .steps li { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+  .steps li:last-child { border-bottom: 0; }
+  .steps .ic { width: 20px; flex: none; text-align: center; font-weight: 700; }
+  .s-ok .ic { color: var(--ok); } .s-err .ic { color: var(--err); } .s-warn .ic { color: var(--warn); } .s-running .ic { color: var(--accent); }
+  pre.log { background: var(--code); border-radius: 6px; padding: 10px; font-size: 12.5px; max-height: 220px; overflow: auto; white-space: pre-wrap; margin: 12px 0 0; }
+  .links a { color: var(--accent); font-weight: 600; }
+  .links p { margin: 6px 0; }
+  .stats { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 10px; }
+  .stats div { font-size: 13px; color: var(--muted); }
+  .stats b { display: block; font-size: 22px; color: var(--text); }
+  h3.sub { font-size: 14.5px; margin: 16px 0 0; }
+  .pw { display: flex; gap: 4px; }
+  .pw input { flex: 1; min-width: 0; }
+  .pw .eye { padding: 4px 8px; }
+  table.scan { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+  table.scan th, table.scan td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  table.scan th { color: var(--muted); font-weight: 500; font-size: 13px; }
+  table.scan td button { padding: 4px 10px; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 24px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Planeten &amp; Erdbeben – Setup</h1>
+  <p class="lead">Richtet Datenbank, Node-RED und Grafana automatisch ein. Danach sammelt Node-RED Erdbeben von USGS
+    und berechnet für jedes Beben die Stellung von Sonne, Mond und Planeten.</p>
+
+  <!-- Server address -->
+  <section class="card">
+    <h2><span class="num">★</span> Wer bist du, und wo ist der Server?</h2>
+    <p class="hint">Dein Name steht später im Node-RED-Tab und im Titel deines Grafana-Dashboards. So sieht jede:r,
+      wem was gehört. Die IP-Adresse des Raspberry Pi füllt alle Adressfelder unten automatisch.</p>
+    <div class="grid big">
+      <label class="f">Dein Name<input type="text" id="owner" placeholder="z. B. Pascal B." autocomplete="off"></label>
+      <label class="f">IP-Adresse des Servers<input type="text" id="server" placeholder="z. B. 192.168.100.133" autocomplete="off"></label>
+    </div>
+    <div class="row">
+      <button type="button" id="preset-docker">Lokale Docker-Umgebung</button>
+      <span class="hint" style="margin:0">Füllt alles für <code>docker compose up -d</code> auf diesem PC aus (Werte aus <code>compose.yaml</code>).</span>
+    </div>
+  </section>
+
+  <!-- 1 Database -->
+  <section class="card" id="card-db">
+    <div class="head">
+      <h2><span class="num">1</span> Datenbank (MySQL / MariaDB)</h2>
+      <label class="toggle"><input type="checkbox" id="step-db" checked> Tabellen anlegen/prüfen</label>
+    </div>
+    <div class="body">
+      <p class="hint">Hier landen die Erdbeben. Node-RED schreibt hinein, Grafana liest daraus. Vorhandene Daten bleiben erhalten.</p>
+      <div class="grid">
+        <label class="f">Adresse<input type="text" id="db-host" data-auto="host"></label>
+        <label class="f">Port<input type="number" id="db-port" value="3306"></label>
+        <label class="f">Datenbankname<input type="text" id="db-database" value="planeten_erdbeben"></label>
+      </div>
+      <h3 class="sub">Anmeldung an der Datenbank</h3>
+      <p class="hint">Das ist <b>nicht</b> dein Grafana-Login, sondern der Zugang zu MariaDB. Wenn du ihn nicht kennst,
+        frag deine Lehrkraft. Das Passwort wird nirgends gespeichert.</p>
+      <div class="grid">
+        <label class="f">Datenbank-Benutzer<input type="text" id="db-user" autocomplete="off"></label>
+        <label class="f">Datenbank-Passwort<span class="pw"><input type="password" id="db-password" autocomplete="off"><button type="button" class="eye" data-eye="db-password" title="Passwort anzeigen">👁</button></span></label>
+      </div>
+      <details>
+        <summary>Erweitert: Adresse der Datenbank aus Sicht von Node-RED und Grafana</summary>
+        <p class="hint">Nur nötig, wenn Node-RED/Grafana die Datenbank unter einer anderen Adresse erreichen als dieser PC
+          (z. B. 127.0.0.1, wenn alles auf demselben Pi läuft). Leer lassen = Adresse von oben.</p>
+        <div class="grid">
+          <label class="f">Adresse für Server<input type="text" id="db-serverHost" placeholder="wie oben"></label>
+          <label class="f">Port für Server<input type="number" id="db-serverPort" placeholder="wie oben"></label>
+        </div>
+      </details>
+      <div class="row"><button data-test="db">Verbindung testen</button></div>
+      <div class="msg" id="msg-db"></div>
+    </div>
+  </section>
+
+  <!-- 2 Node-RED -->
+  <section class="card" id="card-nodered">
+    <div class="head">
+      <h2><span class="num">2</span> Node-RED</h2>
+      <label class="toggle"><input type="checkbox" id="step-nodered" checked> einrichten</label>
+    </div>
+    <div class="body">
+      <p class="hint">Installiert den MySQL-Knoten und legt den Tab „Planeten &amp; Erdbeben“ an. Andere Flows bleiben unverändert.
+        Jede:r hat ein eigenes Node-RED mit eigenem Port (z. B. 1892, 1893, …). Achte darauf, <b>deinen</b> Port zu nehmen.</p>
+      <div class="grid">
+        <label class="f">Adresse<input type="text" id="nodered-host" data-auto="host"></label>
+        <label class="f">Dein Port<input type="number" id="nodered-port" placeholder="z. B. 1893"></label>
+        <label class="f">Benutzer (nur falls Login aktiv)<input type="text" id="nodered-user" autocomplete="off"></label>
+        <label class="f">Passwort (nur falls Login aktiv)<span class="pw"><input type="password" id="nodered-password" autocomplete="off"><button type="button" class="eye" data-eye="nodered-password" title="Passwort anzeigen">👁</button></span></label>
+      </div>
+      <details id="scan-box">
+        <summary>Port vergessen? Mein Node-RED finden</summary>
+        <p class="hint">Sucht auf dem Server nach allen Node-RED-Instanzen und zeigt, wer sie schon eingerichtet hat.</p>
+        <div class="row">
+          <label class="f">von Port<input type="number" id="scan-from" value="1880"></label>
+          <label class="f">bis Port<input type="number" id="scan-to" value="1999"></label>
+          <button type="button" id="scan" style="align-self:flex-end">Suchen</button>
+        </div>
+        <div class="msg" id="msg-scan"></div>
+        <table class="scan hidden" id="scan-table"><thead><tr><th>Port</th><th>Node-RED</th><th>Eingerichtet von</th><th></th></tr></thead><tbody></tbody></table>
+      </details>
+      <div class="row"><button data-test="nodered">Verbindung testen</button></div>
+      <div class="msg" id="msg-nodered"></div>
+      <label class="toggle hidden" id="overwrite-wrap" style="margin-top:8px"><input type="checkbox" id="nodered-overwrite">
+        <span>Trotzdem überschreiben: das ist wirklich mein Node-RED</span></label>
+    </div>
+  </section>
+
+  <!-- 3 Grafana -->
+  <section class="card" id="card-grafana">
+    <div class="head">
+      <h2><span class="num">3</span> Grafana</h2>
+      <label class="toggle"><input type="checkbox" id="step-grafana" checked> einrichten</label>
+    </div>
+    <div class="body">
+      <p class="hint">Legt dein eigenes Dashboard an (Karte, Vergleichsdiagramme, Canvas), mit deinem Namen im Titel.</p>
+      <div class="grid">
+        <label class="f">Adresse<input type="text" id="grafana-host" data-auto="host"></label>
+        <label class="f">Port<input type="number" id="grafana-port" value="3000"></label>
+      </div>
+      <h3 class="sub">Dein Grafana-Konto</h3>
+      <p class="hint">Melde dich mit deinem eigenen Grafana-Benutzer an. Das Passwort wird nirgends gespeichert.</p>
+      <div class="grid">
+        <label class="f">Grafana-Benutzer<input type="text" id="grafana-user" autocomplete="off"></label>
+        <label class="f">Grafana-Passwort<span class="pw"><input type="password" id="grafana-password" autocomplete="off"><button type="button" class="eye" data-eye="grafana-password" title="Passwort anzeigen">👁</button></span></label>
+      </div>
+      <div class="row"><button data-test="grafana">Verbindung testen</button></div>
+      <div class="msg" id="msg-grafana"></div>
+      <div class="grid hidden" id="ds-wrap" style="margin-top:10px">
+        <label class="f">Datenquelle für dein Dashboard<select id="grafana-ds"></select></label>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 Install -->
+  <section class="card">
+    <h2><span class="num">4</span> Einrichten</h2>
+    <p class="hint">Testet alle Verbindungen und richtet danach alles ein. Kann gefahrlos mehrmals ausgeführt werden.</p>
+    <div class="row"><button class="primary" id="install">Alles einrichten</button></div>
+    <ul class="steps hidden" id="steps"></ul>
+    <div class="msg" id="msg-install"></div>
+    <details class="hidden" id="log-wrap"><summary>Details</summary><pre class="log" id="log"></pre></details>
+  </section>
+
+  <!-- 5 Done -->
+  <section class="card hidden" id="card-done">
+    <h2><span class="num">✓</span> Fertig</h2>
+    <div class="links" id="links"></div>
+    <div class="stats" id="stats"></div>
+    <h3 style="font-size:15px;margin:18px 0 0">Ältere Erdbeben laden (Backfill)</h3>
+    <p class="hint">Für aussagekräftige Vergleiche braucht es viele Beben. Ein Jahr mit Magnitude ≥ 5 sind etwa 1500 Beben;
+      Node-RED berechnet danach in wenigen Minuten alle Positionen. Jahre nacheinander laden.</p>
+    <div class="row">
+      <label class="f">Jahr<select id="bf-year"></select></label>
+      <label class="f">Mindest-Magnitude<select id="bf-mag"><option>4.5</option><option selected>5</option><option>6</option></select></label>
+      <button id="backfill" style="align-self:flex-end">Erdbeben laden</button>
+    </div>
+    <div class="msg" id="msg-backfill"></div>
+  </section>
+
+  <footer><button id="quit">Setup beenden</button></footer>
+</main>
+
+<script>
+const TOKEN = '__SETUP_TOKEN__';
+const $ = (id) => document.getElementById(id);
+const FIELDS = ['owner', 'server', 'scan-from', 'scan-to', 'db-host', 'db-port', 'db-user', 'db-database', 'db-serverHost', 'db-serverPort',
+  'nodered-host', 'nodered-port', 'nodered-user', 'grafana-host', 'grafana-port', 'grafana-user'];
+const STORE_KEY = 'planeten-erdbeben-setup';
+
+// ---- remember non-secret fields (passwords are never stored) --------------
+function loadSaved() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch { return {}; }
+}
+function save() {
+  const data = {};
+  for (const id of FIELDS) data[id] = $(id).value;
+  for (const s of ['db', 'nodered', 'grafana']) data[`step-${s}`] = $(`step-${s}`).checked;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch { /* storage unavailable */ }
+}
+const saved = loadSaved();
+for (const id of FIELDS) if (saved[id] != null && saved[id] !== '') $(id).value = saved[id];
+for (const s of ['db', 'nodered', 'grafana']) if (typeof saved[`step-${s}`] === 'boolean') $(`step-${s}`).checked = saved[`step-${s}`];
+
+// ---- the server address fills every host field that the user did not change
+const autoHosts = [...document.querySelectorAll('[data-auto=host]')];
+for (const el of autoHosts) {
+  el.dataset.manual = el.value && el.value !== $('server').value ? '1' : '';
+  el.addEventListener('input', () => { el.dataset.manual = el.value && el.value !== $('server').value ? '1' : ''; });
+}
+$('server').addEventListener('input', () => {
+  for (const el of autoHosts) if (!el.dataset.manual) el.value = $('server').value.trim();
+});
+document.addEventListener('input', save);
+document.addEventListener('change', save);
+
+// Values from compose.yaml. Inside Docker, Node-RED and Grafana reach the database by its
+// service name "mariadb", not by 127.0.0.1 (that would be the container itself).
+const DOCKER_PRESET = {
+  server: '127.0.0.1',
+  'db-host': '127.0.0.1', 'db-port': '3306', 'db-database': 'planeten_erdbeben',
+  'db-user': 'planeten', 'db-password': 'planeten-lernen', 'db-serverHost': 'mariadb', 'db-serverPort': '3306',
+  'nodered-host': '127.0.0.1', 'nodered-port': '1880', 'nodered-user': '', 'nodered-password': '',
+  'grafana-host': '127.0.0.1', 'grafana-port': '3000', 'grafana-user': 'admin', 'grafana-password': 'admin-lernen',
+};
+$('preset-docker').addEventListener('click', () => {
+  for (const [id, value] of Object.entries(DOCKER_PRESET)) $(id).value = value;
+  for (const el of autoHosts) el.dataset.manual = '';
+  for (const s of ['db', 'nodered', 'grafana']) $(`step-${s}`).checked = true;
+  $('db-serverHost').closest('details').open = true;
+  syncCards();
+  save();
+  if (!$('owner').value.trim()) $('owner').focus();
+});
+
+// The database login is always needed (Node-RED writes into it), so only Node-RED/Grafana cards grey out.
+function syncCards() {
+  for (const s of ['nodered', 'grafana']) $(`card-${s}`).classList.toggle('disabled-card', !$(`step-${s}`).checked);
+}
+document.querySelectorAll('[data-eye]').forEach((b) => b.addEventListener('click', () => {
+  const input = $(b.dataset.eye);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}));
+// a different port or address means a different Node-RED: ask again before overwriting
+for (const id of ['nodered-host', 'nodered-port']) $(id).addEventListener('input', () => {
+  $('nodered-overwrite').checked = false; $('overwrite-wrap').classList.add('hidden');
+});
+for (const s of ['db', 'nodered', 'grafana']) $(`step-${s}`).addEventListener('change', syncCards);
+syncCards();
+
+// ---- config ---------------------------------------------------------------
+const url = (host, port) => `http://${host.trim()}:${port}`;
+function config() {
+  return {
+    owner: $('owner').value.trim(),
+    steps: { db: $('step-db').checked, nodered: $('step-nodered').checked, grafana: $('step-grafana').checked },
+    db: {
+      host: $('db-host').value.trim(), port: Number($('db-port').value) || 3306,
+      user: $('db-user').value.trim(), password: $('db-password').value, database: $('db-database').value.trim(),
+      serverHost: $('db-serverHost').value.trim(), serverPort: $('db-serverPort').value.trim(),
+    },
+    nodered: {
+      url: url($('nodered-host').value, $('nodered-port').value), user: $('nodered-user').value.trim(),
+      password: $('nodered-password').value, allowOverwrite: $('nodered-overwrite').checked,
+    },
+    grafana: {
+      url: url($('grafana-host').value, $('grafana-port').value || 3000), user: $('grafana-user').value.trim(),
+      password: $('grafana-password').value, datasourceUid: $('grafana-ds').value,
+    },
+  };
+}
+function missing(section, c) {
+  if (!c.owner) return 'Bitte ganz oben deinen Namen eintragen.';
+  if (section === 'nodered' && !$('nodered-port').value.trim()) return 'Bitte den Port deines Node-RED eintragen (oder unten „Mein Node-RED finden“).';
+  if (section === 'db') {
+    if (!c.db.password && !c.db.user) return 'Bitte die Anmeldung an der Datenbank eintragen (Benutzer und Passwort).';
+    if (!c.db.host) return 'Bitte die Adresse der Datenbank eintragen.';
+    if (!c.db.user) return 'Bitte den Datenbank-Benutzer eintragen.';
+    if (!c.db.database) return 'Bitte einen Datenbanknamen eintragen.';
+  }
+  if (section === 'nodered' && !$('nodered-host').value.trim()) return 'Bitte die Adresse von Node-RED eintragen.';
+  if (section === 'grafana') {
+    if (!$('grafana-host').value.trim()) return 'Bitte die Adresse von Grafana eintragen.';
+    if (!c.grafana.user || !c.grafana.password) return 'Bitte Grafana-Benutzer und -Passwort eintragen.';
+  }
+  return null;
+}
+
+async function api(path, body) {
+  const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Setup-Token': TOKEN }, body: JSON.stringify(body) });
+  if (res.status === 403) throw new Error('Die Setup-Sitzung ist abgelaufen. Bitte das Setup-Programm neu starten.');
+  return res;
+}
+function show(id, kind, text) { const el = $(id); el.className = `msg ${kind}`; el.textContent = text; }
+
+// ---- connection tests -------------------------------------------------------
+async function runTest(section) {
+  const c = config();
+  const problem = missing(section, c);
+  if (problem) { show(`msg-${section}`, 'err', problem); return false; }
+  show(`msg-${section}`, 'info', 'Teste Verbindung ...');
+  try {
+    const r = await (await api('/api/test', { section, config: c[section], owner: c.owner })).json();
+    show(`msg-${section}`, r.ok ? 'ok' : (r.ownerConflict ? 'warn' : 'err'), r.message);
+    if (section === 'nodered') $('overwrite-wrap').classList.toggle('hidden', !r.ownerConflict && !$('nodered-overwrite').checked);
+    if (section === 'grafana' && r.ok) fillDatasources(r);
+    return r.ok;
+  } catch (err) {
+    show(`msg-${section}`, 'err', err.message);
+    return false;
+  }
+}
+// Admins can create their own data source; everyone else picks one that already exists.
+function fillDatasources(r) {
+  const sel = $('grafana-ds');
+  const previous = sel.value;
+  sel.innerHTML = '';
+  if (r.canCreate) sel.add(new Option('Eigene Datenquelle anlegen (mit dem Datenbank-Login oben)', ''));
+  for (const d of r.datasources || []) sel.add(new Option(d.name, d.uid));
+  if ([...sel.options].some((o) => o.value === previous)) sel.value = previous;
+  $('ds-wrap').classList.toggle('hidden', sel.options.length <= 1 && r.canCreate);
+}
+
+// ---- find my Node-RED: scan the server's ports -------------------------------------
+$('scan').addEventListener('click', async () => {
+  const host = $('nodered-host').value.trim();
+  if (!host) { show('msg-scan', 'err', 'Bitte zuerst die Adresse eintragen.'); return; }
+  $('scan').disabled = true;
+  show('msg-scan', 'info', `Suche Node-RED auf ${host}, Ports ${$('scan-from').value}–${$('scan-to').value} ...`);
+  $('scan-table').classList.add('hidden');
+  try {
+    const r = await (await api('/api/scan', { host, from: $('scan-from').value, to: $('scan-to').value })).json();
+    if (!r.ok) { show('msg-scan', 'err', r.message); return; }
+    if (!r.found.length) { show('msg-scan', 'warn', 'Kein Node-RED gefunden. Stimmen Adresse und Portbereich?'); return; }
+    show('msg-scan', 'ok', `${r.found.length} Node-RED gefunden. Wähle deins aus.`);
+    const tbody = $('scan-table').querySelector('tbody');
+    tbody.innerHTML = '';
+    const me = $('owner').value.trim().toLowerCase();
+    for (const n of r.found) {
+      const tr = tbody.insertRow();
+      tr.insertCell().textContent = n.port;
+      tr.insertCell().textContent = n.login ? 'mit Login' : `v${n.version}${n.title && n.title !== 'Node-RED' ? ` – ${n.title}` : ''}`;
+      const who = tr.insertCell();
+      who.textContent = n.login ? 'unbekannt (Login nötig)' : n.owner || '– noch frei –';
+      if (n.owner && me && n.owner.toLowerCase() === me) who.textContent += ' (du)';
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = 'Das ist meins';
+      b.addEventListener('click', () => {
+        $('nodered-port').value = n.port;
+        $('nodered-port').dispatchEvent(new Event('input', { bubbles: true }));
+        $('scan-box').open = false;
+        runTest('nodered');
+      });
+      tr.insertCell().appendChild(b);
+    }
+    $('scan-table').classList.remove('hidden');
+  } catch (err) {
+    show('msg-scan', 'err', err.message);
+  } finally {
+    $('scan').disabled = false;
+  }
+});
+
+document.querySelectorAll('[data-test]').forEach((b) => b.addEventListener('click', async () => {
+  b.disabled = true; await runTest(b.dataset.test); b.disabled = false;
+}));
+
+// ---- install ------------------------------------------------------------------
+const STEP_LABELS = { db: 'Datenbank', nodered: 'Node-RED', grafana: 'Grafana', verify: 'Erster Datentest' };
+const ICONS = { ok: '✓', err: '✗', warn: '!', running: '…', pending: '·' };
+function setStep(id, status, message) {
+  let li = $(`st-${id}`);
+  if (!li) { li = document.createElement('li'); li.id = `st-${id}`; $('steps').appendChild(li); }
+  li.className = `s-${status}`;
+  li.innerHTML = '<span class="ic"></span><span><b></b> <span class="t"></span></span>';
+  li.querySelector('.ic').textContent = ICONS[status] || '·';
+  li.querySelector('b').textContent = `${STEP_LABELS[id] || id}:`;
+  li.querySelector('.t').textContent = message;
+}
+function logLine(text) { $('log').textContent += text + '\n'; $('log').scrollTop = $('log').scrollHeight; }
+
+$('install').addEventListener('click', async () => {
+  const c = config();
+  const selected = Object.keys(c.steps).filter((s) => c.steps[s]);
+  if (!selected.length) { show('msg-install', 'err', 'Bitte mindestens einen Teil zum Einrichten auswählen.'); return; }
+  // Node-RED and Grafana need the database login even when the database step itself is skipped
+  for (const s of new Set(['db', ...selected])) {
+    const problem = missing(s, c);
+    if (problem) { show('msg-install', 'err', problem); return; }
+  }
+  $('install').disabled = true;
+  $('steps').innerHTML = ''; $('steps').classList.remove('hidden');
+  $('log').textContent = ''; $('log-wrap').classList.remove('hidden');
+  show('msg-install', 'info', 'Teste Verbindungen ...');
+
+  // 1. test everything first, so nothing is half set up
+  const tests = [...new Set(['db', ...selected])];
+  for (const s of tests) setStep(s, 'running', 'Teste Verbindung ...');
+  const results = await Promise.all(tests.map(async (s) => [s, await runTest(s)]));
+  const failed = results.filter(([, ok]) => !ok).map(([s]) => s);
+  for (const [s, ok] of results) setStep(s, ok ? 'pending' : 'err', ok ? 'Verbindung ok' : $(`msg-${s}`).textContent);
+  if (failed.length) {
+    show('msg-install', 'err', 'Bitte zuerst die rot markierten Verbindungen korrigieren.');
+    $('install').disabled = false;
+    return;
+  }
+
+  // 2. install, streaming progress
+  show('msg-install', 'info', 'Richte ein ... bitte warten.');
+  let done = null;
+  try {
+    // re-read: the tests may have filled the Grafana data source list
+    const res = await api('/api/install', config());
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    for (;;) {
+      const { value, done: end } = await reader.read();
+      if (end) break;
+      buf += decoder.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i); buf = buf.slice(i + 1);
+        if (!line) continue;
+        const ev = JSON.parse(line);
+        if (ev.type === 'step') { setStep(ev.id, ev.status, ev.message); logLine(`[${ev.id}] ${ev.message}`); }
+        else if (ev.type === 'log') logLine(ev.message);
+        else if (ev.type === 'error') {
+          logLine('FEHLER: ' + ev.message);
+          document.querySelectorAll('.s-running').forEach((li) => { li.className = 's-err'; li.querySelector('.ic').textContent = ICONS.err; });
+          show('msg-install', 'err', ev.message);
+        } else if (ev.type === 'done') done = ev;
+      }
+    }
+  } catch (err) {
+    show('msg-install', 'err', err.message);
+  }
+  $('install').disabled = false;
+  if (done) {
+    show('msg-install', done.verified === false ? 'warn' : 'ok', 'Einrichtung abgeschlossen.');
+    showDone(c, done);
+  }
+});
+
+// ---- done: links, status, backfill ----------------------------------------------
+let statusTimer = null;
+function showDone(c, result) {
+  $('card-done').classList.remove('hidden');
+  const links = [];
+  if (c.steps.nodered) links.push(['Node-RED-Editor', c.nodered.url]);
+  if (result.dashboardUrl) links.push(['Grafana-Dashboard', result.dashboardUrl]);
+  $('links').innerHTML = '';
+  for (const [label, href] of links) {
+    const p = document.createElement('p'); const a = document.createElement('a');
+    a.href = href; a.target = '_blank'; a.rel = 'noopener'; a.textContent = `${label} öffnen →`;
+    p.appendChild(a); $('links').appendChild(p);
+  }
+  $('backfill').disabled = !c.steps.nodered;
+  if (!c.steps.nodered) show('msg-backfill', 'info', 'Backfill braucht den Node-RED-Teil.');
+  clearInterval(statusTimer);
+  refreshStatus(c);
+  statusTimer = setInterval(() => refreshStatus(c), 5000);
+  $('card-done').scrollIntoView({ behavior: 'smooth' });
+}
+async function refreshStatus(c) {
+  try {
+    const r = await (await api('/api/status', { db: c.db })).json();
+    if (!r.ok) return;
+    $('stats').innerHTML = '';
+    for (const [label, v] of [['Erdbeben', r.quakes], ['berechnet', r.computed], ['warten', r.pending]]) {
+      const d = document.createElement('div'); const b = document.createElement('b');
+      b.textContent = v.toLocaleString('de-DE'); d.appendChild(b); d.append(label); $('stats').appendChild(d);
+    }
+  } catch { /* ignore */ }
+}
+const thisYear = new Date().getFullYear();
+for (let y = thisYear - 1; y >= 1990; y--) $('bf-year').add(new Option(y, y));
+$('backfill').addEventListener('click', async () => {
+  const c = config();
+  $('backfill').disabled = true;
+  show('msg-backfill', 'info', 'Starte ...');
+  try {
+    const r = await (await api('/api/backfill', { nodered: c.nodered, year: $('bf-year').value, minmag: $('bf-mag').value })).json();
+    show('msg-backfill', r.ok ? 'ok' : 'err', r.ok
+      ? `Node-RED lädt die Erdbeben von ${$('bf-year').value}. Die Zahlen oben steigen in den nächsten Minuten.`
+      : r.message);
+  } catch (err) { show('msg-backfill', 'err', err.message); }
+  $('backfill').disabled = false;
+});
+
+$('quit').addEventListener('click', async () => {
+  try { await api('/api/quit', {}); } catch { /* already gone */ }
+  document.body.innerHTML = '<main><h1>Setup beendet</h1><p class="lead">Dieses Fenster kann geschlossen werden.</p></main>';
+});
+</script>
+</body>
+</html>

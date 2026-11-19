@@ -1,0 +1,25 @@
+# Installierte Pakete (npm install stellt sie wieder her)
+node_modules/
+
+# Zugangsdaten: NIE ins Repository
+.env
+.env.*
+node-red/flow_cred.json
+node-red/*cred*.backup
+
+# Alte lokale Node-RED-Installation (ersetzt durch Docker, siehe README)
+node-red/data/
+node-red/flow.json
+node-red/.*.backup
+
+# Gebaute Dateien und Downloads
+dist/
+setup-wizard/.cache/
+*.zip
+
+# Lokale Datensicherungen
+backup/
+
+# Betriebssystem und Editor
+.DS_Store
+.vscode/

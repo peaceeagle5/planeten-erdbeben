@@ -1,0 +1,20 @@
+{
+  "scripts": {
+    "api": "node app.js",
+    "node-red": "node-red --userDir node-red/data ../flow.json",
+    "setup": "node setup-wizard/server.js",
+    "build-setup": "node setup-wizard/build.js",
+    "flow-import": "node node-red/flow-builder.js",
+    "dashboard": "node grafana/dashboard-builder.js",
+    "lernen": "node --test \"lernen/**/*.test.js\""
+  },
+  "dependencies": {
+    "astronomy-engine": "^2.1.19"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "eslint": "^10.15.0",
+    "mysql2": "^3.24.6",
+    "prettier": "^3.10.1"
+  }
+}

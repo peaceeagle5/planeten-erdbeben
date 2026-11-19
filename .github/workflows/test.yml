@@ -1,0 +1,61 @@
+# Automatische Tests bei jedem Push (und per Knopf "Run workflow" unter "Actions").
+#  1. Linux: alle Lerneinheiten-Tests, Setup-Programme bauen (Cross-Build wie auf dem Mac), Linux-Programm testen
+#  2. Windows: das gebaute .exe starten und prüfen, Lerneinheiten-Tests unter Windows
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: Bauen und testen (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '26' # build.js braucht Node 25.5+ für --build-sea
+          cache: npm
+      - run: npm ci
+      - name: Lerneinheiten (Musterlösungen)
+        run: npm run lernen
+        env:
+          LOESUNG: '1'
+      - name: Setup-Programme bauen (Windows, Linux x64, Linux arm64)
+        run: npm run build-setup
+      - name: Linux-Programm starten und prüfen
+        run: |
+          sudo apt-get install -y -qq libatomic1
+          node tools/smoke-test.js dist/planeten-erdbeben-setup-linux-x64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: setup-programme
+          path: |
+            dist/planeten-erdbeben-setup-windows-x64.exe
+            dist/planeten-erdbeben-setup-linux-x64
+            dist/planeten-erdbeben-setup-linux-arm64
+          retention-days: 7
+
+  windows:
+    name: Windows
+    needs: build-linux
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24' # Node.js wie bei den Schüler:innen (LTS); das .exe bringt sein eigenes mit
+          cache: npm
+      - run: npm ci
+      - name: Lerneinheiten unter Windows (Musterlösungen)
+        run: npm run lernen
+        env:
+          LOESUNG: '1'
+      - uses: actions/download-artifact@v4
+        with:
+          name: setup-programme
+          path: dist
+      - name: Setup-Programm (.exe) starten und prüfen
+        run: node tools/smoke-test.js dist/planeten-erdbeben-setup-windows-x64.exe

@@ -1,0 +1,2354 @@
+{
+  "uid": "planeten-erdbeben",
+  "title": "Planeten & Erdbeben",
+  "tags": [
+    "earthquakes",
+    "planets"
+  ],
+  "timezone": "utc",
+  "editable": true,
+  "refresh": "5m",
+  "time": {
+    "from": "now-2y",
+    "to": "now"
+  },
+  "schemaVersion": 39,
+  "templating": {
+    "list": [
+      {
+        "type": "datasource",
+        "name": "ds",
+        "label": "Data source",
+        "query": "mysql",
+        "hide": 0
+      },
+      {
+        "type": "custom",
+        "name": "minmag",
+        "label": "Min. magnitude",
+        "query": "4.5,5,6,7",
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "text": "4.5",
+          "value": "4.5"
+        },
+        "options": [
+          {
+            "text": "4.5",
+            "value": "4.5",
+            "selected": true
+          },
+          {
+            "text": "5",
+            "value": "5",
+            "selected": false
+          },
+          {
+            "text": "6",
+            "value": "6",
+            "selected": false
+          },
+          {
+            "text": "7",
+            "value": "7",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "type": "custom",
+        "name": "body",
+        "label": "Body",
+        "query": "Sun,Moon,Mercury,Venus,Mars,Jupiter,Saturn,Uranus,Neptune,Pluto",
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "text": "Moon",
+          "value": "Moon"
+        },
+        "options": [
+          {
+            "text": "Sun",
+            "value": "Sun",
+            "selected": false
+          },
+          {
+            "text": "Moon",
+            "value": "Moon",
+            "selected": true
+          },
+          {
+            "text": "Mercury",
+            "value": "Mercury",
+            "selected": false
+          },
+          {
+            "text": "Venus",
+            "value": "Venus",
+            "selected": false
+          },
+          {
+            "text": "Mars",
+            "value": "Mars",
+            "selected": false
+          },
+          {
+            "text": "Jupiter",
+            "value": "Jupiter",
+            "selected": false
+          },
+          {
+            "text": "Saturn",
+            "value": "Saturn",
+            "selected": false
+          },
+          {
+            "text": "Uranus",
+            "value": "Uranus",
+            "selected": false
+          },
+          {
+            "text": "Neptune",
+            "value": "Neptune",
+            "selected": false
+          },
+          {
+            "text": "Pluto",
+            "value": "Pluto",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "type": "custom",
+        "name": "orb",
+        "label": "Aspect orb °",
+        "query": "1,2,4,8",
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "text": "8",
+          "value": "8"
+        },
+        "options": [
+          {
+            "text": "1",
+            "value": "1",
+            "selected": false
+          },
+          {
+            "text": "2",
+            "value": "2",
+            "selected": false
+          },
+          {
+            "text": "4",
+            "value": "4",
+            "selected": false
+          },
+          {
+            "text": "8",
+            "value": "8",
+            "selected": true
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Pipeline",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${ds}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT SUM(kind = 'earthquake') AS quakes, SUM(kind = 'control') AS controls,\n       SUM(sky_computed = 0) AS pending\nFROM events"
+        }
+      ],
+      "description": "Events stored in the database. \"pending\" = waiting for planetary positions from the API.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pending"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "center",
+        "orientation": "vertical"
+      }
+    },
+    {
+      "id": 2,
+      "type": "canvas",
+      "title": "Sky at the latest earthquake",
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 10
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${ds}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT e.time_utc, e.place, e.magnitude, e.depth_km, ROUND(e.moon_phase_deg, 1) AS moon_phase_deg,\n  MAX(CASE WHEN bp.body = 'Sun'     THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Sun,\n  MAX(CASE WHEN bp.body = 'Moon'    THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Moon,\n  MAX(CASE WHEN bp.body = 'Mercury' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Mercury,\n  MAX(CASE WHEN bp.body = 'Venus'   THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Venus,\n  MAX(CASE WHEN bp.body = 'Mars'    THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Mars,\n  MAX(CASE WHEN bp.body = 'Jupiter' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Jupiter,\n  MAX(CASE WHEN bp.body = 'Saturn'  THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Saturn,\n  MAX(CASE WHEN bp.body = 'Uranus'  THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Uranus,\n  MAX(CASE WHEN bp.body = 'Neptune' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Neptune,\n  MAX(CASE WHEN bp.body = 'Pluto'   THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Pluto\nFROM events e\nJOIN body_positions bp ON bp.event_id = e.id\nWHERE e.id = (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1\n              ORDER BY time_utc DESC LIMIT 1)\nGROUP BY e.id"
+        }
+      ],
+      "description": "Zodiac position of every body when the most recent quake happened. R = retrograde.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "inlineEditing": true,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "type": "frame",
+          "name": "Element root",
+          "elements": [
+            {
+              "type": "rectangle",
+              "name": "Title",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Latest earthquake"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 1,
+                "top": 2,
+                "right": 79,
+                "bottom": 78
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Place",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "place",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 20,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 1,
+                "top": 14,
+                "right": 59,
+                "bottom": 68
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Magnitude label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Magnitude"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 12,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 43,
+                "top": 2,
+                "right": 45,
+                "bottom": 86
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Magnitude",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "magnitude",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#ff7383"
+                },
+                "size": 26,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 43,
+                "top": 12,
+                "right": 45,
+                "bottom": 68
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Depth label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Depth km"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 12,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 56,
+                "top": 2,
+                "right": 32,
+                "bottom": 86
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Depth",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "depth_km",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 22,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 56,
+                "top": 12,
+                "right": 32,
+                "bottom": 68
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Moon phase label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Moon phase °"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 12,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 69,
+                "top": 2,
+                "right": 19,
+                "bottom": 86
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Moon phase",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "moon_phase_deg",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 22,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 69,
+                "top": 12,
+                "right": 19,
+                "bottom": 68
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Time label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Time (UTC)"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 12,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 82,
+                "top": 2,
+                "right": 1,
+                "bottom": 86
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Time",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "time_utc",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 82,
+                "top": 12,
+                "right": 1,
+                "bottom": 68
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Sun card",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 16,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.08)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.35)"
+                },
+                "width": 1,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 1,
+                "top": 38,
+                "right": 80.4,
+                "bottom": 34
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Sun label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "☉ Sun"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 1,
+                "top": 40,
+                "right": 80.4,
+                "bottom": 49
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Sun value",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "Sun",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 18,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 1,
+                "top": 50,
+                "right": 80.4,
+                "bottom": 36
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Moon card",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 16,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.08)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.35)"
+                },
+                "width": 1,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 20.8,
+                "top": 38,
+                "right": 60.6,
+                "bottom": 34
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Moon label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "☽ Moon"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 20.8,
+                "top": 40,
+                "right": 60.6,
+                "bottom": 49
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Moon value",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "Moon",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 18,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 20.8,
+                "top": 50,
+                "right": 60.6,
+                "bottom": 36
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Mercury card",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 16,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.08)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.35)"
+                },
+                "width": 1,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 40.6,
+                "top": 38,
+                "right": 40.8,
+                "bottom": 34
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Mercury label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "☿ Mercury"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 40.6,
+                "top": 40,
+                "right": 40.8,
+                "bottom": 49
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Mercury value",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "Mercury",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 18,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 40.6,
+                "top": 50,
+                "right": 40.8,
+                "bottom": 36
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Venus card",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 16,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.08)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.35)"
+                },
+                "width": 1,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 60.400000000000006,
+                "top": 38,
+                "right": 20.999999999999993,
+                "bottom": 34
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Venus label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "♀ Venus"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 60.400000000000006,
+                "top": 40,
+                "right": 20.999999999999993,
+                "bottom": 49
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Venus value",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "Venus",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 18,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 60.400000000000006,
+                "top": 50,
+                "right": 20.999999999999993,
+                "bottom": 36
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Mars card",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 16,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.08)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.35)"
+                },
+                "width": 1,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 80.2,
+                "top": 38,
+                "right": 1.1999999999999957,
+                "bottom": 34
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Mars label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "♂ Mars"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 80.2,
+                "top": 40,
+                "right": 1.1999999999999957,
+                "bottom": 49
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Mars value",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "Mars",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 18,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 80.2,
+                "top": 50,
+                "right": 1.1999999999999957,
+                "bottom": 36
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Jupiter card",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 16,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.08)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.35)"
+                },
+                "width": 1,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 1,
+                "top": 69,
+                "right": 80.4,
+                "bottom": 3
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Jupiter label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "♃ Jupiter"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 1,
+                "top": 71,
+                "right": 80.4,
+                "bottom": 18
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Jupiter value",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "Jupiter",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 18,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 1,
+                "top": 81,
+                "right": 80.4,
+                "bottom": 5
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Saturn card",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 16,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.08)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.35)"
+                },
+                "width": 1,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 20.8,
+                "top": 69,
+                "right": 60.6,
+                "bottom": 3
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Saturn label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "♄ Saturn"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 20.8,
+                "top": 71,
+                "right": 60.6,
+                "bottom": 18
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Saturn value",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "Saturn",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 18,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 20.8,
+                "top": 81,
+                "right": 60.6,
+                "bottom": 5
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Uranus card",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 16,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.08)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.35)"
+                },
+                "width": 1,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 40.6,
+                "top": 69,
+                "right": 40.8,
+                "bottom": 3
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Uranus label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "♅ Uranus"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 40.6,
+                "top": 71,
+                "right": 40.8,
+                "bottom": 18
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Uranus value",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "Uranus",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 18,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 40.6,
+                "top": 81,
+                "right": 40.8,
+                "bottom": 5
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Neptune card",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 16,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.08)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.35)"
+                },
+                "width": 1,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 60.400000000000006,
+                "top": 69,
+                "right": 20.999999999999993,
+                "bottom": 3
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Neptune label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "♆ Neptune"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 60.400000000000006,
+                "top": 71,
+                "right": 20.999999999999993,
+                "bottom": 18
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Neptune value",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "Neptune",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 18,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 60.400000000000006,
+                "top": 81,
+                "right": 20.999999999999993,
+                "bottom": 5
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Pluto card",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 16,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.08)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.35)"
+                },
+                "width": 1,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 80.2,
+                "top": 69,
+                "right": 1.1999999999999957,
+                "bottom": 3
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Pluto label",
+              "config": {
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "♇ Pluto"
+                },
+                "color": {
+                  "fixed": "#9fa7b3"
+                },
+                "size": 14,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 80.2,
+                "top": 71,
+                "right": 1.1999999999999957,
+                "bottom": 18
+              }
+            },
+            {
+              "type": "rectangle",
+              "name": "Pluto value",
+              "config": {
+                "text": {
+                  "mode": "field",
+                  "field": "Pluto",
+                  "fixed": ""
+                },
+                "color": {
+                  "fixed": "#e6e6e6"
+                },
+                "size": 18,
+                "align": "center",
+                "valign": "middle"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 6
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 80.2,
+                "top": 81,
+                "right": 1.1999999999999957,
+                "bottom": 5
+              }
+            }
+          ],
+          "background": {
+            "color": {
+              "fixed": "transparent"
+            }
+          },
+          "border": {
+            "color": {
+              "fixed": "dark-green"
+            }
+          },
+          "constraint": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "placement": {}
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "geomap",
+      "title": "Earthquakes (time range, M ≥ $minmag)",
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 24,
+        "h": 13
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${ds}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT time_utc AS time, latitude, longitude, magnitude, depth_km, place, moon_phase_deg\nFROM events\nWHERE kind = 'earthquake' AND $__timeFilter(time_utc) AND magnitude >= $minmag"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-YlRd"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "view": {
+          "id": "zero",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 1,
+          "allLayers": true
+        },
+        "controls": {
+          "showZoom": true,
+          "mouseWheelZoom": true,
+          "showAttribution": true
+        },
+        "tooltip": {
+          "mode": "details"
+        },
+        "basemap": {
+          "type": "default",
+          "name": "Basemap",
+          "config": {}
+        },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "Earthquakes",
+            "tooltip": true,
+            "location": {
+              "mode": "coords",
+              "latitude": "latitude",
+              "longitude": "longitude"
+            },
+            "config": {
+              "showLegend": true,
+              "style": {
+                "size": {
+                  "field": "magnitude",
+                  "fixed": 5,
+                  "min": 3,
+                  "max": 18
+                },
+                "color": {
+                  "field": "magnitude",
+                  "fixed": "dark-red"
+                },
+                "opacity": 0.6,
+                "symbol": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/marker/circle.svg"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "type": "barchart",
+      "title": "Moon phase: earthquakes vs. control",
+      "description": "Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.",
+      "gridPos": {
+        "x": 0,
+        "y": 27,
+        "w": 12,
+        "h": 10
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${ds}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT ELT(bin + 1, 'New', 'Waxing crescent', 'First quarter', 'Waxing gibbous',\n                    'Full', 'Waning gibbous', 'Last quarter', 'Waning crescent') AS phase,\n       quakes_pct, control_pct\nFROM (\n  SELECT FLOOR(MOD(moon_phase_deg + 22.5, 360) / 45) AS bin,\n         100 * SUM(kind = 'earthquake') / SUM(SUM(kind = 'earthquake')) OVER () AS quakes_pct,\n         100 * SUM(kind = 'control')    / SUM(SUM(kind = 'control'))    OVER () AS control_pct\n  FROM events\n  WHERE sky_computed = 1 AND magnitude >= $minmag\n  GROUP BY bin\n) t\nORDER BY bin"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "quakes_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Earthquakes"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "control_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Control (same place, random time)"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "phase",
+        "orientation": "auto",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "barchart",
+      "title": "Zodiac sign of $body: earthquakes vs. control",
+      "description": "Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.",
+      "gridPos": {
+        "x": 12,
+        "y": 27,
+        "w": 12,
+        "h": 10
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${ds}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT bp.zodiac_sign AS sign,\n       100 * SUM(e.kind = 'earthquake') / SUM(SUM(e.kind = 'earthquake')) OVER () AS quakes_pct,\n       100 * SUM(e.kind = 'control')    / SUM(SUM(e.kind = 'control'))    OVER () AS control_pct\nFROM body_positions bp\nJOIN events e ON e.id = bp.event_id\nWHERE bp.body = '$body' AND e.magnitude >= $minmag\nGROUP BY bp.zodiac_sign\nORDER BY FIELD(sign, 'Aries','Taurus','Gemini','Cancer','Leo','Virgo',\n                     'Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces')"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "quakes_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Earthquakes"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "control_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Control (same place, random time)"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "sign",
+        "orientation": "auto",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "barchart",
+      "title": "Moon above / below the horizon at the quake location",
+      "description": "Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.",
+      "gridPos": {
+        "x": 0,
+        "y": 37,
+        "w": 8,
+        "h": 10
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${ds}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT IF(bp.above_horizon, 'Moon above horizon', 'Moon below horizon') AS moon,\n       100 * SUM(e.kind = 'earthquake') / SUM(SUM(e.kind = 'earthquake')) OVER () AS quakes_pct,\n       100 * SUM(e.kind = 'control')    / SUM(SUM(e.kind = 'control'))    OVER () AS control_pct\nFROM body_positions bp\nJOIN events e ON e.id = bp.event_id\nWHERE bp.body = 'Moon' AND e.magnitude >= $minmag\nGROUP BY bp.above_horizon"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "quakes_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Earthquakes"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "control_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Control (same place, random time)"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "moon",
+        "orientation": "auto",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Aspects that differ most (orb ≤ $orb°)",
+      "gridPos": {
+        "x": 8,
+        "y": 37,
+        "w": 16,
+        "h": 10
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${ds}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT aspect, quakes_pct, control_pct, quakes_pct - control_pct AS diff_pct, n\nFROM (\n  SELECT CONCAT(a.body_a, ' ', a.aspect, ' ', a.body_b) AS aspect,\n         100 * SUM(e.kind = 'earthquake') / (SELECT COUNT(*) FROM events\n             WHERE kind = 'earthquake' AND sky_computed = 1 AND magnitude >= $minmag) AS quakes_pct,\n         100 * SUM(e.kind = 'control') / (SELECT COUNT(*) FROM events\n             WHERE kind = 'control' AND sky_computed = 1 AND magnitude >= $minmag) AS control_pct,\n         COUNT(*) AS n\n  FROM aspects a\n  JOIN events e ON e.id = a.event_id\n  WHERE e.magnitude >= $minmag AND a.orb_deg <= $orb\n  GROUP BY a.body_a, a.aspect, a.body_b\n  HAVING COUNT(*) >= 30\n) t\nORDER BY ABS(diff_pct) DESC\nLIMIT 20"
+        }
+      ],
+      "description": "Share of events that had each aspect. Only aspects seen at least 30 times are listed. With many aspects, some differences are expected by chance.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "quakes_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Earthquakes"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "control_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Control (same place, random time)"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "diff_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Difference"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-RdYlGr"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "n"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Count"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    }
+  ]
+}

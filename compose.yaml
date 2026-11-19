@@ -1,0 +1,68 @@
+# Lokale Lern- und Entwicklungsumgebung: MariaDB, Node-RED und Grafana in Docker.
+#
+#   docker compose up -d       starten (beim ersten Mal werden die Images geladen, ~1 GB)
+#   docker compose ps          läuft alles?
+#   docker compose stop        anhalten (Daten bleiben erhalten)
+#   docker compose down -v     alles löschen, auch die Daten
+#
+# Danach: npm run setup → Knopf „Lokale Docker-Umgebung“ → „Alles einrichten“.
+#
+# Die Ports sind nur von diesem PC aus erreichbar (127.0.0.1). Ist ein Port schon belegt
+# (z. B. 3306 durch XAMPP), in einer Datei .env neben dieser Datei ändern, z. B. DB_PORT=3307.
+
+name: planeten-erdbeben
+
+services:
+  mariadb:
+    image: mariadb:11.8
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root-lernen
+      MARIADB_DATABASE: planeten_erdbeben
+      MARIADB_USER: planeten          # darf lesen und schreiben (Node-RED, Grafana, Setup)
+      MARIADB_PASSWORD: planeten-lernen
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${DB_PORT:-3306}:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./docker/mariadb-init/02-lernen-user.sql:/docker-entrypoint-initdb.d/02-lernen-user.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  nodered:
+    image: nodered/node-red:5.0.10
+    restart: unless-stopped
+    environment:
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${NODERED_PORT:-1880}:1880"
+    volumes:
+      - nodered-data:/data
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  grafana:
+    image: grafana/grafana:13.3.1
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin-lernen
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  nodered-data:
+  grafana-data:

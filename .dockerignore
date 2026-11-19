@@ -1,0 +1,11 @@
+# Wird beim "docker build" nicht an Docker geschickt (wie .gitignore, nur für Docker)
+node_modules
+.env
+dist
+*.zip
+setup-wizard/.cache
+node-red/data
+node-red/flow_cred.json
+.git
+backup
+.env.xampp

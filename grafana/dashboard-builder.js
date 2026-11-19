@@ -1,0 +1,229 @@
+// Builds the Grafana dashboard from the panel queries in grafana/queries.sql.
+// Used by the setup wizard, and from the command line:
+//
+//   node grafana/dashboard-builder.js                     # only write dashboard.json
+//   GRAFANA_URL=http://127.0.0.1:3000 GRAFANA_USER=admin GRAFANA_PASSWORD=... \
+//     node grafana/dashboard-builder.js                   # write + upload
+//   (or GRAFANA_TOKEN=<service account token> instead of user/password)
+const { readAsset } = require('../shared/assets');
+
+// ---------------------------------------------------------------------------
+// Parse queries.sql: blocks start with "-- ====", "-- N) Title", "-- ===="
+// ---------------------------------------------------------------------------
+function loadQueries() {
+  const lines = readAsset('grafana/queries.sql').split('\n');
+  const queries = {};
+  let current = null;
+  for (let i = 0; i < lines.length; i++) {
+    const header = lines[i].match(/^-- (\d+)\) /);
+    if (header && /^-- =+/.test(lines[i - 1] || '')) {
+      current = Number(header[1]);
+      queries[current] = [];
+      while (i + 1 < lines.length && lines[i + 1].startsWith('--')) i++; // skip rest of header
+      continue;
+    }
+    if (current && !lines[i].startsWith('--')) queries[current].push(lines[i]);
+  }
+  for (const k of Object.keys(queries)) queries[k] = queries[k].join('\n').trim().replace(/;$/, '');
+  return queries;
+}
+
+const DS = { type: 'mysql', uid: '${ds}' };
+const target = (sql) => ({ refId: 'A', datasource: DS, editorMode: 'code', rawQuery: true, format: 'table', rawSql: sql });
+
+const QUAKE_COLOR = 'red';
+const CONTROL_COLOR = 'text';
+
+// quakes_pct / control_pct get the same names and colors everywhere
+const comparisonOverrides = [
+  { matcher: { id: 'byName', options: 'quakes_pct' }, properties: [
+    { id: 'displayName', value: 'Earthquakes' },
+    { id: 'color', value: { mode: 'fixed', fixedColor: QUAKE_COLOR } }] },
+  { matcher: { id: 'byName', options: 'control_pct' }, properties: [
+    { id: 'displayName', value: 'Control (same place, random time)' },
+    { id: 'color', value: { mode: 'fixed', fixedColor: CONTROL_COLOR } }] },
+];
+
+function barChart(id, title, description, sql, xField, gridPos) {
+  return {
+    id, type: 'barchart', title, description, gridPos, datasource: DS, targets: [target(sql)],
+    fieldConfig: { defaults: { unit: 'percent', decimals: 1, min: 0, custom: { fillOpacity: 80, lineWidth: 0 } }, overrides: comparisonOverrides },
+    options: {
+      xField, orientation: 'auto', groupWidth: 0.75, barWidth: 0.9, showValue: 'never', stacking: 'none',
+      xTickLabelRotation: 0, legend: { showLegend: true, displayMode: 'list', placement: 'bottom' },
+      tooltip: { mode: 'multi', sort: 'none' },
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Canvas: latest quake + where every body stood (zodiac sign, R = retrograde)
+// ---------------------------------------------------------------------------
+function canvasElements() {
+  const els = [];
+  const scale = { horizontal: 'scale', vertical: 'scale' };
+  const box = (left, top, width, height) => ({ left, top, right: 100 - left - width, bottom: 100 - top - height });
+  const rect = (name, text, place, opts = {}) => els.push({
+    type: 'rectangle', name,
+    config: { text, color: { fixed: opts.color || '#e6e6e6' }, size: opts.size || 16, align: 'center', valign: 'middle' },
+    background: { color: { fixed: opts.bg || 'transparent' } },
+    border: { color: { fixed: opts.border || 'transparent' }, width: opts.border ? 1 : 0, radius: 6 },
+    constraint: scale, placement: place,
+  });
+  const field = (f) => ({ mode: 'field', field: f, fixed: '' });
+  const fixed = (t) => ({ mode: 'fixed', fixed: t });
+
+  // header row
+  rect('Title', fixed('Latest earthquake'), box(1, 2, 20, 20), { size: 14, color: '#9fa7b3' });
+  rect('Place', field('place'), box(1, 14, 40, 18), { size: 20 });
+  rect('Magnitude label', fixed('Magnitude'), box(43, 2, 12, 12), { size: 12, color: '#9fa7b3' });
+  rect('Magnitude', field('magnitude'), box(43, 12, 12, 20), { size: 26, color: '#ff7383' });
+  rect('Depth label', fixed('Depth km'), box(56, 2, 12, 12), { size: 12, color: '#9fa7b3' });
+  rect('Depth', field('depth_km'), box(56, 12, 12, 20), { size: 22 });
+  rect('Moon phase label', fixed('Moon phase °'), box(69, 2, 12, 12), { size: 12, color: '#9fa7b3' });
+  rect('Moon phase', field('moon_phase_deg'), box(69, 12, 12, 20), { size: 22 });
+  rect('Time label', fixed('Time (UTC)'), box(82, 2, 17, 12), { size: 12, color: '#9fa7b3' });
+  rect('Time', field('time_utc'), box(82, 12, 17, 20), { size: 14 });
+
+  // body cards: 2 rows x 5
+  const bodies = [
+    ['Sun', '☉'], ['Moon', '☽'], ['Mercury', '☿'], ['Venus', '♀'], ['Mars', '♂'],
+    ['Jupiter', '♃'], ['Saturn', '♄'], ['Uranus', '♅'], ['Neptune', '♆'], ['Pluto', '♇'],
+  ];
+  bodies.forEach(([name, symbol], i) => {
+    const left = 1 + (i % 5) * 19.8;
+    const top = i < 5 ? 38 : 69;
+    rect(`${name} card`, fixed(''), box(left, top, 18.6, 28), { bg: 'rgba(128,128,128,0.08)', border: 'rgba(128,128,128,0.35)' });
+    rect(`${name} label`, fixed(`${symbol} ${name}`), box(left, top + 2, 18.6, 11), { size: 14, color: '#9fa7b3' });
+    rect(`${name} value`, field(name), box(left, top + 12, 18.6, 14), { size: 18 });
+  });
+  return els;
+}
+
+// ---------------------------------------------------------------------------
+// Dashboard
+// ---------------------------------------------------------------------------
+const custom = (name, label, values, current, description) => ({
+  type: 'custom', name, label, description, query: values.join(','), multi: false, includeAll: false,
+  current: { text: current, value: current },
+  options: values.map((v) => ({ text: v, value: v, selected: v === current })),
+});
+
+const COMPARE_NOTE = 'Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.';
+
+/**
+ * @param {{dsUid?:string, dsName?:string, uid?:string, title?:string}} [opts]
+ *   dsUid/dsName: data source preselected in the $ds variable;
+ *   uid/title: one dashboard per person when several people share a Grafana.
+ */
+function buildDashboard({ dsUid, dsName, uid = 'planeten-erdbeben', title = 'Planeten & Erdbeben' } = {}) {
+const Q = loadQueries();
+const dashboard = {
+  uid,
+  title,
+  tags: ['earthquakes', 'planets'],
+  timezone: 'utc',
+  editable: true,
+  refresh: '5m',
+  time: { from: 'now-2y', to: 'now' },
+  schemaVersion: 39,
+  templating: { list: [
+    { type: 'datasource', name: 'ds', label: 'Data source', query: 'mysql', hide: 0,
+      ...(dsUid ? { current: { text: dsName || dsUid, value: dsUid } } : {}) },
+    custom('minmag', 'Min. magnitude', ['4.5', '5', '6', '7'], '4.5'),
+    custom('body', 'Body', ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'], 'Moon'),
+    custom('orb', 'Aspect orb °', ['1', '2', '4', '8'], '8'),
+  ] },
+  panels: [
+    {
+      id: 1, type: 'stat', title: 'Pipeline', gridPos: { x: 0, y: 0, w: 24, h: 4 }, datasource: DS, targets: [target(Q[7])],
+      description: 'Events stored in the database. "pending" = waiting for planetary positions from the API.',
+      fieldConfig: { defaults: { color: { mode: 'fixed', fixedColor: 'text' } }, overrides: [
+        { matcher: { id: 'byName', options: 'pending' }, properties: [{ id: 'thresholds', value: { mode: 'absolute', steps: [{ color: 'green', value: null }, { color: 'orange', value: 1 }] } }, { id: 'color', value: { mode: 'thresholds' } }] }] },
+      options: { reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false }, colorMode: 'value', graphMode: 'none', textMode: 'value_and_name', justifyMode: 'center', orientation: 'vertical' },
+    },
+    {
+      id: 2, type: 'canvas', title: 'Sky at the latest earthquake', gridPos: { x: 0, y: 4, w: 24, h: 10 }, datasource: DS, targets: [target(Q[6])],
+      description: 'Zodiac position of every body when the most recent quake happened. R = retrograde.',
+      fieldConfig: { defaults: {}, overrides: [] },
+      options: { inlineEditing: true, showAdvancedTypes: true, panZoom: false, infinitePan: false, root: {
+        type: 'frame', name: 'Element root', elements: canvasElements(),
+        background: { color: { fixed: 'transparent' } }, border: { color: { fixed: 'dark-green' } },
+        constraint: { horizontal: 'left', vertical: 'top' }, placement: {},
+      } },
+    },
+    {
+      id: 3, type: 'geomap', title: 'Earthquakes (time range, M ≥ $minmag)', gridPos: { x: 0, y: 14, w: 24, h: 13 }, datasource: DS, targets: [target(Q[1])],
+      fieldConfig: { defaults: { color: { mode: 'continuous-YlRd' }, decimals: 1 }, overrides: [] },
+      options: {
+        view: { id: 'zero', lat: 0, lon: 0, zoom: 1, allLayers: true },
+        controls: { showZoom: true, mouseWheelZoom: true, showAttribution: true },
+        tooltip: { mode: 'details' },
+        basemap: { type: 'default', name: 'Basemap', config: {} },
+        layers: [{
+          type: 'markers', name: 'Earthquakes', tooltip: true,
+          location: { mode: 'coords', latitude: 'latitude', longitude: 'longitude' },
+          config: { showLegend: true, style: {
+            size: { field: 'magnitude', fixed: 5, min: 3, max: 18 },
+            color: { field: 'magnitude', fixed: 'dark-red' },
+            opacity: 0.6, symbol: { mode: 'fixed', fixed: 'img/icons/marker/circle.svg' },
+          } },
+        }],
+      },
+    },
+    barChart(4, 'Moon phase: earthquakes vs. control', COMPARE_NOTE, Q[2], 'phase', { x: 0, y: 27, w: 12, h: 10 }),
+    barChart(5, 'Zodiac sign of $body: earthquakes vs. control', COMPARE_NOTE, Q[3], 'sign', { x: 12, y: 27, w: 12, h: 10 }),
+    barChart(6, 'Moon above / below the horizon at the quake location', COMPARE_NOTE, Q[5], 'moon', { x: 0, y: 37, w: 8, h: 10 }),
+    {
+      id: 7, type: 'table', title: 'Aspects that differ most (orb ≤ $orb°)', gridPos: { x: 8, y: 37, w: 16, h: 10 }, datasource: DS, targets: [target(Q[4])],
+      description: 'Share of events that had each aspect. Only aspects seen at least 30 times are listed. With many aspects, some differences are expected by chance.',
+      fieldConfig: { defaults: { decimals: 1 }, overrides: [
+        ...comparisonOverrides,
+        { matcher: { id: 'byRegexp', options: '.*_pct' }, properties: [{ id: 'unit', value: 'percent' }] },
+        { matcher: { id: 'byName', options: 'diff_pct' }, properties: [
+          { id: 'displayName', value: 'Difference' },
+          { id: 'custom.cellOptions', value: { type: 'color-text' } },
+          { id: 'color', value: { mode: 'continuous-RdYlGr' } }] },
+        { matcher: { id: 'byName', options: 'n' }, properties: [{ id: 'displayName', value: 'Count' }, { id: 'decimals', value: 0 }] },
+      ] },
+      options: { showHeader: true, cellHeight: 'sm' },
+    },
+  ],
+};
+
+return dashboard;
+}
+
+/** Upload (create or overwrite) the dashboard. auth = {token} or {user, password}. */
+async function uploadDashboard(grafanaUrl, auth, dashboard) {
+  const base = grafanaUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/dashboards/db`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: grafanaAuthHeader(auth) },
+    body: JSON.stringify({ dashboard, overwrite: true, message: 'Planeten-Erdbeben setup' }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`Dashboard upload failed: HTTP ${res.status} ${body.message || JSON.stringify(body)}`);
+  return `${base}${body.url}`;
+}
+
+function grafanaAuthHeader({ token, user, password }) {
+  return token ? `Bearer ${token}` : 'Basic ' + Buffer.from(`${user}:${password}`).toString('base64');
+}
+
+module.exports = { buildDashboard, uploadDashboard, grafanaAuthHeader, DASHBOARD_UID: 'planeten-erdbeben' };
+
+if (require.main === module) {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const dashboard = buildDashboard({ dsUid: process.env.GRAFANA_DS_UID });
+  const outFile = path.join(__dirname, 'dashboard.json');
+  fs.writeFileSync(outFile, JSON.stringify(dashboard, null, 2) + '\n');
+  console.log(`Wrote ${outFile} (${dashboard.panels.length} panels)`);
+  if (process.env.GRAFANA_URL) {
+    const auth = { token: process.env.GRAFANA_TOKEN, user: process.env.GRAFANA_USER, password: process.env.GRAFANA_PASSWORD };
+    uploadDashboard(process.env.GRAFANA_URL, auth, dashboard)
+      .then((url) => console.log(`Uploaded: ${url}`))
+      .catch((e) => { console.error(e.message); process.exit(1); });
+  }
+}
