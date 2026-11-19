@@ -1,0 +1,62 @@
+# Einheit 15 – Subnetze und Adressen
+# Schreib deine Antwort hinter den Doppelpunkt (Adressen wie 192.168.1.0, Zahlen, ja/nein oder a/b/c).
+# Leer lassen = noch offen. Prüfen: node --test lernen/15-netzwerk-praxis/
+
+# --- 192.168.100.133/24 ---
+# Netzadresse:
+netz-24:
+# Broadcast-Adresse:
+broadcast-24:
+# Wie viele Hosts passen in ein /24-Netz?
+hosts-24:
+# Subnetzmaske zu /24:
+maske-24:
+
+# --- 192.168.100.133/26 ---
+# Subnetzmaske zu /26:
+maske-26:
+# Wie viele Hosts passen in ein /26-Netz?
+hosts-26:
+# Netzadresse:
+netz-26:
+# Broadcast-Adresse:
+broadcast-26:
+
+# --- Im selben Netz? (ja oder nein) ---
+# 192.168.100.133 und 192.168.100.20, Präfix /24
+gleich-1:
+# 192.168.100.133 und 192.168.101.20, Präfix /24
+gleich-2:
+# 192.168.100.133 und 192.168.101.20, Präfix /16
+gleich-3:
+
+# --- Privat? (ja oder nein) ---
+# 192.168.100.133
+privat-1:
+# 8.8.8.8
+privat-2:
+# 172.20.1.5
+privat-3:
+# 172.40.1.5
+privat-4:
+
+# --- Verstehen (a, b oder c) ---
+# Ein PC hat die Adresse 169.254.12.7. Was bedeutet das?
+#   a) Er ist im Internet   b) Er hat keinen DHCP-Server erreicht   c) Er ist der Router
+apipa:
+
+# Warum sollte der Pi eine DHCP-Reservierung bekommen?
+#   a) damit er schneller ist   b) damit er immer dieselbe IP hat und alle Einträge im Setup stimmen   c) damit er ins Internet kommt
+reservierung:
+
+# Was erlaubt "sudo ufw default deny incoming" noch?
+#   a) gar nichts mehr, auch kein Ausgehendes   b) nur Verbindungen, für die es eine allow-Regel gibt   c) alles aus dem Schulnetz
+default-deny:
+
+# Warum muss die SSH-Regel VOR "sudo ufw enable" angelegt werden?
+#   a) sonst sperrt man sich bei einer SSH-Verbindung aus   b) ufw kennt sonst kein SSH   c) die Reihenfolge ist egal
+ssh-zuerst:
+
+# Docker veröffentlicht einen Port mit "3306:3306" (ohne IP). ufw hat keine Regel für 3306. Ist der Port von außen erreichbar?
+#   a) nein, ufw blockiert ihn   b) ja, Docker setzt seine Regeln an ufw vorbei   c) nur am Wochenende
+docker-ufw:

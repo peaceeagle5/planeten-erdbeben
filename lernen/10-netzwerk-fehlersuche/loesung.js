@@ -22,12 +22,4 @@ function nextCheck(error) {
   return checks[layerOf(error)] ?? 'log';
 }
 
-const fall = {
-  eins: 'b', // lokal geht es, von außen nicht → bind-address
-  zwei: 'a', // address already in use = Port belegt
-  drei: 'c', // ENOTFOUND = Name nicht auflösbar → kein Internet/DNS
-  vier: 'b', // Beben kommen an, aber niemand berechnet sie
-  fuenf: 'a', // 127.0.0.1 ist aus Sicht des Pi der Pi selbst
-};
-
-module.exports = { isLoopback, layerOf, nextCheck, fall };
+module.exports = { isLoopback, layerOf, nextCheck };

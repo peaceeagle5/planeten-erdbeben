@@ -27,15 +27,3 @@ test('3. nextCheck', () => {
   assert.equal(m.nextCheck('ER_DBACCESS_DENIED_ERROR'), 'rechte');
   assert.equal(m.nextCheck(500), 'log');
 });
-
-test('4. Fallquiz', () => {
-  const hints = {
-    eins: 'Lokal geht es, übers Netz nicht: Wo lauscht MariaDB?',
-    zwei: '„address already in use“ heißt …',
-    drei: 'ENOTFOUND = ein Name kann nicht aufgelöst werden',
-    vier: 'Beben kommen an (pending steigt), aber niemand rechnet',
-    fuenf: '„localhost“ aus Sicht von wem?',
-  };
-  const expected = { eins: 'b', zwei: 'a', drei: 'c', vier: 'b', fuenf: 'a' };
-  for (const k of Object.keys(expected)) assert.equal(m.fall[k], expected[k], `Fall ${k}: ${hints[k]}`);
-});

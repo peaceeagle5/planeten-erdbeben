@@ -121,7 +121,7 @@ löschen, dann `git add` und `git commit`. VS Code zeigt dafür Knöpfe an („A
 ## Übung
 
 1. **JavaScript:** [uebung.js](uebung.js): `.gitignore`-Muster, `git status` lesen, Konflikte lösen, Commit-Nachrichten prüfen.
-   Prüfen: `node --test lernen/13-git-github/`
+   Prüfen: `node --test lernen/13-git-github/uebung.test.js`
 2. **Praxis: dein erstes Repository** (im entpackten Lernpaket, dauert 15 Minuten):
    ```
    git init
@@ -136,6 +136,9 @@ löschen, dann `git add` und `git commit`. VS Code zeigt dafür Knöpfe an („A
    git merge uebung-01
    git log --oneline
    ```
+   **Prüfen, ohne Programmieren:** `node --test lernen/13-git-github/git-praxis.test.js` schaut in dein echtes
+   Repository: mindestens zwei Commits, ein Branch `uebung-…`, keine `.env` im Repository, gute letzte Commit-Nachricht.
+
    Bonus: Lege auf GitHub ein **privates** Repository an und pushe es (Abschnitt 6).
    Wenn `git init` meldet, dass dein Name fehlt: einmal
    `git config --global user.name "Dein Name"` und `git config --global user.email "deine@adresse"`.

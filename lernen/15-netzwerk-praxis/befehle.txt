@@ -1,0 +1,39 @@
+# Einheit 15 – Firewall und Tests: Schreib hinter den Doppelpunkt den Befehl.
+# Das Schulnetz ist 192.168.100.0/24, der Pi hat 192.168.100.133. Leer lassen = noch offen.
+# Prüfen: node --test lernen/15-netzwerk-praxis/
+
+# Standard: alle eingehenden Verbindungen verbieten
+ufw-eingehend-verbieten:
+
+# Standard: ausgehende Verbindungen erlauben
+ufw-ausgehend-erlauben:
+
+# SSH (Port 22, TCP) nur aus dem Schulnetz erlauben
+ufw-ssh:
+
+# Die Node-RED-Ports 1880 bis 1899 (TCP) nur aus dem Schulnetz erlauben
+ufw-nodered:
+
+# Grafana (Port 3000, TCP) nur aus dem Schulnetz erlauben
+ufw-grafana:
+
+# MariaDB (Port 3306, TCP) nur aus dem Schulnetz erlauben
+ufw-mariadb:
+
+# Die Firewall einschalten
+ufw-einschalten:
+
+# Alle Regeln mit Nummern anzeigen
+ufw-anzeigen:
+
+# Die Regel mit der Nummer 3 löschen
+ufw-loeschen:
+
+# Von einem Mac/Linux-PC aus testen, ob Port 3000 auf dem Pi erreichbar ist (mit nc)
+test-linux:
+
+# Dasselbe von einem Windows-PC aus (PowerShell)
+test-windows:
+
+# Auf dem Pi die MAC-Adresse der Netzwerkkarten anzeigen (für die DHCP-Reservierung)
+mac-adresse:

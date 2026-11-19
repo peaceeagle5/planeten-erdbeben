@@ -112,12 +112,12 @@ Eine `.dockerignore` (wie `.gitignore`) verhindert, dass `node_modules`, `.env` 
 
 ## Übung
 
-1. **JavaScript:** [uebung.js](uebung.js): Image-Namen, Port-Angaben und Compose-Variablen zerlegen.
-2. **Dockerfile:** Schreibe [Dockerfile](Dockerfile) für die Planeten-API (Vorlage mit TODOs liegt bereit).
+1. **Dockerfile, ohne Programmieren:** Schreibe [Dockerfile](Dockerfile) für die Planeten-API (Vorlage mit TODOs liegt bereit).
    Der Test prüft, ob die wichtigen Bausteine drin sind. Mit Docker kannst du es danach wirklich bauen (Befehle oben,
    im Projektordner: `docker build -f lernen/12-docker/Dockerfile -t planeten-api .`).
-
-Prüfen: `node --test lernen/12-docker/`
+   Prüfen: `node --test lernen/12-docker/dockerfile-praxis.test.js`
+2. **JavaScript:** [uebung.js](uebung.js): Image-Namen, Port-Angaben und Compose-Variablen zerlegen.
+   Prüfen: `node --test lernen/12-docker/uebung.test.js`
 
 ## So erklärst du es
 > „Ein Image ist wie eine Backform, ein Container ist der Kuchen daraus. Du kannst aus einer Form beliebig viele

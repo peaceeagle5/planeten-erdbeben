@@ -51,9 +51,12 @@ docker --version
 
 ## 3. Ohne Server loslegen
 
-Die meisten Lerneinheiten brauchen nur Node.js. Starte mit [lernen/README.md](lernen/README.md):
+Die meisten Lerneinheiten brauchen nur Node.js. Starte mit [lernen/README.md](lernen/README.md); dort stehen
+zwei Lernwege: **Anwendungsentwicklung** (mit JavaScript) und **Systemintegration** (ohne Programmieren).
 ```
-node --test lernen/00-gesamtbild/
+node --test lernen/00-gesamtbild/   # eine Einheit prüfen
+npm run lernen                      # alle Übungen
+npm run lernen:fisi                 # nur die Übungen ohne Programmieren
 ```
 
 ## 4. Die Docker-Umgebung starten

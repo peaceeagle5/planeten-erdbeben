@@ -122,7 +122,7 @@ Nützlich: `SHOW TABLES;`, `DESCRIBE events;`, `SELECT * FROM events LIMIT 3;`
 
 1. **JavaScript:** [uebung.js](uebung.js). Prüfen: `node --test lernen/06-datenbank-sql/uebung.test.js`
 2. **SQL:** [uebung.sql](uebung.sql). Schreibe die Abfragen unter jede Aufgabe. Prüfen:
-   `node --test lernen/06-datenbank-sql/sql.test.js`
+   `node --test lernen/06-datenbank-sql/sql-praxis.test.js`
    Der Test führt deine Abfrage und die Musterlösung gegen die echte Datenbank aus und vergleicht
    die Ergebnisse. Er liest nur, er ändert nichts. Dafür muss die Docker-Umgebung laufen und mit Daten
    gefüllt sein (Backfill); den Zugang regelt [verbindung.js](../verbindung.js).

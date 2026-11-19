@@ -1,0 +1,30 @@
+# Einheit 00 – Musterlösung
+# Schreib deine Antwort hinter den Doppelpunkt. Leer lassen = noch offen.
+# Prüfen: node --test lernen/00-gesamtbild/
+
+# Auf welchem Port läuft Grafana standardmäßig?
+port-grafana: 3000
+
+# Auf welchem Port läuft MariaDB/MySQL standardmäßig?
+port-datenbank: 3306
+
+# Auf welchem Port läuft Node-RED standardmäßig?
+port-nodered: 1880
+
+# Wie viele Zeilen entstehen in der Tabelle "events" pro echtem Erdbeben?
+events-pro-beben: 2
+
+# Wie viele Zeilen entstehen in "body_positions" pro Event? (Sonne, Mond, Merkur … Pluto)
+positionen-pro-event: 10
+
+# Wer schreibt in die Datenbank? (nodered oder grafana)
+wer-schreibt: nodered
+
+# Wer liest für die Diagramme aus der Datenbank? (nodered oder grafana)
+wer-zeigt-an: grafana
+
+# In welcher Zeitzone sind alle Zeiten gespeichert? (drei Buchstaben)
+zeitzone: UTC
+
+# Muss der Setup-Assistent dauerhaft laufen? (ja oder nein)
+setup-dauerhaft: nein

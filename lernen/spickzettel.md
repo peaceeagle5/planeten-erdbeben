@@ -17,6 +17,9 @@
 | **Image / Container** | Backform und Kuchen: aus einem Image kann man beliebig viele gleiche Container starten. |
 | **Git** | Speicherpunkte für Code: jeder Commit ist ein Stand, zu dem man zurück kann. |
 | **GitHub** | Die Cloud für Git-Repositories, mit Pull Requests zum gemeinsamen Arbeiten. |
+| **Dienst (systemd)** | Ein Programm, das im Hintergrund läuft und beim Hochfahren startet; gesteuert mit `systemctl`. |
+| **Subnetz /24** | Alle Geräte, deren erste drei Zahlen gleich sind (z. B. 192.168.100.x), erreichen sich direkt. |
+| **Firewall** | Der Türsteher: Nur wer auf der Liste steht, kommt rein. Grundsatz: alles verbieten, nur das Nötige erlauben. |
 
 ## Wer läuft wo?
 
@@ -47,6 +50,8 @@ Im Labor mit Pi gilt dasselbe Bild, nur mit der IP des Pi statt `127.0.0.1` und 
 | „port is already allocated“ | „Läuft schon XAMPP oder ein anderes Node-RED? Beenden oder Port in .env ändern.“ |
 | „Meine Daten sind nach docker compose down -v weg“ | „-v löscht die Volumes, also die Daten. Ohne -v bleiben sie.“ |
 | „git status zeigt .env“ | „Stopp, nicht committen! .env in die .gitignore.“ |
+| „Nach ufw enable komme ich nicht mehr per SSH auf den Pi“ | „SSH-Regel vergessen: am Pi direkt `sudo ufw allow 22/tcp`. Nächstes Mal SSH zuerst erlauben.“ |
+| „Der Pi hat plötzlich eine andere IP“ | „Er braucht eine DHCP-Reservierung im Router (Einheit 15).“ |
 | „Ich habe ein Passwort auf GitHub hochgeladen“ | „Zuerst das Passwort ändern. Löschen allein reicht nicht, es steht noch im Verlauf.“ |
 
 ## Vorgehen bei jedem Fehler

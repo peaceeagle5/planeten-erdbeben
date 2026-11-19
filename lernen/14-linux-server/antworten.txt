@@ -1,0 +1,45 @@
+# Einheit 14 – Quiz Linux-Server
+# Schreib deine Antwort hinter den Doppelpunkt. Leer lassen = noch offen.
+# Prüfen: node --test lernen/14-linux-server/
+
+# Wie heißt 755 als Text (z. B. rw-r--r--)?
+rechte-755:
+
+# Welche Zahl gehört zu rw-r----- ?
+rechte-zahl:
+
+# Welche Rechte (als Zahl) sollte die Datei .env mit Passwörtern haben?
+rechte-env:
+
+# "-rwxr-xr-x 1 pi pi 152165424 Nov 19 planeten-erdbeben-setup-linux-arm64": Wem gehört die Datei?
+besitzer:
+
+# Was macht "sudo apt update"?
+#   a) installiert alle Updates   b) aktualisiert nur die Paketlisten   c) startet den Pi neu
+apt-update:
+
+# Was ist der Unterschied zwischen "systemctl start" und "systemctl enable"?
+#   a) kein Unterschied   b) start = jetzt starten, enable = beim Hochfahren starten   c) enable = jetzt starten, start = beim Hochfahren
+start-enable:
+
+# In welcher Datei steht auf dem Pi die bind-address von MariaDB? (vollständiger Pfad)
+config-mariadb:
+
+# In welcher Datei stellt man den Port von Grafana ein? (vollständiger Pfad)
+config-grafana:
+
+# Du hast eine Konfigurationsdatei geändert. Was musst du danach tun?
+#   a) nichts, es wirkt sofort   b) den Dienst neu starten   c) den Pi neu installieren
+nach-aenderung:
+
+# Was bedeutet die cron-Zeitangabe "0 * * * *"?
+#   a) jede Minute   b) jede volle Stunde   c) nie
+cron-stunde:
+
+# Was bedeutet "30 2 * * 1"?
+#   a) jeden Montag um 02:30   b) jeden Tag um 02:30   c) am 2. jedes Monats um 01:30
+cron-montag:
+
+# Warum gehört das Datenbank-Passwort nicht direkt in die crontab?
+#   a) cron kann keine Passwörter   b) die crontab ist schwerer geschützt als nötig   c) Befehle mit Passwort sind z. B. in der Prozessliste für andere sichtbar
+cron-passwort:

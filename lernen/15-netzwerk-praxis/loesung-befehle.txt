@@ -1,0 +1,39 @@
+# Einheit 15 – Musterlösung Firewall (andere Schreibweisen sind oft auch richtig)
+# Das Schulnetz ist 192.168.100.0/24, der Pi hat 192.168.100.133. Leer lassen = noch offen.
+# Prüfen: node --test lernen/15-netzwerk-praxis/
+
+# Standard: alle eingehenden Verbindungen verbieten
+ufw-eingehend-verbieten: sudo ufw default deny incoming
+
+# Standard: ausgehende Verbindungen erlauben
+ufw-ausgehend-erlauben: sudo ufw default allow outgoing
+
+# SSH (Port 22, TCP) nur aus dem Schulnetz erlauben
+ufw-ssh: sudo ufw allow from 192.168.100.0/24 to any port 22 proto tcp
+
+# Die Node-RED-Ports 1880 bis 1899 (TCP) nur aus dem Schulnetz erlauben
+ufw-nodered: sudo ufw allow from 192.168.100.0/24 to any port 1880:1899 proto tcp
+
+# Grafana (Port 3000, TCP) nur aus dem Schulnetz erlauben
+ufw-grafana: sudo ufw allow from 192.168.100.0/24 to any port 3000 proto tcp
+
+# MariaDB (Port 3306, TCP) nur aus dem Schulnetz erlauben
+ufw-mariadb: sudo ufw allow from 192.168.100.0/24 to any port 3306 proto tcp
+
+# Die Firewall einschalten
+ufw-einschalten: sudo ufw enable
+
+# Alle Regeln mit Nummern anzeigen
+ufw-anzeigen: sudo ufw status numbered
+
+# Die Regel mit der Nummer 3 löschen
+ufw-loeschen: sudo ufw delete 3
+
+# Von einem Mac/Linux-PC aus testen, ob Port 3000 auf dem Pi erreichbar ist (mit nc)
+test-linux: nc -zv 192.168.100.133 3000
+
+# Dasselbe von einem Windows-PC aus (PowerShell)
+test-windows: Test-NetConnection 192.168.100.133 -Port 3000
+
+# Auf dem Pi die MAC-Adresse der Netzwerkkarten anzeigen (für die DHCP-Reservierung)
+mac-adresse: ip link

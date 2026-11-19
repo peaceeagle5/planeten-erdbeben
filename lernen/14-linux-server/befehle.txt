@@ -1,0 +1,42 @@
+# Einheit 14 – Befehle: Schreib hinter den Doppelpunkt den Befehl, der die Aufgabe erledigt.
+# Mit oder ohne sudo, wo es egal ist. Leer lassen = noch offen.
+# Prüfen: node --test lernen/14-linux-server/
+
+# Als Benutzer pi auf dem Pi mit der IP 192.168.100.133 anmelden
+ssh-anmelden:
+
+# Nachsehen, ob der Dienst nodered läuft
+status-nodered:
+
+# Den Dienst grafana-server neu starten
+neustart-grafana:
+
+# Dafür sorgen, dass mariadb beim Hochfahren automatisch startet
+autostart-mariadb:
+
+# Das Log von nodered live mitlesen
+log-live-nodered:
+
+# Die Paketlisten aktualisieren
+paketlisten:
+
+# Das Paket libatomic1 installieren
+installieren-libatomic:
+
+# Die Datei planeten-erdbeben-setup-linux-arm64 ausführbar machen
+ausfuehrbar:
+
+# Die Datei .env so einstellen, dass nur der Besitzer sie lesen und schreiben darf (als Zahl)
+nur-besitzer-env:
+
+# Den freien Speicherplatz in lesbarer Form (GB/MB) anzeigen
+speicherplatz:
+
+# Anzeigen, welche Programme auf welchen TCP-Ports lauschen (mit ss)
+lauschende-ports:
+
+# Die Datenbank planeten_erdbeben als Benutzer planeten in die Datei backup.sql sichern
+datenbank-sichern:
+
+# cron-Zeile: das Skript /home/pi/backup.sh jeden Tag um 02:30 ausführen
+cron-zeile:

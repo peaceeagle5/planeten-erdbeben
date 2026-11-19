@@ -133,7 +133,9 @@ Variablen nicht an Leerzeichen auf und suchte ein Programm, dessen Name den ganz
 
 ## Übung
 
-[uebung.js](uebung.js): Fehler einordnen und ein Fall-Quiz. Prüfen: `node --test lernen/10-netzwerk-fehlersuche/`
+1. **Fall-Quiz, ohne Programmieren:** [quiz.txt](quiz.txt), 7 echte Fälle, jeweils a, b oder c eintragen.
+   Prüfen: `node --test lernen/10-netzwerk-fehlersuche/quiz-praxis.test.js`
+2. **JavaScript:** [uebung.js](uebung.js), Fehler automatisch einer Schicht zuordnen. Prüfen: `node --test lernen/10-netzwerk-fehlersuche/uebung.test.js`
 
 **Praxis:** Finde mit den Befehlen aus Abschnitt 4 heraus, welche Programme auf deinem Mac gerade auf den Ports
 1880, 3000, 3001 und 3306 lauschen.
@@ -146,6 +148,9 @@ Variablen nicht an Leerzeichen auf und suchte ein Programm, dessen Name den ganz
 ## Wenn es nicht klappt
 
 Diese Einheit **ist** das „Wenn es nicht klappt“. Kurzfassung für die Klasse: [spickzettel.md](../spickzettel.md).
+
+**Weiter:** Subnetze, feste Adressen und Firewall in [Einheit 15](../15-netzwerk-praxis/README.md),
+Dienste und Logs auf dem Pi in [Einheit 14](../14-linux-server/README.md).
 
 ## Selbsttest-Fragen
 1. Warum funktioniert `localhost` als Datenbank-Adresse im Setup-Assistenten auf deinem PC nicht, wenn die Datenbank auf dem Pi läuft?
