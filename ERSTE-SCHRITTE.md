@@ -127,6 +127,7 @@ PC aus erreichbar (`127.0.0.1`), nicht aus dem Netzwerk.
 | Linux: `error while loading shared libraries: libatomic.so.1` beim Start des Setup-Programms | Einmal `sudo apt install libatomic1`, dann neu starten. (Oder `npm run setup` benutzen.) |
 | Setup: „Unter http://127.0.0.1:1880 läuft kein Node-RED“ | `docker compose ps`: läuft `nodered`? Sonst `docker compose up -d`. |
 | Setup: „Warte auf die ersten Daten …“ endet mit Warnung | Der Node-RED-Container braucht Internet (für USGS und npm). `docker compose logs nodered` zeigt den Fehler. |
+| Labor: Node-RED auf dem Raspberry Pi bekommt keine Daten, das Netz hat einen Proxy | [LABOR-PROXY.md](LABOR-PROXY.md) |
 | SQL-Übungen werden übersprungen: „Datenbank nicht erreichbar“ | Docker-Umgebung starten. Bei geändertem Port: der Wert aus `.env` wird automatisch benutzt. |
 | Grafana zeigt „No data“ | Backfill (Schritt 5.4) gemacht? Zeitbereich oben rechts auf „Last 2 years“. |
 

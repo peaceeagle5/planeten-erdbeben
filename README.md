@@ -64,6 +64,7 @@ Requirements on the servers:
   from other hosts (`'name'@'%'`).
 - **Node-RED** needs internet access (USGS, and npm for `astronomy-engine`/`node-red-node-mysql`), and
   `functionExternalModules: true` in `settings.js`, which is the default.
+  Behind a proxy: see [LABOR-PROXY.md](LABOR-PROXY.md) (German).
 - **Grafana** needs an Admin login.
 
 Building the programs (needs Node.js 25.5+, downloads the official Node.js binaries once):

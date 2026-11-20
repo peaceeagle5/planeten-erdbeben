@@ -95,7 +95,7 @@ function buildPackage({ name, out, include, gitignore, edits = {}, jsonEdits = {
 
 /** Sources both packages contain. */
 const SOURCES = [
-  'ERSTE-SCHRITTE.md', 'README.md', 'package.json', 'package-lock.json', 'compose.yaml', '.dockerignore', 'app.js',
+  'ERSTE-SCHRITTE.md', 'LABOR-PROXY.md', 'README.md', 'package.json', 'package-lock.json', 'compose.yaml', '.dockerignore', 'app.js',
   'src', 'shared', 'db', 'grafana', 'docker',
   'node-red/flow-builder.js', 'node-red/flow-import.json', 'node-red/functions',
   'setup-wizard/server.js', 'setup-wizard/ui.html', 'setup-wizard/build.js', 'setup-wizard/lib',
