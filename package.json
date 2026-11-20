@@ -1,4 +1,5 @@
 {
+  "name": "planeten-erdbeben",
   "scripts": {
     "api": "node app.js",
     "node-red": "node-red --userDir node-red/data ../flow.json",
