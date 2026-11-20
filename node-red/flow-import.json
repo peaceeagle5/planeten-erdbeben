@@ -3,7 +3,7 @@
     "id": "peb_tab",
     "type": "tab",
     "label": "Planeten & Erdbeben",
-    "info": "Erstellt vom Planeten-Erdbeben-Setup.\n\n1. Holt Erdbeben von USGS (+ Kontroll-Events: gleicher Ort, zufällige Zeit) in die Datenbank.\n2. Berechnet für jedes Event die Positionen von Sonne, Mond und Planeten.\n\nBackfill: Knopf links am Knoten \"Backfill\" klicken. Jahr per Doppelklick ändern.",
+    "info": "Erstellt vom Planeten-Erdbeben-Setup.\n\n1. Holt Erdbeben von USGS (+ Kontroll-Events: gleicher Ort, zufällige Zeit) in die Datenbank.\n2. Berechnet für jedes Event die Positionen von Sonne, Mond und Planeten.\n3. Holt die Grenzen der tektonischen Platten (PB2002) in die Tabellen plates und plate_points.\n\nBackfill: Knopf links am Knoten \"Backfill\" klicken. Jahr per Doppelklick ändern.",
     "disabled": false
   },
   {
@@ -302,6 +302,100 @@
     "name": "WRITE Positionen",
     "x": 1130,
     "y": 300,
+    "wires": [
+      []
+    ],
+    "mydb": "peb_mysql"
+  },
+  {
+    "id": "peb_c3",
+    "type": "comment",
+    "z": "peb_tab",
+    "name": "3. Plattengrenzen holen (beim Start, dann jede Woche)",
+    "x": 260,
+    "y": 480,
+    "wires": []
+  },
+  {
+    "id": "peb_plates_timer",
+    "type": "inject",
+    "z": "peb_tab",
+    "name": "Start + jede Woche",
+    "x": 150,
+    "y": 540,
+    "wires": [
+      [
+        "peb_plates_http"
+      ]
+    ],
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "604800",
+    "crontab": "",
+    "once": true,
+    "onceDelay": 20,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date"
+  },
+  {
+    "id": "peb_plates_http",
+    "type": "http request",
+    "z": "peb_tab",
+    "name": "PB2002 Platten (GitHub)",
+    "x": 370,
+    "y": 540,
+    "wires": [
+      [
+        "peb_plates_sql"
+      ]
+    ],
+    "method": "GET",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "https://raw.githubusercontent.com/fraxen/tectonicplates/refs/heads/master/GeoJSON/PB2002_plates.json",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": []
+  },
+  {
+    "id": "peb_plates_sql",
+    "type": "function",
+    "z": "peb_tab",
+    "name": "Platten -> SQL",
+    "x": 580,
+    "y": 540,
+    "wires": [
+      [
+        "peb_db_plates"
+      ]
+    ],
+    "func": "// Input: PB2002 tectonic plates as GeoJSON in msg.payload (54 features, ~11 700 points).\n// Output: per plate one upsert into `plates` (outline as MULTIPOLYGON) and the outline points\n// in batches into `plate_points`. Upserts, so running it again changes nothing.\n// Some plates come in several features (split at the date line): they are merged by code.\nconst PLATE_SQL = 'INSERT INTO plates (code, name, geom) VALUES (?, ?, ST_GeomFromText(?)) ' +\n  'ON DUPLICATE KEY UPDATE name = VALUES(name), geom = VALUES(geom)';\nconst POINTS_PER_INSERT = 500;\n\nconst features = (msg.payload && msg.payload.features) || [];\nif (!features.length) {\n  node.error('Keine Platten in der Antwort (ist die URL erreichbar?)', msg);\n  return null;\n}\n\n// code -> { name, polygons: [ [ring, ring, ...], ... ] }, ring = [[lon, lat], ...]\nconst plates = new Map();\nfor (const f of features) {\n  const p = f.properties || {};\n  const g = f.geometry || {};\n  if (!p.Code || !g.coordinates) continue;\n  const polygons = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];\n  if (!plates.has(p.Code)) plates.set(p.Code, { name: p.PlateName || p.Code, polygons: [] });\n  plates.get(p.Code).polygons.push(...polygons);\n}\n\nconst wktRing = (ring) => '(' + ring.map(([lon, lat]) => `${lon} ${lat}`).join(',') + ')';\nconst out = [];\nlet pointCount = 0;\nfor (const [code, { name, polygons }] of plates) {\n  const wkt = 'MULTIPOLYGON(' + polygons.map((poly) => '(' + poly.map(wktRing).join(',') + ')').join(',') + ')';\n  out.push({ topic: PLATE_SQL, payload: [code, name, wkt] });\n\n  const rows = [];\n  polygons.flat().forEach((ring, part) => ring.forEach(([lon, lat], seq) => rows.push([code, part, seq, lat, lon])));\n  for (let i = 0; i < rows.length; i += POINTS_PER_INSERT) {\n    const batch = rows.slice(i, i + POINTS_PER_INSERT);\n    out.push({\n      topic: 'INSERT INTO plate_points (code, part, seq, latitude, longitude) VALUES ' +\n        batch.map(() => '(?,?,?,?,?)').join(',') +\n        ' ON DUPLICATE KEY UPDATE latitude = VALUES(latitude), longitude = VALUES(longitude)',\n      payload: batch.flat(),\n    });\n  }\n  pointCount += rows.length;\n}\nnode.status({ text: `${plates.size} Platten, ${pointCount} Punkte @ ${new Date().toISOString().slice(11, 16)}Z` });\nreturn [out];\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "peb_db_plates",
+    "type": "mysql",
+    "z": "peb_tab",
+    "name": "WRITE Platten",
+    "x": 780,
+    "y": 540,
     "wires": [
       []
     ],

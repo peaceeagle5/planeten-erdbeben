@@ -23,7 +23,7 @@ test('2. expandTimeFilter', () => {
 test('3. loadQueries mit der echten queries.sql', () => {
   const text = fs.readFileSync(path.join(__dirname, '..', '..', 'grafana', 'queries.sql'), 'utf8');
   const q = m.loadQueries(text);
-  assert.deepEqual(Object.keys(q).map(Number), [1, 2, 3, 4, 5, 6, 7], 'Es gibt 7 Abfragen');
+  assert.deepEqual(Object.keys(q).map(Number), [1, 2, 3, 4, 5, 6, 7, 8, 9], 'Es gibt 9 Abfragen');
   assert.match(q[1], /^SELECT time_utc AS time/);
   assert.ok(!q[1].endsWith(';'), 'Das ; am Ende entfernen');
   assert.ok(!/^--/m.test(q[2]), 'Keine Kommentarzeilen in der Abfrage');

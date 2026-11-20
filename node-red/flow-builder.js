@@ -12,6 +12,7 @@ function ownerFromInfo(info) {
   return m ? m[1] : null;
 }
 const DB = 'peb_mysql';
+const PLATES_URL = 'https://raw.githubusercontent.com/fraxen/tectonicplates/refs/heads/master/GeoJSON/PB2002_plates.json';
 
 const PENDING_SQL =
   "SELECT id, latitude, longitude, " +
@@ -77,6 +78,13 @@ function buildFlowTab({ dbHost, dbPort, dbName, owner }) {
       920, 300, [['peb_db_write']], [{ var: 'Astronomy', module: 'astronomy-engine' }]),
     mysqlNode('peb_db_write', 'WRITE Positionen', 1130, 300),
 
+    // 3. Tectonic plates
+    base('peb_c3', 'comment', '3. Plattengrenzen holen (beim Start, dann jede Woche)', 260, 480, []),
+    inject('peb_plates_timer', 'Start + jede Woche', 150, 540, [['peb_plates_http']], { repeat: '604800', once: true, onceDelay: 20 }),
+    httpNode('peb_plates_http', 'PB2002 Platten (GitHub)', PLATES_URL, 370, 540, [['peb_plates_sql']]),
+    fnNode('peb_plates_sql', 'Platten -> SQL', fnCode('plates-sql.js'), 580, 540, [['peb_db_plates']]),
+    mysqlNode('peb_db_plates', 'WRITE Platten', 780, 540),
+
     // errors
     base('peb_catch', 'catch', 'Fehler', 120, 400, [['peb_debug']], { scope: null, uncaught: false }),
     base('peb_debug', 'debug', 'Fehler-Log', 300, 400, [], {
@@ -93,7 +101,7 @@ function buildFlowTab({ dbHost, dbPort, dbName, owner }) {
     id: TAB,
     label: 'Planeten & Erdbeben',
     info: (owner ? `${OWNER_PREFIX}${owner} (${new Date().toISOString().slice(0, 10)})\n\n` : '') +
-      'Erstellt vom Planeten-Erdbeben-Setup.\n\n1. Holt Erdbeben von USGS (+ Kontroll-Events: gleicher Ort, zufällige Zeit) in die Datenbank.\n2. Berechnet für jedes Event die Positionen von Sonne, Mond und Planeten.\n\nBackfill: Knopf links am Knoten "Backfill" klicken. Jahr per Doppelklick ändern.',
+      'Erstellt vom Planeten-Erdbeben-Setup.\n\n1. Holt Erdbeben von USGS (+ Kontroll-Events: gleicher Ort, zufällige Zeit) in die Datenbank.\n2. Berechnet für jedes Event die Positionen von Sonne, Mond und Planeten.\n3. Holt die Grenzen der tektonischen Platten (PB2002) in die Tabellen plates und plate_points.\n\nBackfill: Knopf links am Knoten "Backfill" klicken. Jahr per Doppelklick ändern.',
     nodes,
     configs,
   };
@@ -105,7 +113,7 @@ function buildFlowImport(opts) {
   return [{ id, type: 'tab', label, info, disabled: false }, ...nodes, ...configs];
 }
 
-module.exports = { buildFlowTab, buildFlowImport, ownerFromInfo, TAB_ID: TAB, BACKFILL_NODE_ID: 'peb_backfill', DB_CONFIG_ID: DB };
+module.exports = { buildFlowTab, buildFlowImport, ownerFromInfo, PLATES_URL, TAB_ID: TAB, BACKFILL_NODE_ID: 'peb_backfill', DB_CONFIG_ID: DB };
 
 if (require.main === module) {
   const fs = require('node:fs');

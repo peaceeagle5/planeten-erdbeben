@@ -55,7 +55,7 @@ und würden sonst teilweise herausgefiltert.
 
 ## 4. Wie das Dashboard entsteht
 
-Niemand klickt die 7 Panels von Hand zusammen. [dashboard-builder.js](../../grafana/dashboard-builder.js):
+Niemand klickt die 8 Panels von Hand zusammen. [dashboard-builder.js](../../grafana/dashboard-builder.js):
 1. liest [queries.sql](../../grafana/queries.sql) und zerlegt sie an den Überschriften `-- 1) …`, `-- 2) …`,
 2. baut daraus das Dashboard-JSON (Panels, Farben, Variablen),
 3. schickt es per `POST /api/dashboards/db` an Grafana (mit `overwrite: true`).

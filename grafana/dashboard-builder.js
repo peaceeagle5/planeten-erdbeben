@@ -33,6 +33,7 @@ const target = (sql) => ({ refId: 'A', datasource: DS, editorMode: 'code', rawQu
 
 const QUAKE_COLOR = 'red';
 const CONTROL_COLOR = 'text';
+const PLATE_COLOR = '#5794f2';
 
 // quakes_pct / control_pct get the same names and colors everywhere
 const comparisonOverrides = [
@@ -153,7 +154,9 @@ const dashboard = {
       } },
     },
     {
-      id: 3, type: 'geomap', title: 'Earthquakes (time range, M ≥ $minmag)', gridPos: { x: 0, y: 14, w: 24, h: 13 }, datasource: DS, targets: [target(Q[1])],
+      id: 3, type: 'geomap', title: 'Earthquakes (time range, M ≥ $minmag)', gridPos: { x: 0, y: 14, w: 16, h: 13 }, datasource: DS,
+      targets: [target(Q[1]), { ...target(Q[8]), refId: 'B' }],
+      description: 'Red dots: earthquakes. Blue lines: boundaries of the tectonic plates (PB2002, loaded by Node-RED).',
       fieldConfig: { defaults: { color: { mode: 'continuous-YlRd' }, decimals: 1 }, overrides: [] },
       options: {
         view: { id: 'zero', lat: 0, lon: 0, zoom: 1, allLayers: true },
@@ -161,7 +164,17 @@ const dashboard = {
         tooltip: { mode: 'details' },
         basemap: { type: 'default', name: 'Basemap', config: {} },
         layers: [{
+          type: 'markers', name: 'Plate boundaries', tooltip: false,
+          filterData: { id: 'byRefId', options: 'B' },
+          location: { mode: 'coords', latitude: 'latitude', longitude: 'longitude' },
+          config: { showLegend: false, style: {
+            size: { fixed: 1, min: 1, max: 1 },
+            color: { fixed: PLATE_COLOR },
+            opacity: 0.8, symbol: { mode: 'fixed', fixed: 'img/icons/marker/circle.svg' },
+          } },
+        }, {
           type: 'markers', name: 'Earthquakes', tooltip: true,
+          filterData: { id: 'byRefId', options: 'A' },
           location: { mode: 'coords', latitude: 'latitude', longitude: 'longitude' },
           config: { showLegend: true, style: {
             size: { field: 'magnitude', fixed: 5, min: 3, max: 18 },
@@ -169,6 +182,19 @@ const dashboard = {
             opacity: 0.6, symbol: { mode: 'fixed', fixed: 'img/icons/marker/circle.svg' },
           } },
         }],
+      },
+    },
+    {
+      id: 8, type: 'barchart', title: 'Earthquakes per tectonic plate (M ≥ $minmag)', gridPos: { x: 16, y: 14, w: 8, h: 13 },
+      datasource: DS, targets: [target(Q[9])],
+      description: 'Number of quakes in the time range on each plate (the 15 plates with the most). ' +
+        'Most quakes happen where plates meet, so plates with long, active boundaries lead.',
+      fieldConfig: { defaults: { decimals: 0, min: 0, color: { mode: 'fixed', fixedColor: QUAKE_COLOR }, custom: { fillOpacity: 80, lineWidth: 0 } },
+        overrides: [{ matcher: { id: 'byName', options: 'quakes' }, properties: [{ id: 'displayName', value: 'Earthquakes' }] }] },
+      options: {
+        xField: 'plate', orientation: 'horizontal', groupWidth: 0.75, barWidth: 0.8, showValue: 'auto', stacking: 'none',
+        xTickLabelRotation: 0, legend: { showLegend: false, displayMode: 'list', placement: 'bottom' },
+        tooltip: { mode: 'single', sort: 'none' },
       },
     },
     barChart(4, 'Moon phase: earthquakes vs. control', COMPARE_NOTE, Q[2], 'phase', { x: 0, y: 27, w: 12, h: 10 }),

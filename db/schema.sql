@@ -60,6 +60,28 @@ CREATE TABLE IF NOT EXISTS aspects (
   CONSTRAINT fk_asp_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- Tectonic plates (Bird 2002, "PB2002"), loaded by Node-RED from GitHub.
+-- geom: outline as MULTIPOLYGON with X = longitude, Y = latitude (SRID 0, plain lon/lat plane),
+-- so SQL can ask "which plate is this quake on?":  ST_Contains(geom, POINT(longitude, latitude))
+CREATE TABLE IF NOT EXISTS plates (
+  code        VARCHAR(4)   NOT NULL PRIMARY KEY,   -- e.g. 'PA' = Pacific
+  name        VARCHAR(64)  NOT NULL,
+  geom        GEOMETRY     NOT NULL,
+  updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  SPATIAL KEY sp_geom (geom)
+) ENGINE=InnoDB;
+
+-- The same outlines as single points, for drawing the plate boundaries on the Grafana map.
+--   part = number of the ring (a plate can consist of several pieces), seq = position in the ring
+CREATE TABLE IF NOT EXISTS plate_points (
+  code       VARCHAR(4)        NOT NULL,
+  part       SMALLINT UNSIGNED NOT NULL,
+  seq        SMALLINT UNSIGNED NOT NULL,
+  latitude   DOUBLE            NOT NULL,
+  longitude  DOUBLE            NOT NULL,
+  PRIMARY KEY (code, part, seq)
+) ENGINE=InnoDB;
+
 -- Optional: a read-only user for Grafana
 -- CREATE USER 'grafana'@'%' IDENTIFIED BY 'change-me';
 -- GRANT SELECT ON planeten_erdbeben.* TO 'grafana'@'%';

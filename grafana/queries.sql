@@ -104,3 +104,22 @@ GROUP BY e.id;
 SELECT SUM(kind = 'earthquake') AS quakes, SUM(kind = 'control') AS controls,
        SUM(sky_computed = 0) AS pending
 FROM events;
+
+-- =====================================================================
+-- 8) Geomap panel, second query (refId B): tectonic plate boundaries
+--    (points of the plate outlines, drawn as small dots under the quakes)
+-- =====================================================================
+SELECT latitude, longitude, code AS plate
+FROM plate_points;
+
+-- =====================================================================
+-- 9) Bar chart: earthquakes per tectonic plate (time range, M >= $minmag)
+--    ST_Contains finds the plate whose outline contains the quake.
+-- =====================================================================
+SELECT p.name AS plate, COUNT(*) AS quakes
+FROM events e
+JOIN plates p ON ST_Contains(p.geom, POINT(e.longitude, e.latitude))
+WHERE e.kind = 'earthquake' AND $__timeFilter(e.time_utc) AND e.magnitude >= $minmag
+GROUP BY p.code, p.name
+ORDER BY quakes DESC
+LIMIT 15;

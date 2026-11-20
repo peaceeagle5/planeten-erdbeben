@@ -10,11 +10,13 @@ Das Node-RED auf dem Pi muss selbst ins Internet:
 | Wofür | Wohin |
 |---|---|
 | Erdbebendaten (live und Nachladen älterer Jahre) | `https://earthquake.usgs.gov` |
+| Grenzen der tektonischen Platten (beim Start, dann wöchentlich) | `https://raw.githubusercontent.com` |
 | Paket `astronomy-engine` für die Planetenpositionen | npm-Verzeichnis `https://registry.npmjs.org` |
 | Paket `node-red-node-mysql`, falls es noch fehlt | npm-Verzeichnis `https://registry.npmjs.org` |
 
 Kommt Node-RED nicht ins Internet, läuft der Setup-Assistent zwar durch, aber die Tabellen bleiben leer und
-Grafana zeigt „No data“.
+Grafana zeigt „No data“. Fehlen nur die Platten, bleibt die Karte ohne Plattengrenzen und das Diagramm
+„Earthquakes per tectonic plate“ leer.
 
 **Warum es in Docker auf dem PC klappt:** Docker Desktop übernimmt die Proxy-Einstellung von Windows bzw.
 macOS und leitet den Verkehr der Container darüber. Auf dem Pi läuft Node-RED als normaler Dienst und kennt den
@@ -42,12 +44,16 @@ Per SSH auf dem Pi anmelden (`ssh <benutzer>@<ip-des-pi>`, mehr dazu in Lerneinh
 curl -sI https://earthquake.usgs.gov | head -1                                # ohne Proxy
 curl -sI -x http://<proxy>:<port> https://earthquake.usgs.gov | head -1       # mit Proxy
 curl -sI -x http://<proxy>:<port> https://registry.npmjs.org | head -1        # npm mit Proxy
+curl -sI -x http://<proxy>:<port> https://raw.githubusercontent.com/fraxen/tectonicplates/refs/heads/master/GeoJSON/PB2002_plates.json | head -1   # Platten
 ```
+
+Diese Tests nur **auf dem Pi** ausführen. Ein GitHub Codespace läuft in einem Rechenzentrum und nicht hinter
+eurem Proxy: Dort kommt immer `200`, das sagt über das Labor nichts aus.
 
 | Ergebnis | Bedeutung | Weiter |
 |---|---|---|
 | Schon der erste Befehl meldet `HTTP/2 200` | Der Pi kommt ohne Proxy raus | Nichts zu tun |
-| Erst mit `-x` kommt `HTTP/2 200` | Der Proxy lässt den Pi durch | Schritt 3 |
+| Erst mit `-x` kommt `HTTP/2 200` (bei allen drei) | Der Proxy lässt den Pi durch | Schritt 3 |
 | Auch mit `-x` kein `200` (Fehler oder `403`) | Der Proxy lässt den Pi nicht durch | Schritt 5 |
 
 ## 3. Dem Node-RED-Dienst den Proxy mitgeben
@@ -96,7 +102,8 @@ journalctl -u nodered -n 50                       # die letzten Meldungen von No
 ```
 
 Dann den Setup-Assistenten wie gewohnt laufen lassen. Klappt es, endet „Warte auf die ersten Daten …“ ohne
-Warnung, und im Node-RED-Editor zeigen die Nodes unter dem USGS-Abruf keinen roten Fehler.
+Warnung, und im Node-RED-Editor zeigen die Nodes unter dem USGS-Abruf keinen roten Fehler. Unter
+„3. Plattengrenzen holen“ steht nach etwa 20 Sekunden am Node „Platten -> SQL“: `52 Platten, 11738 Punkte`.
 
 **Rückgängig machen:** `sudo systemctl revert nodered`, danach `sudo systemctl restart nodered`.
 
@@ -106,4 +113,4 @@ Dann lässt der Proxy nur bestimmte Geräte durch. Es bleibt, die IT zu bitten, 
 abzuschalten oder den Pi freizugeben.
 
 Ist `node-red-node-mysql` bereits auf dem Pi installiert, überspringt der Setup-Assistent diese Installation.
-Die USGS-Daten und `astronomy-engine` brauchen trotzdem Internet.
+Die USGS-Daten, die Plattengrenzen und `astronomy-engine` brauchen trotzdem Internet.

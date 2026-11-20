@@ -19,14 +19,15 @@ Moment Sonne, Mond und Planeten? Dann vergleichen wir mit Zeitpunkten **ohne** E
  │ USGS         │ ────────────► │ Node-RED                    │ ───────► │ MariaDB      │ ◄────── │ Grafana   │
  │ (Internet)   │   GeoJSON     │ 1. Erdbeben holen           │  INSERT  │ (Datenbank)  │ SELECT  │ (Dashboard│
  │ Erdbebendaten│               │ 2. Planeten berechnen       │          │              │         │  im Browser)
- └──────────────┘               └─────────────────────────────┘          └──────────────┘         └───────────┘
+ └──────────────┘  GitHub:      │ 3. Plattengrenzen holen     │          │              │         │           │
+                   Platten      └─────────────────────────────┘          └──────────────┘         └───────────┘
                                    Port 1880 (bzw. 1892, 1893 …)          Port 3306                 Port 3000
 ```
 
 | Teil | Was er tut | Womit | Port |
 |---|---|---|---|
 | **USGS** | Der US Geological Survey veröffentlicht alle Erdbeben weltweit als Daten im Internet. | GeoJSON über HTTPS | 443 |
-| **Node-RED** | Holt die Erdbeben, berechnet für jedes die Planetenstellung und schreibt alles in die Datenbank. Läuft ständig. | Flows aus Nodes, JavaScript | 1880 (Standard), bei euch pro Person eigener Port |
+| **Node-RED** | Holt die Erdbeben, berechnet für jedes die Planetenstellung und schreibt alles in die Datenbank. Holt außerdem einmal pro Woche die Grenzen der tektonischen Platten. Läuft ständig. | Flows aus Nodes, JavaScript | 1880 (Standard), bei euch pro Person eigener Port |
 | **astronomy-engine** | JavaScript-Bibliothek, die Planetenpositionen genau berechnet. Wird in Node-RED benutzt. | npm-Paket | – |
 | **MariaDB** | Speichert alles dauerhaft in Tabellen. | SQL | 3306 |
 | **Grafana** | Liest aus der Datenbank und zeigt Karten und Diagramme. | SQL, Browser | 3000 |

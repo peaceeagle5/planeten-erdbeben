@@ -1842,7 +1842,7 @@
       "gridPos": {
         "x": 0,
         "y": 14,
-        "w": 24,
+        "w": 16,
         "h": 13
       },
       "datasource": {
@@ -1860,8 +1860,20 @@
           "rawQuery": true,
           "format": "table",
           "rawSql": "SELECT time_utc AS time, latitude, longitude, magnitude, depth_km, place, moon_phase_deg\nFROM events\nWHERE kind = 'earthquake' AND $__timeFilter(time_utc) AND magnitude >= $minmag"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT latitude, longitude, code AS plate\nFROM plate_points"
         }
       ],
+      "description": "Red dots: earthquakes. Blue lines: boundaries of the tectonic plates (PB2002, loaded by Node-RED).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1895,8 +1907,44 @@
         "layers": [
           {
             "type": "markers",
+            "name": "Plate boundaries",
+            "tooltip": false,
+            "filterData": {
+              "id": "byRefId",
+              "options": "B"
+            },
+            "location": {
+              "mode": "coords",
+              "latitude": "latitude",
+              "longitude": "longitude"
+            },
+            "config": {
+              "showLegend": false,
+              "style": {
+                "size": {
+                  "fixed": 1,
+                  "min": 1,
+                  "max": 1
+                },
+                "color": {
+                  "fixed": "#5794f2"
+                },
+                "opacity": 0.8,
+                "symbol": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/marker/circle.svg"
+                }
+              }
+            }
+          },
+          {
+            "type": "markers",
             "name": "Earthquakes",
             "tooltip": true,
+            "filterData": {
+              "id": "byRefId",
+              "options": "A"
+            },
             "location": {
               "mode": "coords",
               "latitude": "latitude",
@@ -1924,6 +1972,81 @@
             }
           }
         ]
+      }
+    },
+    {
+      "id": 8,
+      "type": "barchart",
+      "title": "Earthquakes per tectonic plate (M ≥ $minmag)",
+      "gridPos": {
+        "x": 16,
+        "y": 14,
+        "w": 8,
+        "h": 13
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${ds}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT p.name AS plate, COUNT(*) AS quakes\nFROM events e\nJOIN plates p ON ST_Contains(p.geom, POINT(e.longitude, e.latitude))\nWHERE e.kind = 'earthquake' AND $__timeFilter(e.time_utc) AND e.magnitude >= $minmag\nGROUP BY p.code, p.name\nORDER BY quakes DESC\nLIMIT 15"
+        }
+      ],
+      "description": "Number of quakes in the time range on each plate (the 15 plates with the most). Most quakes happen where plates meet, so plates with long, active boundaries lead.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "quakes"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Earthquakes"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "plate",
+        "orientation": "horizontal",
+        "groupWidth": 0.75,
+        "barWidth": 0.8,
+        "showValue": "auto",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       }
     },
     {

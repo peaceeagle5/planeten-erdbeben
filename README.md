@@ -62,7 +62,7 @@ Requirements on the servers:
 - **MariaDB/MySQL** must be reachable from the network. On Raspberry Pi OS set
   `bind-address = 0.0.0.0` in `/etc/mysql/mariadb.conf.d/50-server.cnf`, and use a user that may log in
   from other hosts (`'name'@'%'`).
-- **Node-RED** needs internet access (USGS, and npm for `astronomy-engine`/`node-red-node-mysql`), and
+- **Node-RED** needs internet access (USGS, GitHub for the plate boundaries, and npm for `astronomy-engine`/`node-red-node-mysql`), and
   `functionExternalModules: true` in `settings.js`, which is the default.
   Behind a proxy: see [LABOR-PROXY.md](LABOR-PROXY.md) (German).
 - **Grafana** needs an Admin login.
@@ -109,6 +109,9 @@ Since 2026-11-19 this Mac uses the same Docker environment as the pupils ([compo
 - **Enrich:** every minute Node-RED takes up to 600 events without positions, computes the positions of
   Sun, Moon and the planets (20 per second), and writes them with the aspects. Failures are retried
   on the next run.
+- **Plates:** at start and then weekly Node-RED loads the tectonic plates (PB2002, Bird 2002) from
+  [GitHub](https://github.com/fraxen/tectonicplates) into `plates` (outline as geometry) and `plate_points`.
+  The map shows the plate boundaries, and a bar chart counts the quakes per plate (`ST_Contains`).
 
 ## Reading the results
 
