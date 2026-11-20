@@ -21,6 +21,10 @@ Docker environment into `dist/PlanetenErdbeben-Lernpaket.zip` (no executables, n
 The setup wizard configures an **existing** database, Node-RED and Grafana over the network,
 for example on a Raspberry Pi at `192.168.100.133`. Nothing has to be installed by hand.
 
+[![Setup-Ablauf: was man eingibt und was im Hintergrund passiert](praesentation/Setup-Ablauf.png)](praesentation/Setup-Ablauf.png)
+
+*The whole process on one page (in German). Vector version: [Setup-Ablauf.svg](praesentation/Setup-Ablauf.svg).*
+
 1. Start the program for your system from `dist/`:
    - Windows: `planeten-erdbeben-setup-windows-x64.exe` (double-click; on the first start
      Windows SmartScreen may warn about an unknown publisher: "More info" > "Run anyway")

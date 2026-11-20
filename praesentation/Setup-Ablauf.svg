@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<rect width="1920" height="1080" fill="#f4f6f9"/>
+<defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6576"/></marker></defs>
+<text x="60" y="82" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="44" font-weight="700" fill="#1b2330" text-anchor="start">Planeten &amp; Erdbeben – So läuft das Setup</text>
+<text x="60" y="122" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6576" text-anchor="start">Der Setup-Assistent richtet Datenbank, Node-RED und Grafana für dich ein. Oben: was du eingibst. Unten: was im Hintergrund passiert.</text>
+<rect x="40.0" y="170" width="240.57142857142858" height="640" rx="16" fill="#ffffff" stroke="#d5dae2" stroke-width="1.5"/>
+<rect x="40.0" y="170" width="240.57142857142858" height="8" rx="4" fill="#5b6576"/>
+<circle cx="160.28571428571428" cy="228" r="28" fill="#5b6576"/>
+<text x="160.28571428571428" y="238" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="27" font-weight="700" fill="#ffffff" text-anchor="middle">▶</text>
+<text x="160.28571428571428" y="292" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="23" font-weight="700" fill="#1b2330" text-anchor="middle">Starten</text>
+<text x="58.0" y="336" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#5b6576" text-anchor="start">DU GIBST EIN</text>
+<text x="58.0" y="364" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Doppelklick auf die</text>
+<text x="58.0" y="388" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Setup-Datei (.exe unter</text>
+<text x="58.0" y="412" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Windows) oder</text>
+<text x="58.0" y="436" font-family="'Cascadia Mono', Menlo, Consolas, monospace" font-size="16" font-weight="600" fill="#1b2330" text-anchor="start">npm run setup</text>
+<line x1="58.0" y1="515" x2="262.57142857142856" y2="515" stroke="#d5dae2" stroke-width="1.5" stroke-dasharray="4 5"/>
+<text x="58.0" y="547" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#5b6576" text-anchor="start">IM HINTERGRUND</text>
+<text x="58.0" y="575" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Kleiner Webserver nur auf</text>
+<text x="58.0" y="598" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">diesem PC (127.0.0.1:8790)</text>
+<text x="58.0" y="621" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Browser öffnet die</text>
+<text x="58.0" y="644" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Setup-Seite</text>
+<line x1="283.57142857142856" y1="228" x2="303.57142857142856" y2="228" stroke="#5b6576" stroke-width="2.5" marker-end="url(#arr)"/>
+<rect x="306.57142857142856" y="170" width="240.57142857142858" height="640" rx="16" fill="#ffffff" stroke="#d5dae2" stroke-width="1.5"/>
+<rect x="306.57142857142856" y="170" width="240.57142857142858" height="8" rx="4" fill="#7a4fc2"/>
+<circle cx="426.85714285714283" cy="228" r="28" fill="#7a4fc2"/>
+<text x="426.85714285714283" y="238" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="27" font-weight="700" fill="#ffffff" text-anchor="middle">★</text>
+<text x="426.85714285714283" y="292" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="23" font-weight="700" fill="#1b2330" text-anchor="middle">Wer und wo?</text>
+<text x="324.57142857142856" y="336" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#7a4fc2" text-anchor="start">DU GIBST EIN</text>
+<text x="324.57142857142856" y="364" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Dein Name</text>
+<text x="324.57142857142856" y="388" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">IP des Servers,</text>
+<text x="324.57142857142856" y="412" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">z. B. 192.168.100.133</text>
+<text x="324.57142857142856" y="436" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">– oder Knopf „Lokale</text>
+<text x="324.57142857142856" y="460" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Docker-Umgebung“</text>
+<line x1="324.57142857142856" y1="515" x2="529.1428571428571" y2="515" stroke="#d5dae2" stroke-width="1.5" stroke-dasharray="4 5"/>
+<text x="324.57142857142856" y="547" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#5b6576" text-anchor="start">IM HINTERGRUND</text>
+<text x="324.57142857142856" y="575" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">IP füllt alle Adressfelder</text>
+<text x="324.57142857142856" y="598" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Docker-Knopf: Werte aus</text>
+<text x="324.57142857142856" y="621" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">compose.yaml</text>
+<text x="324.57142857142856" y="644" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Name erscheint im Tab</text>
+<text x="324.57142857142856" y="667" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">und im Dashboard-Titel</text>
+<line x1="550.1428571428571" y1="228" x2="570.1428571428571" y2="228" stroke="#5b6576" stroke-width="2.5" marker-end="url(#arr)"/>
+<rect x="573.1428571428571" y="170" width="240.57142857142858" height="640" rx="16" fill="#ffffff" stroke="#d5dae2" stroke-width="1.5"/>
+<rect x="573.1428571428571" y="170" width="240.57142857142858" height="8" rx="4" fill="#b5651d"/>
+<circle cx="693.4285714285714" cy="228" r="28" fill="#b5651d"/>
+<text x="693.4285714285714" y="238" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="27" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="693.4285714285714" y="292" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="23" font-weight="700" fill="#1b2330" text-anchor="middle">Datenbank</text>
+<text x="591.1428571428571" y="336" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#b5651d" text-anchor="start">DU GIBST EIN</text>
+<text x="591.1428571428571" y="364" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Datenbank-Benutzer</text>
+<text x="591.1428571428571" y="388" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">und -Passwort</text>
+<text x="591.1428571428571" y="412" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">(von der Lehrkraft)</text>
+<text x="591.1428571428571" y="436" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Port 3306</text>
+<line x1="591.1428571428571" y1="515" x2="795.7142857142857" y2="515" stroke="#d5dae2" stroke-width="1.5" stroke-dasharray="4 5"/>
+<text x="591.1428571428571" y="547" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#5b6576" text-anchor="start">IM HINTERGRUND</text>
+<text x="591.1428571428571" y="575" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Legt planeten_erdbeben</text>
+<text x="591.1428571428571" y="598" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">und die Tabellen an</text>
+<text x="591.1428571428571" y="621" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">oder prüft sie</text>
+<text x="591.1428571428571" y="644" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Vorhandene Daten</text>
+<text x="591.1428571428571" y="667" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">bleiben erhalten</text>
+<rect x="591.1428571428571" y="752" width="204.57142857142858" height="38" rx="19" fill="#e9f5ee" stroke="#1f8a4c" stroke-width="1.5"/>
+<text x="693.4285714285714" y="777" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#1f8a4c" text-anchor="middle">✓ Verbindung testen</text>
+<line x1="816.7142857142857" y1="228" x2="836.7142857142857" y2="228" stroke="#5b6576" stroke-width="2.5" marker-end="url(#arr)"/>
+<rect x="839.7142857142857" y="170" width="240.57142857142858" height="640" rx="16" fill="#ffffff" stroke="#d5dae2" stroke-width="1.5"/>
+<rect x="839.7142857142857" y="170" width="240.57142857142858" height="8" rx="4" fill="#c23b3b"/>
+<circle cx="960.0" cy="228" r="28" fill="#c23b3b"/>
+<text x="960.0" y="238" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="27" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<text x="960.0" y="292" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="23" font-weight="700" fill="#1b2330" text-anchor="middle">Node-RED</text>
+<text x="857.7142857142857" y="336" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#c23b3b" text-anchor="start">DU GIBST EIN</text>
+<text x="857.7142857142857" y="364" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Dein eigener Port,</text>
+<text x="857.7142857142857" y="388" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">z. B. 1893</text>
+<text x="857.7142857142857" y="412" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Vergessen? „Mein</text>
+<text x="857.7142857142857" y="436" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Node-RED finden“</text>
+<line x1="857.7142857142857" y1="515" x2="1062.2857142857142" y2="515" stroke="#d5dae2" stroke-width="1.5" stroke-dasharray="4 5"/>
+<text x="857.7142857142857" y="547" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#5b6576" text-anchor="start">IM HINTERGRUND</text>
+<text x="857.7142857142857" y="575" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Prüft, wem die Instanz</text>
+<text x="857.7142857142857" y="598" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">gehört (Schutz vor</text>
+<text x="857.7142857142857" y="621" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Überschreiben)</text>
+<text x="857.7142857142857" y="644" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Installiert MySQL-Knoten</text>
+<text x="857.7142857142857" y="667" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Legt Tab „Planeten &amp;</text>
+<text x="857.7142857142857" y="690" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Erdbeben“ an</text>
+<rect x="857.7142857142857" y="752" width="204.57142857142858" height="38" rx="19" fill="#e9f5ee" stroke="#1f8a4c" stroke-width="1.5"/>
+<text x="960.0" y="777" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#1f8a4c" text-anchor="middle">✓ Verbindung testen</text>
+<line x1="1083.2857142857142" y1="228" x2="1103.2857142857142" y2="228" stroke="#5b6576" stroke-width="2.5" marker-end="url(#arr)"/>
+<rect x="1106.2857142857142" y="170" width="240.57142857142858" height="640" rx="16" fill="#ffffff" stroke="#d5dae2" stroke-width="1.5"/>
+<rect x="1106.2857142857142" y="170" width="240.57142857142858" height="8" rx="4" fill="#d08a00"/>
+<circle cx="1226.5714285714284" cy="228" r="28" fill="#d08a00"/>
+<text x="1226.5714285714284" y="238" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="27" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<text x="1226.5714285714284" y="292" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="23" font-weight="700" fill="#1b2330" text-anchor="middle">Grafana</text>
+<text x="1124.2857142857142" y="336" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#d08a00" text-anchor="start">DU GIBST EIN</text>
+<text x="1124.2857142857142" y="364" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Dein Grafana-Benutzer</text>
+<text x="1124.2857142857142" y="388" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">und -Passwort</text>
+<text x="1124.2857142857142" y="412" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Datenquelle auswählen</text>
+<line x1="1124.2857142857142" y1="515" x2="1328.857142857143" y2="515" stroke="#d5dae2" stroke-width="1.5" stroke-dasharray="4 5"/>
+<text x="1124.2857142857142" y="547" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#5b6576" text-anchor="start">IM HINTERGRUND</text>
+<text x="1124.2857142857142" y="575" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Liest deine Rolle</text>
+<text x="1124.2857142857142" y="598" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">(Admin / Editor)</text>
+<text x="1124.2857142857142" y="621" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Legt Dashboard</text>
+<text x="1124.2857142857142" y="644" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">„Planeten &amp; Erdbeben</text>
+<text x="1124.2857142857142" y="667" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">(Dein Name)“ an</text>
+<rect x="1124.2857142857142" y="752" width="204.57142857142858" height="38" rx="19" fill="#e9f5ee" stroke="#1f8a4c" stroke-width="1.5"/>
+<text x="1226.5714285714284" y="777" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#1f8a4c" text-anchor="middle">✓ Verbindung testen</text>
+<line x1="1349.857142857143" y1="228" x2="1369.857142857143" y2="228" stroke="#5b6576" stroke-width="2.5" marker-end="url(#arr)"/>
+<rect x="1372.8571428571427" y="170" width="240.57142857142858" height="640" rx="16" fill="#ffffff" stroke="#d5dae2" stroke-width="1.5"/>
+<rect x="1372.8571428571427" y="170" width="240.57142857142858" height="8" rx="4" fill="#2457c5"/>
+<circle cx="1493.1428571428569" cy="228" r="28" fill="#2457c5"/>
+<text x="1493.1428571428569" y="238" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="27" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<text x="1493.1428571428569" y="292" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="23" font-weight="700" fill="#1b2330" text-anchor="middle">Alles einrichten</text>
+<text x="1390.8571428571427" y="336" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#2457c5" text-anchor="start">DU GIBST EIN</text>
+<text x="1390.8571428571427" y="364" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Ein Klick auf</text>
+<text x="1390.8571428571427" y="388" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">„Alles einrichten“</text>
+<line x1="1390.8571428571427" y1="515" x2="1595.4285714285713" y2="515" stroke="#d5dae2" stroke-width="1.5" stroke-dasharray="4 5"/>
+<text x="1390.8571428571427" y="547" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#5b6576" text-anchor="start">IM HINTERGRUND</text>
+<text x="1390.8571428571427" y="575" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Nacheinander:</text>
+<text x="1390.8571428571427" y="598" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Datenbank → Node-RED</text>
+<text x="1390.8571428571427" y="621" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">→ Grafana</text>
+<text x="1390.8571428571427" y="644" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Wartet bis zu 2 Min.</text>
+<text x="1390.8571428571427" y="667" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">auf erste Erdbeben</text>
+<text x="1390.8571428571427" y="690" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Mehrmals ausführbar</text>
+<line x1="1616.4285714285713" y1="228" x2="1636.4285714285713" y2="228" stroke="#5b6576" stroke-width="2.5" marker-end="url(#arr)"/>
+<rect x="1639.4285714285713" y="170" width="240.57142857142858" height="640" rx="16" fill="#ffffff" stroke="#d5dae2" stroke-width="1.5"/>
+<rect x="1639.4285714285713" y="170" width="240.57142857142858" height="8" rx="4" fill="#1f8a4c"/>
+<circle cx="1759.7142857142856" cy="228" r="28" fill="#1f8a4c"/>
+<text x="1759.7142857142856" y="238" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="27" font-weight="700" fill="#ffffff" text-anchor="middle">✓</text>
+<text x="1759.7142857142856" y="292" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="23" font-weight="700" fill="#1b2330" text-anchor="middle">Fertig</text>
+<text x="1657.4285714285713" y="336" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#1f8a4c" text-anchor="start">DU GIBST EIN</text>
+<text x="1657.4285714285713" y="364" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Optional Backfill:</text>
+<text x="1657.4285714285713" y="388" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Jahr und Mindest-</text>
+<text x="1657.4285714285713" y="412" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Magnitude wählen</text>
+<line x1="1657.4285714285713" y1="515" x2="1862.0" y2="515" stroke="#d5dae2" stroke-width="1.5" stroke-dasharray="4 5"/>
+<text x="1657.4285714285713" y="547" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#5b6576" text-anchor="start">IM HINTERGRUND</text>
+<text x="1657.4285714285713" y="575" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Link zu deinem</text>
+<text x="1657.4285714285713" y="598" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Dashboard</text>
+<text x="1657.4285714285713" y="621" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Backfill holt ältere</text>
+<text x="1657.4285714285713" y="644" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">Beben von USGS</text>
+<text x="1657.4285714285713" y="667" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">(≈ 1500 pro Jahr</text>
+<text x="1657.4285714285713" y="690" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#5b6576" text-anchor="start">bei M ≥ 5)</text>
+<rect x="40" y="850" width="1840" height="190" rx="16" fill="#ffffff" stroke="#d5dae2" stroke-width="1.5"/>
+<text x="66" y="892" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#2457c5" text-anchor="start">DANACH LÄUFT VON ALLEIN</text>
+<rect x="66" y="914" width="210" height="92" rx="12" fill="#f4f6f9" stroke="#5b6576" stroke-width="2"/>
+<text x="171.0" y="954" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#5b6576" text-anchor="middle">USGS</text>
+<text x="171.0" y="982" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="400" fill="#5b6576" text-anchor="middle">Erdbeben-Daten</text>
+<line x1="282" y1="960.0" x2="340" y2="960.0" stroke="#5b6576" stroke-width="2.5" marker-end="url(#arr)"/>
+<rect x="346" y="914" width="210" height="92" rx="12" fill="#f4f6f9" stroke="#c23b3b" stroke-width="2"/>
+<text x="451.0" y="954" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#c23b3b" text-anchor="middle">Node-RED</text>
+<text x="451.0" y="982" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="400" fill="#5b6576" text-anchor="middle">holt Beben, berechnet</text>
+<line x1="562" y1="960.0" x2="620" y2="960.0" stroke="#5b6576" stroke-width="2.5" marker-end="url(#arr)"/>
+<rect x="626" y="914" width="210" height="92" rx="12" fill="#f4f6f9" stroke="#b5651d" stroke-width="2"/>
+<text x="731.0" y="954" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#b5651d" text-anchor="middle">MariaDB</text>
+<text x="731.0" y="982" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="400" fill="#5b6576" text-anchor="middle">speichert alles</text>
+<line x1="842" y1="960.0" x2="900" y2="960.0" stroke="#5b6576" stroke-width="2.5" marker-end="url(#arr)"/>
+<rect x="906" y="914" width="210" height="92" rx="12" fill="#f4f6f9" stroke="#d08a00" stroke-width="2"/>
+<text x="1011.0" y="954" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#d08a00" text-anchor="middle">Grafana</text>
+<text x="1011.0" y="982" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="15" font-weight="400" fill="#5b6576" text-anchor="middle">dein Dashboard</text>
+<text x="451.0" y="1028" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#5b6576" text-anchor="middle">+ Stellung von Sonne, Mond, Planeten</text>
+<line x1="1146" y1="876" x2="1146" y2="1014" stroke="#d5dae2" stroke-width="1.5"/>
+<text x="1176" y="892" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#2457c5" text-anchor="start">GUT ZU WISSEN</text>
+<circle cx="1182" cy="922" r="4" fill="#2457c5"/>
+<text x="1196" y="928" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Passwörter werden nirgends gespeichert.</text>
+<circle cx="1182" cy="950" r="4" fill="#2457c5"/>
+<text x="1196" y="956" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Deine anderen Node-RED-Flows bleiben unverändert.</text>
+<circle cx="1182" cy="978" r="4" fill="#2457c5"/>
+<text x="1196" y="984" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Jede:r hat ein eigenes Node-RED (eigener Port) und ein eigenes Grafana-Konto.</text>
+<circle cx="1182" cy="1006" r="4" fill="#2457c5"/>
+<text x="1196" y="1012" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#1b2330" text-anchor="start">Docker-Knopf = das Labor auf dem eigenen PC nachbauen (docker compose up -d).</text>
+</svg>
