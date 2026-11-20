@@ -34,7 +34,7 @@ jobs:
           node tools/smoke-test.js dist/planeten-erdbeben-setup-linux-x64
       - name: Lernpaket packen
         run: node tools/lernpaket.js
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-dateien
           path: |
@@ -58,7 +58,7 @@ jobs:
         run: npm run lernen
         env:
           LOESUNG: '1'
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: release-dateien
           path: dist
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: release-dateien
           path: dist
