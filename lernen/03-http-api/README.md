@@ -108,7 +108,7 @@ Statuscode, Header und Antwort jeder Anfrage. Das ist das wichtigste Werkzeug be
 ## Übung
 
 [uebung.js](uebung.js): Eingaben prüfen, Query lesen, Routing und URLs bauen, wie in `app.js`.
-Prüfen: `node --test lernen/03-http-api/`
+Prüfen: `node --test "lernen/03-http-api/*.test.js"`
 
 **Bonus (ohne Test):** Baue in [bonus-server.js](bonus-server.js) eine kleine API für deine Lebensmittel:
 `GET /foods` liefert alle, `GET /foods?maxCalories=60` filtert mit `filter`. Start: `node lernen/03-http-api/bonus-server.js`.

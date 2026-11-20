@@ -90,7 +90,7 @@ Der Effekt verschwindet vollständig.
 
 ## Übung
 
-1. [uebung.js](uebung.js): Häufigkeiten, erwartete Werte, χ², Zufallstreffer. Prüfen: `node --test lernen/11-statistik/`
+1. [uebung.js](uebung.js): Häufigkeiten, erwartete Werte, χ², Zufallstreffer. Prüfen: `node --test "lernen/11-statistik/*.test.js"`
 2. Danach mit deinen echten Daten (benutzt deine Funktionen aus der Übung):
    ```
    node lernen/11-statistik/analyse.js             # alle Beben

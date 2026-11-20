@@ -77,7 +77,7 @@ beleuchteter Anteil, rückläufig ja/nein.
 
 ## Übung
 
-[uebung.js](uebung.js): die Winkel-Funktionen selbst bauen. Prüfen: `node --test lernen/05-planeten/`
+[uebung.js](uebung.js): die Winkel-Funktionen selbst bauen. Prüfen: `node --test "lernen/05-planeten/*.test.js"`
 
 ## So erklärst du es
 > „Stell dir den Himmel als Uhr mit 360 Strichen vor. Die Sonne wandert in einem Jahr einmal herum, der Mond

@@ -87,7 +87,7 @@ Darum steht `node_modules/` in der [.gitignore](../../.gitignore) und war nicht 
 ## Übung
 
 [uebung.js](uebung.js): Funktionen exportieren und `astronomy-engine` benutzen.
-Prüfen: `node --test lernen/02-module-npm/`
+Prüfen: `node --test "lernen/02-module-npm/*.test.js"`
 
 ## So erklärst du es
 > „Jede Datei ist wie ein Werkzeugkasten. Mit `module.exports` legt man fest, welche Werkzeuge andere

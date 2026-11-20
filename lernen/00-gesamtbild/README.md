@@ -57,7 +57,7 @@ Moment Sonne, Mond und Planeten? Dann vergleichen wir mit Zeitpunkten **ohne** E
 ## Übung
 
 Öffne [antworten.txt](antworten.txt) und schreib deine Antworten hinter die Doppelpunkte. Kein Programmieren nötig.
-Prüfen: `node --test lernen/00-gesamtbild/`
+Prüfen: `node --test "lernen/00-gesamtbild/*.test.js"`
 
 Zusatzaufgabe ohne Code: Zeichne das Bild oben aus dem Gedächtnis auf Papier, mit Ports und Pfeilrichtungen.
 

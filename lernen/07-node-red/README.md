@@ -92,7 +92,7 @@ Deshalb kann man `flows.json` weitergeben, ohne Passwörter zu verraten. Der Sch
 
 ## Übung
 
-1. **Function-Nodes** in [uebung.js](uebung.js). Prüfen: `node --test lernen/07-node-red/`
+1. **Function-Nodes** in [uebung.js](uebung.js). Prüfen: `node --test "lernen/07-node-red/*.test.js"`
 2. **Im Editor** (http://127.0.0.1:1880 oder dein eigener Port): Baue den Flow
    `inject → http request (USGS-Feed) → function → debug`, der im Debug-Fenster ausgibt:
    „12 Beben, stärkstes: M6.1 bei …“. Musterlösung zum Importieren (Menü → Import): [loesung-flow.json](loesung-flow.json).

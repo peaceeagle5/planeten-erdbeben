@@ -115,7 +115,7 @@ Im Projekt: `phaseFraction: body === 'Sun' ? null : round(illum.phase_fraction, 
 
 ## Übung
 
-[uebung.js](uebung.js) hat 8 Funktionen mit `TODO`. Prüfen: `node --test lernen/01-js-werkzeuge/`
+[uebung.js](uebung.js) hat 8 Funktionen mit `TODO`. Prüfen: `node --test "lernen/01-js-werkzeuge/*.test.js"`
 
 ## So erklärst du es
 > „Das sind Abkürzungen. `?.` heißt ‚schau nach, aber stürz nicht ab, wenn es nicht da ist‘.

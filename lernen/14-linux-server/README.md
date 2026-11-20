@@ -139,7 +139,7 @@ crontab, sondern in eine Datei `~/.my.cnf` mit Rechten `600`.
 3. **Praxis** auf dem Pi (oder im Docker-Container, ohne `systemctl`): Prüfe den Status aller drei Dienste, lies
    eine Minute lang das Node-RED-Log mit, finde heraus, wie viel Speicher frei ist, und mach eine Sicherung der Datenbank.
 
-Prüfen: `node --test lernen/14-linux-server/`
+Prüfen: `node --test "lernen/14-linux-server/*.test.js"`
 
 ## So erklärst du es
 > „Ein Dienst ist ein Programm, das im Hintergrund wartet, wie ein Kellner, der immer da ist. Mit systemctl sagst du

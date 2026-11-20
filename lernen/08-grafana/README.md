@@ -76,7 +76,7 @@ im Setup-Assistenten aus. Sie brauchen dann **nicht** das Datenbank-Passwort fü
 
 ## Übung
 
-1. **JavaScript:** [uebung.js](uebung.js), Grafanas Ersetzungen nachbauen. Prüfen: `node --test lernen/08-grafana/`
+1. **JavaScript:** [uebung.js](uebung.js), Grafanas Ersetzungen nachbauen. Prüfen: `node --test "lernen/08-grafana/*.test.js"`
 2. **In Grafana** (http://127.0.0.1:3000): Öffne dein Dashboard → **Edit** → **Add → Visualization**.
    - Datenquelle: Planeten-Erdbeben. Oben auf **Code** umschalten, Format **Table**.
    - Aufgabe A, Typ „Time series“: Beben pro Tag.

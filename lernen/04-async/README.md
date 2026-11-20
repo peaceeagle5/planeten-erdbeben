@@ -89,7 +89,7 @@ await fetch(url, { signal: AbortSignal.timeout(2500) });   // nach 2,5 s abbrech
 ## Übung
 
 [uebung.js](uebung.js). Die Tests geben dir ein nachgebautes `fetch` (`fetchFn`), damit sie ohne Internet laufen.
-Prüfen: `node --test lernen/04-async/`
+Prüfen: `node --test "lernen/04-async/*.test.js"`
 
 Zum Ausprobieren mit echtem Internet:
 ```

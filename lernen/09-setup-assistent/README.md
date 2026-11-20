@@ -106,7 +106,7 @@ Im Programm liest [assets.js](../../shared/assets.js) die Dateien mit `sea.getAs
 
 ## Übung
 
-[uebung.js](uebung.js): sieben Bausteine aus dem Assistenten. Prüfen: `node --test lernen/09-setup-assistent/`
+[uebung.js](uebung.js): sieben Bausteine aus dem Assistenten. Prüfen: `node --test "lernen/09-setup-assistent/*.test.js"`
 
 **Lese-Aufgabe:** Öffne [server.js](../../setup-wizard/server.js) und finde: (a) wo der Token geprüft wird,
 (b) wo die Schritte nacheinander laufen, (c) woran der Datentest erkennt, dass Node-RED arbeitet.

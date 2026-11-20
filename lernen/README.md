@@ -58,7 +58,7 @@ Zum Nachschlagen für den Unterricht: [Erklär-Spickzettel](spickzettel.md).
      z. B. `port-grafana: 3000`. Leer gelassene Fragen zählen als „noch offen“, nicht als falsch.
 3. Prüfe dich selbst, z. B.:
    ```
-   node --test lernen/14-linux-server/
+   node --test "lernen/14-linux-server/*.test.js"
    ```
    Grün ✔ = richtig, rot ✖ = schau dir die Meldung an (sie gibt meistens einen Tipp), ﹣ = noch offen.
 4. Erst danach in die Musterlösung schauen (`loesung.js`, `loesung-*.txt`). Deine Lösung darf anders aussehen,

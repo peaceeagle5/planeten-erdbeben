@@ -139,7 +139,7 @@ Vor dem Einschalten der Firewall testen, danach wieder: Was vorher ging und dana
 1. **Subnetze und Adressen:** [antworten.txt](antworten.txt): rechnen und entscheiden.
 2. **Firewall und Tests:** [befehle.txt](befehle.txt): die ufw-Regeln für das Projekt und die Prüfbefehle.
 
-Prüfen: `node --test lernen/15-netzwerk-praxis/`
+Prüfen: `node --test "lernen/15-netzwerk-praxis/*.test.js"`
 
 **Praxis (auf dem Pi, mit Lehrkraft):** Firewall nach Abschnitt 8 einrichten. Vorher und nachher von deinem PC aus
 die Ports 22, 1880, 3000 und 3306 testen. Danach `sudo ufw status numbered` ansehen und erklären.
