@@ -88,4 +88,5 @@ jobs:
             dist/PlanetenErdbeben-Lernpaket.zip \
             praesentation/Planeten-Erdbeben.pptx \
             praesentation/Setup-Assistent-erklaert.pdf \
-            praesentation/Lerneinheiten-Inhaltsuebersicht.pdf
+            praesentation/Lerneinheiten-Inhaltsuebersicht.pdf \
+            praesentation/Setup-Ablauf.png

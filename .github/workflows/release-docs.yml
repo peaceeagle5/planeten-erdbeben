@@ -30,6 +30,7 @@ jobs:
           gh release upload "$TAG" --clobber \
             praesentation/Planeten-Erdbeben.pptx \
             praesentation/Setup-Assistent-erklaert.pdf \
-            praesentation/Lerneinheiten-Inhaltsuebersicht.pdf
+            praesentation/Lerneinheiten-Inhaltsuebersicht.pdf \
+            praesentation/Setup-Ablauf.png
           gh release edit "$TAG" --notes-file .github/release-notes.md
           gh release view "$TAG" --json assets --jq '.assets[].name'
