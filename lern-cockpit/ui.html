@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lern-Cockpit – Planeten &amp; Erdbeben</title>
 <link rel="icon" href="ui/logo.svg" type="image/svg+xml">
+<script>
+  // Theme before the first paint (no light flash in dark mode): the saved choice, otherwise the system setting.
+  (() => {
+    let saved = null;
+    try { saved = localStorage.getItem('lc.theme'); } catch { /* private mode */ }
+    const system = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = saved === 'light' || saved === 'dark' ? saved : system;
+  })();
+</script>
 <link rel="stylesheet" href="ui/fonts.css">
 <style>
   /* Colours and type of 1-heart.eu ("Sunny Side Up"): parchment, plum, amber, burgundy, green, sea.
@@ -32,8 +41,9 @@
     --sans: Lato, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
+  /* Night version: set by the theme switch, or by the system setting until the switch is used */
+  :root[data-theme="dark"] {
+    color-scheme: dark;
       --bg: #241626; --card: #2e1d30; --nav: #1d111e; --text: #f3e6c4; --muted: #c4ad9a; --line: #e2a12340;
       --heading: #fdf3c7; --heading-em: #f2a7b8; --eyebrow: #8cc79a;
       --accent: #e2a123; --accent-strong: #f0b94a; --accent-ink: #f0b94a; --accent-text: #3d0815; --accent-soft: #e2a12329; --link: #f0b94a;
@@ -48,7 +58,6 @@
       --t-text: #f3e6c4; --t-kw: #f2a7b8; --t-lit: #7fc4d6; --t-str: #8cc79a; --t-num: #7fc4d6; --t-com: #a68ba3;
       --t-title: #fdf3c7; --t-bi: #f0b94a; --t-var: #d3a6d6; --t-subst: #7fc4d6; --t-type: #f0b94a; --t-attr: #f2a7b8;
       --code-inline: #f6d07f; --code-inline-bg: #e2a12324;
-    }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -78,6 +87,11 @@
   .seg button { border: 0; border-radius: 0; padding: 4px 14px; font-size: 13px; letter-spacing: .08em; font-weight: 700; background: transparent; }
   .seg button.on { background: var(--accent); color: var(--accent-text); }
   .spacer { flex: 1; }
+  .theme-btn { width: 34px; height: 34px; padding: 0; display: grid; place-items: center; flex: none; color: var(--accent-ink); border-color: var(--line); background: transparent; }
+  .theme-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .theme-btn svg { width: 18px; height: 18px; }
+  .theme-btn .sun, :root[data-theme="dark"] .theme-btn .moon { display: none; }
+  :root[data-theme="dark"] .theme-btn .sun { display: block; }
   .where { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   nav { border-right: 1px solid var(--line); overflow-y: auto; padding: 12px 10px 24px; background: var(--nav); }
@@ -204,6 +218,10 @@
     </div>
     <div class="spacer"></div>
     <div class="where" id="where"></div>
+    <button class="theme-btn" id="themeBtn" type="button" title="Hell / Dunkel umschalten" aria-label="Hell oder dunkel">
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+    </button>
   </header>
   <nav id="nav"></nav>
   <div class="main">

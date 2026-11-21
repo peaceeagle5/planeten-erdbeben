@@ -473,7 +473,43 @@ function setupResizer() {
   });
 }
 
+/**
+ * Light / dark switch. Without a saved choice the page follows the system setting (also when it changes);
+ * after a click the choice is kept. The head script in ui.html sets the theme before the first paint.
+ */
+function setupThemeSwitch() {
+  const root = document.documentElement;
+  const button = $('themeBtn');
+  const system = matchMedia('(prefers-color-scheme: dark)');
+  const label = () => {
+    const next = root.dataset.theme === 'dark' ? 'hell' : 'dunkel';
+    button.title = `Auf ${next} umschalten`;
+    button.setAttribute('aria-label', button.title);
+  };
+  const saved = () => {
+    try {
+      return localStorage.getItem('lc.theme');
+    } catch {
+      return null;
+    }
+  };
+  button.addEventListener('click', () => {
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    try {
+      localStorage.setItem('lc.theme', root.dataset.theme);
+    } catch { /* private mode: the choice lasts until reload */ }
+    label();
+  });
+  system.addEventListener('change', (e) => {
+    if (saved()) return;
+    root.dataset.theme = e.matches ? 'dark' : 'light';
+    label();
+  });
+  label();
+}
+
 function wire() {
+  setupThemeSwitch();
   $('nav').addEventListener('click', (e) => {
     const b = e.target.closest('[data-unit]');
     if (!b) return;
