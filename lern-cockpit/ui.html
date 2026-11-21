@@ -5,31 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lern-Cockpit – Planeten &amp; Erdbeben</title>
 <style>
-  /* Claude look: warm ivory / charcoal, terracotta accent, serif headings */
+  /* Colours of the VS Code theme "Claude Code Mono Light" / "Claude Code Mono Dark" (ashwingopalsamy.claude-code-theme) */
   :root {
-    --bg: #faf9f5; --card: #ffffff; --nav: #f5f4ed; --text: #141413; --muted: #6b6a64; --line: #e6e3d9;
-    --accent: #d97757; --accent-strong: #c6613f; --accent-text: #ffffff; --accent-soft: #f9ece5; --link: #b5552f;
-    --ok: #3f7d3a; --warn: #9a5b14; --err: #b3372e;
-    --ok-bg: #edf4e6; --warn-bg: #fbf0df; --err-bg: #fbeae7; --code: #f0eee6; --input: #ffffff;
-    --term-bg: #1f1e1d; --term-text: #e8e6dc; --term-muted: #8f8c83; --term-line: #34332f;
-    --term-prompt: #e08a6d; --term-cmd: #faf9f5; --term-info: #d9b38c;
+    --bg: #faf9f5; --card: #f3f1e9; --nav: #f0eee6; --text: #1a1917; --muted: #6b665f; --line: #d9d5cc;
+    --accent: #cc785c; --accent-strong: #b85f3d; --accent-text: #faf9f5; --accent-soft: #cc785c1a; --link: #b85f3d;
+    --ok: #2e7c4c; --warn: #8a6220; --err: #a84b3a;
+    --ok-bg: #2e7c4c14; --warn-bg: #8a622014; --err-bg: #a84b3a12; --code: #f0eee6; --input: #faf9f5;
+    --selection: #cc785c2e; --line-number: #8d877d;
+    --term-bg: #faf9f5; --term-text: #1a1917; --term-muted: #8d877d; --term-line: #d9d5cc;
+    --term-prompt: #cc785c; --term-cmd: #1a1917; --term-info: #2e5f99;
+    --ansi-30: #1a1917; --ansi-31: #a84b3a; --ansi-32: #2e7c4c; --ansi-33: #8a6220; --ansi-34: #207fde; --ansi-35: #6a5bcc; --ansi-36: #2e5f99; --ansi-37: #746e64;
+    --ansi-90: #8d877d; --ansi-91: #c45f4a; --ansi-92: #5e8f6d; --ansi-93: #9c7a39; --ansi-94: #4f79a8; --ansi-95: #6d5dbd; --ansi-96: #45809e; --ansi-97: #4a473f;
+    --t-com: #6e6962; --t-kw: #ae4e30; --t-str: #8a6220; --t-num: #6b4f1b; --t-fn: #141413; --t-prop: #4a473f; --t-punc: #6e6962; --t-var: #2b2a27;
     --serif: "Tiempos Headline", "Copernicus", Charter, "Iowan Old Style", Georgia, ui-serif, serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #262624; --card: #30302e; --nav: #1f1e1d; --text: #f0eee6; --muted: #a6a39a; --line: #3e3d39;
-      --accent: #d97757; --accent-strong: #e08a6d; --accent-text: #ffffff; --accent-soft: #3a2b25; --link: #e8957a;
-      --ok: #8fbf72; --warn: #e2ad5f; --err: #ec7b70;
-      --ok-bg: #263021; --warn-bg: #352b1c; --err-bg: #3a2522; --code: #1f1e1d; --input: #262624;
-      --term-bg: #191817; --term-line: #2e2d2a;
+      --bg: #141413; --card: #1f1d1a; --nav: #1a1917; --text: #eae7df; --muted: #a9a39a; --line: #4a473f;
+      --accent: #d97757; --accent-strong: #e58f72; --accent-text: #141413; --accent-soft: #d9775729; --link: #d97757;
+      --ok: #9aca86; --warn: #e8c96b; --err: #d47563;
+      --ok-bg: #9aca861a; --warn-bg: #e8c96b14; --err-bg: #d475631a; --code: #1a1917; --input: #141413;
+      --selection: #d9775742; --line-number: #6b665f;
+      --term-bg: #141413; --term-text: #eae7df; --term-muted: #6b665f; --term-line: #4a473f;
+      --term-prompt: #d97757; --term-cmd: #f5f2e9; --term-info: #8cc4ff;
+      --ansi-30: #1a1917; --ansi-31: #d47563; --ansi-32: #9aca86; --ansi-33: #e8c96b; --ansi-34: #61aaf2; --ansi-35: #9b87f5; --ansi-36: #8cc4ff; --ansi-37: #d9d5cc;
+      --ansi-90: #6b665f; --ansi-91: #f09884; --ansi-92: #b6e0a5; --ansi-93: #f2d98f; --ansi-94: #a2d2ff; --ansi-95: #c9bcff; --ansi-96: #bde0ff; --ansi-97: #f5f2e9;
+      --t-com: #8d877d; --t-kw: #d97757; --t-str: #d4a27f; --t-num: #ebdbbc; --t-fn: #f5f2e9; --t-prop: #c9c4ba; --t-punc: #8d877d; --t-var: #d9d5cc;
     }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
   h1, h2, .doc h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -.01em; }
-  ::selection { background: var(--accent-soft); }
-  .term ::selection { background: #5a3a2c; }
+  ::selection { background: var(--selection); }
   button { font: inherit; border-radius: 6px; padding: 6px 12px; cursor: pointer; border: 1px solid var(--line); background: var(--card); color: var(--text); }
   button:hover { border-color: var(--muted); }
   button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
@@ -50,7 +58,7 @@
 
   nav { border-right: 1px solid var(--line); overflow-y: auto; padding: 10px 8px 24px; background: var(--nav); }
   nav .item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: 0; background: transparent; padding: 7px 8px; border-radius: 6px; font-size: 14px; }
-  nav .item:hover { background: var(--line); }
+  nav .item:hover { background: var(--accent-soft); }
   nav .item.on { background: var(--accent-soft); color: var(--accent-strong); font-weight: 600; }
   nav .item.dim { opacity: .55; }
   nav .num { font-variant-numeric: tabular-nums; color: var(--muted); width: 20px; flex: none; font-size: 13px; }
@@ -93,8 +101,13 @@
   .editor-bar .state { font-size: 12.5px; color: var(--muted); }
   .editor-bar .state.dirty { color: var(--warn); }
   .editor { display: flex; height: calc(100% - 47px); min-height: 0; }
-  .gutter { padding: 10px 8px 10px 12px; text-align: right; color: var(--muted); font-size: 13px; line-height: 20px; user-select: none; overflow: hidden; background: var(--code); min-width: 44px; white-space: pre; font-family: ui-monospace, Menlo, Consolas, monospace; }
-  textarea.code { flex: 1; border: 0; resize: none; padding: 10px 12px; font-size: 13px; line-height: 20px; background: var(--input); color: var(--text); outline: none; white-space: pre; overflow: auto; tab-size: 2; }
+  .gutter { padding: 10px 8px 10px 12px; text-align: right; color: var(--line-number); font-size: 13px; line-height: 20px; user-select: none; overflow: hidden; background: var(--input); min-width: 44px; white-space: pre; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  /* Editor: a transparent textarea over a highlighted copy (pre.hl); both must have identical text metrics. */
+  .code-wrap { position: relative; flex: 1; min-width: 0; background: var(--input); }
+  .code-wrap .code { position: absolute; inset: 0; margin: 0; border: 0; padding: 10px 12px; font: 13px/20px ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; letter-spacing: 0; white-space: pre; tab-size: 2; }
+  pre.hl { overflow: hidden; pointer-events: none; color: var(--t-var); }
+  textarea.code { resize: none; outline: none; overflow: auto; background: transparent; color: transparent; caret-color: var(--accent); }
+  textarea.code::selection { background: var(--selection); color: transparent; }
   pre.view { margin: 0; padding: 10px 14px; font-size: 13px; line-height: 20px; white-space: pre; overflow: auto; }
   pre.view.solution { background: var(--code); border-radius: 6px; }
 
@@ -111,7 +124,7 @@
   .test .skipmsg { color: var(--muted); font-size: 13px; }
   .legend { font-size: 13px; color: var(--muted); }
 
-  .resizer { height: 6px; cursor: row-resize; background: var(--line); flex: none; }
+  .resizer { height: 5px; cursor: row-resize; background: var(--nav); border-top: 1px solid var(--line); flex: none; }
   .term { flex: none; height: 36vh; background: var(--term-bg); color: var(--term-text); font-size: 13px; line-height: 1.45; display: flex; flex-direction: column; min-height: 80px; }
   .term-bar { display: flex; align-items: center; gap: 10px; padding: 4px 10px; color: var(--term-muted); font: 12.5px system-ui, sans-serif; border-bottom: 1px solid var(--term-line); }
   .term-bar button { background: transparent; color: var(--term-text); border-color: var(--term-line); padding: 2px 9px; font-size: 12.5px; }
@@ -119,11 +132,18 @@
   .term-line { display: flex; gap: 8px; padding: 2px 12px 10px; }
   .term-line .p { color: var(--term-prompt); white-space: nowrap; }
   .term-line input { flex: 1; background: transparent; border: 0; outline: none; color: var(--term-text); font: inherit; caret-color: var(--accent); min-width: 0; }
-  .term .cmd { color: var(--term-cmd); } .term .cmd .p { color: var(--term-prompt); }
+  .term .cmd { color: var(--term-cmd); font-weight: 600; } .term .cmd .p { color: var(--term-prompt); }
   .term .info { color: var(--term-info); } .term .muted { color: var(--term-muted); }
   .a1 { font-weight: 700; } .a2 { opacity: .7; } .a3 { font-style: italic; }
-  .a30 { color: #8f8c83; } .a31 { color: #ec7b70; } .a32 { color: #9cc57f; } .a33 { color: #e6c07b; } .a34 { color: #8fb3d9; } .a35 { color: #c99bd6; } .a36 { color: #86c5c0; } .a37 { color: #e8e6dc; }
-  .a90 { color: #8f8c83; } .a91 { color: #f29a90; } .a92 { color: #b5d69c; } .a93 { color: #f0d39a; } .a94 { color: #adc9e6; } .a95 { color: #dbb6e5; } .a96 { color: #a5d6d2; } .a97 { color: #faf9f5; }
+  .a30 { color: var(--ansi-30); } .a31 { color: var(--ansi-31); } .a32 { color: var(--ansi-32); } .a33 { color: var(--ansi-33); }
+  .a34 { color: var(--ansi-34); } .a35 { color: var(--ansi-35); } .a36 { color: var(--ansi-36); } .a37 { color: var(--ansi-37); }
+  .a90 { color: var(--ansi-90); } .a91 { color: var(--ansi-91); } .a92 { color: var(--ansi-92); } .a93 { color: var(--ansi-93); }
+  .a94 { color: var(--ansi-94); } .a95 { color: var(--ansi-95); } .a96 { color: var(--ansi-96); } .a97 { color: var(--ansi-97); }
+
+  /* Syntax colours (highlight.mjs) */
+  .t-com { color: var(--t-com); } .t-kw { color: var(--t-kw); font-weight: 600; } .t-str { color: var(--t-str); }
+  .t-num, .t-const { color: var(--t-num); } .t-fn { color: var(--t-fn); } .t-prop { color: var(--t-prop); } .t-punc { color: var(--t-punc); }
+  pre.view, .doc pre code { color: var(--t-var); }
 
   .modal { position: fixed; inset: 0; background: rgba(20,20,19,.5); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 10; }
   .modal.open { display: flex; }

@@ -1,12 +1,10 @@
 // Markdown → HTML for the explanations. Only what the READMEs in lernen/ use:
 // headings, paragraphs, lists (nested), code blocks, quotes, tables, rules, `code`, **bold**, *italic*, links.
 // No DOM needed, so it is tested with node --test (see ../cockpit.test.mjs).
+import { esc } from './html.mjs';
+import { highlight } from './highlight.mjs';
 
-export const esc = (s) => String(s)
-  .replaceAll('&', '&amp;')
-  .replaceAll('<', '&lt;')
-  .replaceAll('>', '&gt;')
-  .replaceAll('"', '&quot;');
+export { esc };
 
 // Code spans are cut out first and put back at the end, so nothing inside them is formatted.
 // Private-use characters mark the spots; they never appear in the READMEs.
@@ -141,7 +139,7 @@ function fenceBlock(lines, i) {
     buf.push(lines[j]);
     j += 1;
   }
-  return [`<pre data-lang="${esc(lang)}"><code>${esc(buf.join('\n'))}</code></pre>`, j + 1];
+  return [`<pre data-lang="${esc(lang)}"><code>${highlight(buf.join('\n'), lang)}</code></pre>`, j + 1];
 }
 
 function headingBlock(lines, i, base) {

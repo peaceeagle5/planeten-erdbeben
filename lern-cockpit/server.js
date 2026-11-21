@@ -19,15 +19,7 @@ const readline = require('node:readline');
 const { spawn, execFile } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 const { readAsset, isSea } = require('../shared/assets');
-
-/** Files the page needs; inside the .exe they are embedded (see build.js). */
-const UI_ASSETS = {
-  '/': ['lern-cockpit/ui.html', 'text/html'],
-  '/ui/app.mjs': ['lern-cockpit/ui/app.mjs', 'text/javascript'],
-  '/ui/markdown.mjs': ['lern-cockpit/ui/markdown.mjs', 'text/javascript'],
-  '/ui/terminal.mjs': ['lern-cockpit/ui/terminal.mjs', 'text/javascript'],
-};
-const REPORTER_ASSET = 'lern-cockpit/reporter.mjs';
+const { UI_ASSETS, REPORTER_ASSET } = require('./assets');
 
 const TOKEN = crypto.randomBytes(16).toString('hex');
 const PREFERRED_PORT = Number(process.env.LERN_PORT) || 8791;

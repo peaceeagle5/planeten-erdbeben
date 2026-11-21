@@ -6,15 +6,6 @@
 // The program looks for the project folder (the one with lernen/) next to itself and above,
 // then in the folder it was started from. Node.js must be installed for the tests in the terminal.
 const { runBuild } = require('../shared/sea-build');
+const { ASSET_FILES } = require('./assets');
 
-runBuild({
-  name: 'planeten-lern-cockpit',
-  entry: 'lern-cockpit/server.js',
-  assets: [
-    'lern-cockpit/ui.html',
-    'lern-cockpit/ui/app.mjs',
-    'lern-cockpit/ui/markdown.mjs',
-    'lern-cockpit/ui/terminal.mjs',
-    'lern-cockpit/reporter.mjs',
-  ],
-});
+runBuild({ name: 'planeten-lern-cockpit', entry: 'lern-cockpit/server.js', assets: ASSET_FILES });

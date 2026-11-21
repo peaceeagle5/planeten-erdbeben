@@ -1,5 +1,6 @@
 // Lern-Cockpit page: unit list, explanations, editor, results, solutions and the terminal.
 import { esc, md } from './markdown.mjs';
+import { highlight, langForFile } from './highlight.mjs';
 import { createTerminal } from './terminal.mjs';
 
 const TOKEN = new URLSearchParams(location.search).get('t') || '';
@@ -197,21 +198,31 @@ async function renderEditor(c, u, name) {
     <span class="spacer"></span>
     <button id="edReset" title="Ersetzt die Datei durch die leere Vorlage. Deine Version wird vorher gesichert.">Vorlage wiederherstellen</button>
     <button id="edSave">Speichern (Strg+S)</button></div>
-    <div class="editor"><div class="gutter" id="gutter"></div><textarea class="code" id="ed" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea></div>`;
+    <div class="editor"><div class="gutter" id="gutter"></div><div class="code-wrap">
+    <pre class="code hl" id="hl" aria-hidden="true"></pre>
+    <textarea class="code" id="ed" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea></div></div>`;
   const ed = $('ed');
   const gutter = $('gutter');
-  const numberLines = () => {
+  const hl = $('hl');
+  const lang = langForFile(name);
+  // The textarea is transparent; the coloured copy below it shows the text.
+  const paint = () => {
     gutter.textContent = Array.from({ length: ed.value.split('\n').length }, (_, k) => k + 1).join('\n');
+    hl.innerHTML = `${highlight(ed.value, lang)}\n`;
   };
   ed.value = S.editor.text;
-  numberLines();
+  paint();
   updateEditorState();
   ed.addEventListener('input', () => {
     S.editor.text = ed.value;
     setDirty(ed.value !== S.editor.saved);
-    numberLines();
+    paint();
   });
-  ed.addEventListener('scroll', () => { gutter.scrollTop = ed.scrollTop; });
+  ed.addEventListener('scroll', () => {
+    gutter.scrollTop = ed.scrollTop;
+    hl.scrollTop = ed.scrollTop;
+    hl.scrollLeft = ed.scrollLeft;
+  });
   ed.addEventListener('keydown', (e) => {
     if (e.key !== 'Tab' || e.shiftKey) return;
     e.preventDefault();
@@ -262,7 +273,7 @@ async function renderResults(c, u) {
   for (const d of c.querySelectorAll('details')) {
     d.addEventListener('toggle', async () => {
       const pre = d.querySelector('pre');
-      if (d.open && !pre.textContent) pre.textContent = await readFile(pre.dataset.load);
+      if (d.open && !pre.textContent) pre.innerHTML = highlight(await readFile(pre.dataset.load), 'js');
     });
   }
 }
@@ -271,7 +282,7 @@ async function renderSolution(c, u) {
   const files = u.files.filter((f) => f.kind === 'solution');
   const texts = await Promise.all(files.map((f) => readFile(`${u.dir}/${f.name}`)));
   const command = esc(`LOESUNG=1 node --test "${u.dir}/*.test.js"`);
-  const blocks = files.map((f, k) => `<h3>${esc(f.name)}</h3><pre class="view solution">${esc(texts[k])}</pre>`).join('');
+  const blocks = files.map((f, k) => `<h3>${esc(f.name)}</h3><pre class="view solution">${highlight(texts[k], langForFile(f.name))}</pre>`).join('');
   c.innerHTML = `<div class="results"><div class="note"><p><strong>Musterlösung.</strong> Am meisten lernst du, wenn du es erst selbst versuchst
     und danach deine Version mit dieser vergleichst. Prüfen gegen die Lösung: <code>${command}</code></p></div>${blocks}</div>`;
 }
@@ -328,7 +339,8 @@ async function openProjectFile(target, anchor) {
     const { content } = await api(`/api/repofile?path=${encodeURIComponent(target)}`);
     const base = target.split('/').slice(0, -1).join('/');
     $('modalTitle').textContent = target;
-    $('modalBody').innerHTML = target.endsWith('.md') ? `<div class="doc">${md(content, base)}</div>` : `<pre class="view">${esc(content)}</pre>`;
+    const name = target.split('/').at(-1);
+    $('modalBody').innerHTML = target.endsWith('.md') ? `<div class="doc">${md(content, base)}</div>` : `<pre class="view">${highlight(content, langForFile(name))}</pre>`;
     $('modal').classList.add('open');
     if (anchor) document.getElementById(anchor)?.scrollIntoView();
   } catch (err) {
