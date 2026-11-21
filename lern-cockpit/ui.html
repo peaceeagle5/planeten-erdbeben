@@ -16,7 +16,10 @@
     --term-prompt: #cc785c; --term-cmd: #1a1917; --term-info: #2e5f99;
     --ansi-30: #1a1917; --ansi-31: #a84b3a; --ansi-32: #2e7c4c; --ansi-33: #8a6220; --ansi-34: #207fde; --ansi-35: #6a5bcc; --ansi-36: #2e5f99; --ansi-37: #746e64;
     --ansi-90: #8d877d; --ansi-91: #c45f4a; --ansi-92: #5e8f6d; --ansi-93: #9c7a39; --ansi-94: #4f79a8; --ansi-95: #6d5dbd; --ansi-96: #45809e; --ansi-97: #4a473f;
-    --t-com: #6e6962; --t-kw: #ae4e30; --t-str: #8a6220; --t-num: #6b4f1b; --t-fn: #141413; --t-prop: #4a473f; --t-punc: #6e6962; --t-var: #2b2a27;
+    /* Code colours of VS Code's Markdown preview (highlight.css: "vs" style), inline code from the theme */
+    --t-text: #1a1917; --t-kw: #0000ff; --t-lit: #a31515; --t-str: #a31515; --t-num: #008000; --t-com: #008000;
+    --t-title: #808080; --t-bi: #007acc; --t-var: #008000; --t-subst: #2b91af; --t-type: #a31515; --t-attr: #ff0000;
+    --code-inline: #8f3c2d; --code-inline-bg: #f3e4dd;
     --serif: "Tiempos Headline", "Copernicus", Charter, "Iowan Old Style", Georgia, ui-serif, serif;
   }
   @media (prefers-color-scheme: dark) {
@@ -30,7 +33,10 @@
       --term-prompt: #d97757; --term-cmd: #f5f2e9; --term-info: #8cc4ff;
       --ansi-30: #1a1917; --ansi-31: #d47563; --ansi-32: #9aca86; --ansi-33: #e8c96b; --ansi-34: #61aaf2; --ansi-35: #9b87f5; --ansi-36: #8cc4ff; --ansi-37: #d9d5cc;
       --ansi-90: #6b665f; --ansi-91: #f09884; --ansi-92: #b6e0a5; --ansi-93: #f2d98f; --ansi-94: #a2d2ff; --ansi-95: #c9bcff; --ansi-96: #bde0ff; --ansi-97: #f5f2e9;
-      --t-com: #8d877d; --t-kw: #d97757; --t-str: #d4a27f; --t-num: #ebdbbc; --t-fn: #f5f2e9; --t-prop: #c9c4ba; --t-punc: #8d877d; --t-var: #d9d5cc;
+      /* "vs2015" style */
+      --t-text: #eae7df; --t-kw: #569cd6; --t-lit: #569cd6; --t-str: #d69d85; --t-num: #b8d7a3; --t-com: #57a64a;
+      --t-title: #dcdcdc; --t-bi: #4ec9b0; --t-var: #bd63c5; --t-subst: #dcdcdc; --t-type: #4ec9b0; --t-attr: #9cdcfe;
+      --code-inline: #edb19c; --code-inline-bg: #432c23;
     }
   }
   * { box-sizing: border-box; }
@@ -82,9 +88,11 @@
   .doc { max-width: 860px; padding: 18px 26px 48px; }
   .doc h1 { font-size: 28px; } .doc h2 { font-size: 22px; margin-top: 30px; } .doc h3 { font-size: 17px; }
   .doc a { color: var(--link); text-decoration-color: color-mix(in srgb, var(--link) 40%, transparent); text-underline-offset: 2px; }
-  .doc code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: .9em; }
-  .doc pre { background: var(--code); padding: 10px 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
-  .doc pre code { background: none; padding: 0; }
+  /* Code like in VS Code's Markdown preview */
+  .doc code { color: var(--code-inline); background: var(--code-inline-bg); padding: 1px 3px; border-radius: 4px; font-size: .93em; line-height: 1.357em; }
+  .doc a code { color: var(--code-inline); text-decoration: underline; }
+  .doc pre { background: var(--code); border: 1px solid var(--line); padding: 16px; border-radius: 3px; overflow-x: auto; font-size: 14px; line-height: 1.357em; tab-size: 4; }
+  .doc pre code { color: var(--t-text); background: none; padding: 0; font-size: 1em; }
   .doc table { border-collapse: collapse; margin: 10px 0; font-size: 14px; display: block; overflow-x: auto; }
   .doc th, .doc td { border: 1px solid var(--line); padding: 5px 9px; text-align: left; vertical-align: top; }
   .doc th { background: var(--code); }
@@ -105,7 +113,8 @@
   /* Editor: a transparent textarea over a highlighted copy (pre.hl); both must have identical text metrics. */
   .code-wrap { position: relative; flex: 1; min-width: 0; background: var(--input); }
   .code-wrap .code { position: absolute; inset: 0; margin: 0; border: 0; padding: 10px 12px; font: 13px/20px ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; letter-spacing: 0; white-space: pre; tab-size: 2; }
-  pre.hl { overflow: hidden; pointer-events: none; color: var(--t-var); }
+  pre.hl { overflow: hidden; pointer-events: none; color: var(--t-text); }
+  pre.hl .t-com { font-style: normal; } /* italics could shift the text under the cursor */
   textarea.code { resize: none; outline: none; overflow: auto; background: transparent; color: transparent; caret-color: var(--accent); }
   textarea.code::selection { background: var(--selection); color: transparent; }
   pre.view { margin: 0; padding: 10px 14px; font-size: 13px; line-height: 20px; white-space: pre; overflow: auto; }
@@ -140,10 +149,11 @@
   .a90 { color: var(--ansi-90); } .a91 { color: var(--ansi-91); } .a92 { color: var(--ansi-92); } .a93 { color: var(--ansi-93); }
   .a94 { color: var(--ansi-94); } .a95 { color: var(--ansi-95); } .a96 { color: var(--ansi-96); } .a97 { color: var(--ansi-97); }
 
-  /* Syntax colours (highlight.mjs) */
-  .t-com { color: var(--t-com); } .t-kw { color: var(--t-kw); font-weight: 600; } .t-str { color: var(--t-str); }
-  .t-num, .t-const { color: var(--t-num); } .t-fn { color: var(--t-fn); } .t-prop { color: var(--t-prop); } .t-punc { color: var(--t-punc); }
-  pre.view, .doc pre code { color: var(--t-var); }
+  /* Syntax colours (highlight.mjs), like VS Code's Markdown preview */
+  .t-kw { color: var(--t-kw); } .t-lit { color: var(--t-lit); } .t-str { color: var(--t-str); } .t-num { color: var(--t-num); }
+  .t-com { color: var(--t-com); font-style: italic; } .t-title { color: var(--t-title); } .t-bi { color: var(--t-bi); }
+  .t-var { color: var(--t-var); } .t-subst { color: var(--t-subst); } .t-type { color: var(--t-type); } .t-attr { color: var(--t-attr); }
+  pre.view { color: var(--t-text); }
 
   .modal { position: fixed; inset: 0; background: rgba(20,20,19,.5); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 10; }
   .modal.open { display: flex; }

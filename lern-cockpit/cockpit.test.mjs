@@ -76,22 +76,22 @@ test('Terminal: gemeinsamer Anfang für die Tab-Ergänzung', () => {
   assert.equal(commonPrefix([]), '');
 });
 
-test('Syntaxfarben: JavaScript', () => {
-  const html = highlight('const s = `Hallo ${name}`; // Gruß\nformatFood(food.name, 52);', 'js');
+test('Syntaxfarben wie in der Markdown-Vorschau: JavaScript', () => {
+  const html = highlight('const s = `Hallo ${food.name}`; // Gruß\nformatFood(food.name, 52, true);\nconsole.log(require("x"));', 'js');
   assert.match(html, /<span class="t-kw">const<\/span>/);
-  assert.match(html, /<span class="t-str">`Hallo \$\{name\}`<\/span>/);
+  assert.match(html, /<span class="t-str">`Hallo <\/span><span class="t-subst">\$\{food.name\}<\/span><span class="t-str">`<\/span>/);
   assert.match(html, /<span class="t-com">\/\/ Gruß<\/span>/);
-  assert.match(html, /<span class="t-fn">formatFood<\/span>/);
-  assert.match(html, /<span class="t-prop">name<\/span>/);
-  assert.match(html, /<span class="t-num">52<\/span>/);
-  assert.equal(highlight('a < b', 'js'), 'a <span class="t-punc">&lt;</span> b');
+  assert.match(html, /<span class="t-title">formatFood<\/span>\(food.name, <span class="t-num">52<\/span>, <span class="t-lit">true<\/span>\)/);
+  assert.match(html, /<span class="t-var">console<\/span>.<span class="t-title">log<\/span>\(<span class="t-bi">require<\/span>/);
+  assert.equal(highlight('a < b', 'js'), 'a &lt; b');
 });
 
 test('Syntaxfarben: SQL, Dockerfile, Antwortdateien', () => {
-  assert.match(highlight("select name from planets -- alle\nWHERE id = 'x'", 'sql'), /t-kw">select<.*t-kw">from<.*t-com">-- alle<.*t-kw">WHERE<.*t-str">'x'</s);
+  const sql = highlight("select COUNT(*) from planets -- alle\nWHERE id = 'x'", 'sql');
+  assert.match(sql, /t-kw">select<.*t-bi">COUNT<.*t-kw">from<.*t-com">-- alle<.*t-kw">WHERE<.*t-str">'x'</s);
   assert.match(highlight('FROM node:24\n# Basis\nRUN npm ci', 'dockerfile'), /t-kw">FROM<.*t-com"># Basis<.*t-kw">RUN</s);
   assert.equal(highlight('# Frage\nport-grafana: 3000', 'answers'),
-    '<span class="t-com"># Frage</span>\n<span class="t-prop">port-grafana</span><span class="t-punc">:</span><span class="t-str"> 3000</span>');
+    '<span class="t-com"># Frage</span>\n<span class="t-attr">port-grafana</span>:<span class="t-str"> 3000</span>');
   assert.equal(highlight('<b>', 'unbekannt'), '&lt;b&gt;');
   assert.equal(langForFile('uebung.js'), 'js');
   assert.equal(langForFile('loesung.Dockerfile'), 'dockerfile');
