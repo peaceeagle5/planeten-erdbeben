@@ -8,7 +8,8 @@
     "flow-import": "node node-red/flow-builder.js",
     "dashboard": "node grafana/dashboard-builder.js",
     "lernen": "node --test \"lernen/**/*.test.js\"",
-    "lernen:fisi": "node --test \"lernen/**/*-praxis.test.js\""
+    "lernen:fisi": "node --test \"lernen/**/*-praxis.test.js\"",
+    "lernen:ui": "node lern-cockpit/server.js"
   },
   "dependencies": {
     "astronomy-engine": "^2.1.19"

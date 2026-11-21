@@ -20,6 +20,9 @@ setup-wizard/.cache/
 # Lokale Datensicherungen
 backup/
 
+# Eigene Lösungen aus dem Lern-Cockpit (npm run lernen:ui), gehören nicht ins Repository
+meine-uebungen/
+
 # Betriebssystem und Editor
 .DS_Store
 .vscode/
