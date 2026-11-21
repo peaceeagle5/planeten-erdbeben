@@ -8,6 +8,8 @@ const UI_ASSETS = {
   '/ui/highlight.mjs': ['lern-cockpit/ui/highlight.mjs', 'text/javascript'],
   '/ui/markdown.mjs': ['lern-cockpit/ui/markdown.mjs', 'text/javascript'],
   '/ui/terminal.mjs': ['lern-cockpit/ui/terminal.mjs', 'text/javascript'],
+  '/ui/logo.svg': ['lern-cockpit/ui/logo.svg', 'image/svg+xml'],
+  '/ui/fonts.css': ['lern-cockpit/ui/fonts.css', 'text/css'],
 };
 const REPORTER_ASSET = 'lern-cockpit/reporter.mjs';
 const ASSET_FILES = [...Object.values(UI_ASSETS).map(([file]) => file), REPORTER_ASSET];
