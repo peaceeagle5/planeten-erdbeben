@@ -16,13 +16,13 @@ npm run lernen:ui
 ```
 
 Öffnet im Browser eine Seite mit allen Einheiten: Erklärung lesen, Übungsdatei bearbeiten, auf **Prüfen ▶** klicken.
-Unten ist ein Terminal, in dem die echten Befehle laufen (`node --test 01-js-werkzeuge/`, `npm run lernen`, `git status` …).
+Unten ist ein Terminal, in dem die echten Befehle laufen (`node --test "01-js-werkzeuge/*.test.js"`, `npm run lernen`, `git status` …).
 
 Deine Lösungen liegen im Ordner **`meine-uebungen/`** im Projektordner, einer Kopie von `lernen/`.
 Der Ordner steht in der `.gitignore`: `git pull` überschreibt ihn nicht, und deine Lösungen landen nicht im Repository.
 Neue Einheiten kommen beim nächsten Start automatisch dazu, deine eigenen Dateien bleiben, wie sie sind.
 
-Ohne Cockpit geht es weiterhin direkt in `lernen/` mit `node --test lernen/01-js-werkzeuge/`.
+Ohne Cockpit geht es weiterhin direkt in `lernen/` mit `node --test "lernen/01-js-werkzeuge/*.test.js"`.
 Dann aber deine Änderungen nicht committen, sonst stehen deine Lösungen im Repository.
 
 ## Zwei Lernwege

@@ -415,7 +415,7 @@ async function renderOverview(c) {
   c.innerHTML = `<div class="doc"><div class="note">
     <p><strong>So arbeitest du hier:</strong> Links eine Einheit wählen, die <em>Erklärung</em> lesen, dann die Übungsdatei
     (z. B. <code>uebung.js</code>) bearbeiten und auf <strong>Prüfen ▶</strong> klicken.</p>
-    <p>Unten ist ein echtes Terminal. <strong>Prüfen</strong> tippt dort z. B. <code>node --test 01-js-werkzeuge/</code> für dich –
+    <p>Unten ist ein echtes Terminal. <strong>Prüfen</strong> tippt dort z. B. <code>node --test "01-js-werkzeuge/*.test.js"</code> für dich –
     du kannst die Befehle auch selbst eingeben. <code>hilfe</code> zeigt alle Befehle.</p>
     <p>Deine Lösungen liegen im Ordner <code>${esc(S.workDir)}</code>. Der Ordner gehört dir: <code>git pull</code> überschreibt
     ihn nicht, und er kommt nicht ins Git-Repository.</p></div>${md(content, 'lernen')}</div>`;
@@ -494,7 +494,7 @@ async function renderResults(c, u) {
   S.editor = null;
   if (!results.length) {
     c.innerHTML = `<div class="results"><div class="note"><p>Diese Einheit wurde noch nicht geprüft.</p>
-      <p>Klick oben auf <strong>Prüfen ▶</strong> oder tippe unten im Terminal: <code>node --test ${esc(u.dir)}/</code></p></div></div>`;
+      <p>Klick oben auf <strong>Prüfen ▶</strong> oder tippe unten im Terminal: <code>node --test "${esc(u.dir)}/*.test.js"</code></p></div></div>`;
     return;
   }
   let h = '<div class="results"><p class="legend">Bei Fehlern: Zeilen mit <b style="color:var(--err)">+</b> zeigen, was dein Code liefert,'
@@ -523,7 +523,7 @@ async function renderSolution(c, u) {
   const files = u.files.filter((f) => f.kind === 'solution');
   const parts = await Promise.all(files.map(async (f) => [f.name, (await api(`/api/file?path=${encodeURIComponent(`${u.dir}/${f.name}`)}`)).content]));
   c.innerHTML = `<div class="results"><div class="note"><p><strong>Musterlösung.</strong> Am meisten lernst du, wenn du es erst selbst versuchst
-    und danach deine Version mit dieser vergleichst. Prüfen gegen die Lösung: <code>LOESUNG=1 node --test ${esc(u.dir)}/</code></p></div>
+    und danach deine Version mit dieser vergleichst. Prüfen gegen die Lösung: <code>LOESUNG=1 node --test "${esc(u.dir)}/*.test.js"</code></p></div>
     ${parts.map(([name, text]) => `<h3>${esc(name)}</h3><pre class="view" style="background:var(--code);border-radius:6px">${esc(text)}</pre>`).join('')}</div>`;
 }
 
@@ -732,13 +732,14 @@ const term = (() => {
   return { run, info, setPrompt, isRunning: () => running, typeAndRun: (cmd) => { input.value = ''; return run(cmd); } };
 })();
 
-/** Prüfen: the same command the pupil could type, relative to the terminal's folder. */
+/**
+ * Prüfen: the same command the pupil could type, relative to the terminal's folder.
+ * A glob pattern, because Node 24 no longer accepts a folder after "node --test".
+ */
 async function checkUnit(dir) {
   const cur = $('termPrompt').textContent.replace(/ \$$/, '').split('/').slice(1);
-  let target;
-  if (cur.length === 1 && cur[0] === dir) target = '';
-  else target = `${'../'.repeat(cur.length)}${dir}/`;
-  await term.typeAndRun(`node --test${target ? ` ${target}` : ''}`);
+  const prefix = cur.length === 1 && cur[0] === dir ? '' : `${'../'.repeat(cur.length)}${dir}/`;
+  await term.typeAndRun(`node --test "${prefix}*.test.js"`);
 }
 
 async function refresh(rerender) {
@@ -819,7 +820,7 @@ window.addEventListener('beforeunload', (e) => { if (S.editor && S.editor.dirty)
   const [hashUnit, hashTab] = decodeURIComponent(location.hash.slice(1)).split('/');
   if (hashUnit && unitByDir(hashUnit)) S.view = { unit: hashUnit, tab: hashTab || 'readme' };
   term.info('Willkommen im Lern-Cockpit. Hier tippst du Befehle wie in einem echten Terminal.');
-  term.info('Probier zum Beispiel:  node --test 01-js-werkzeuge/   ·   npm run lernen   ·   hilfe');
+  term.info('Probier zum Beispiel:  node --test "01-js-werkzeuge/*.test.js"   ·   npm run lernen   ·   hilfe');
   await render();
   $('termIn').focus();
 })();

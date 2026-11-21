@@ -56,13 +56,17 @@ function fileKind(name) {
 }
 
 /**
- * Copies one file. In texts, "node --test lernen/01-…" becomes "node --test 01-…", because the
- * cockpit terminal starts in meine-uebungen/. Commands meant for the project folder
- * (docker build -f lernen/…, git add lernen/…) stay as they are.
+ * Copies one file. In texts, test commands are adapted to the cockpit terminal, which starts in
+ * meine-uebungen/:  node --test "lernen/01-…/*.test.js"  →  node --test "01-…/*.test.js"
+ * The old folder form (node --test lernen/01-…/) becomes the glob form, because Node 24 no longer
+ * accepts a folder. Commands meant for the project folder (docker build -f lernen/…, git add lernen/…)
+ * stay as they are.
  */
 function copyFile(src, dst) {
-  if (/\.(md|txt|js|sql)$/.test(src) && !src.endsWith('.test.js')) {
-    const text = fs.readFileSync(src, 'utf8').replace(/\bnode (--test )?lernen\//g, 'node $1');
+  if (/(\.(md|txt|js|sql)|Dockerfile)$/.test(src) && !src.endsWith('.test.js')) {
+    const text = fs.readFileSync(src, 'utf8')
+      .replace(/\bnode --test lernen\/(\d\d-[\w-]+)\/(?=[\s`'")]|$)/gm, 'node --test "$1/*.test.js"')
+      .replace(/\bnode (--test )?("?)lernen\//g, 'node $1$2');
     fs.writeFileSync(dst, text);
   } else {
     fs.copyFileSync(src, dst);
@@ -243,14 +247,14 @@ function words(line) {
 }
 
 const HELP = `Befehle in diesem Terminal
-  node --test 01-js-werkzeuge/   Tests einer Einheit ausführen
-  node --test                    alle Tests im aktuellen Ordner und darunter
-  npm run lernen                 alle Tests (Lernweg FIAE)
-  npm run lernen:fisi            nur die Praxis-Übungen (Lernweg FISI)
-  LOESUNG=1 node --test ...      Tests gegen die Musterlösung laufen lassen
-  node datei.js                  ein Programm starten
-  git ...                        Git-Befehle (z. B. für Einheit 13)
-  docker ...                     Docker-Befehle (z. B. für Einheit 12)
+  node --test "01-js-werkzeuge/*.test.js"   Tests einer Einheit ausführen
+  node --test                               alle Tests im aktuellen Ordner und darunter
+  npm run lernen                            alle Tests (Lernweg FIAE)
+  npm run lernen:fisi                       nur die Praxis-Übungen (Lernweg FISI)
+  LOESUNG=1 node --test ...                 Tests gegen die Musterlösung laufen lassen
+  node datei.js                             ein Programm starten
+  git ...                                   Git-Befehle (z. B. für Einheit 13)
+  docker ...                                Docker-Befehle (z. B. für Einheit 12)
 
   cd ordner   cd ..   ls   pwd   cat datei   clear
 
