@@ -15,6 +15,10 @@ Einmal im Projektordner: `npm install`.
 npm run lernen:ui
 ```
 
+Oder ohne Befehl: **`planeten-lern-cockpit-windows-x64.exe`** (aus dem Release) in den Projektordner legen, dorthin,
+wo der Ordner `lernen` liegt, und doppelklicken. Node.js muss trotzdem installiert sein (für die Tests im Terminal),
+und im Projektordner muss einmal `npm install` gelaufen sein.
+
 Öffnet im Browser eine Seite mit allen Einheiten: Erklärung lesen, Übungsdatei bearbeiten, auf **Prüfen ▶** klicken.
 Unten ist ein Terminal, in dem die echten Befehle laufen (`node --test "01-js-werkzeuge/*.test.js"`, `npm run lernen`, `git status` …).
 

@@ -1,6 +1,7 @@
 # Automatische Tests bei jedem Push (und per Knopf "Run workflow" unter "Actions").
-#  1. Linux: alle Lerneinheiten-Tests, Setup-Programme bauen (Cross-Build wie auf dem Mac), Linux-Programm testen
-#  2. Windows: das gebaute .exe starten und prüfen, Lerneinheiten-Tests unter Windows
+#  1. Linux: alle Lerneinheiten-Tests, Setup-Programme und Lern-Cockpit bauen (Cross-Build wie auf dem Mac), Linux-Programme testen
+#  2. Windows: die gebauten .exe starten und prüfen, Lerneinheiten-Tests unter Windows
+#  3. Linux mit Node 24: das Lern-Cockpit so, wie es bei den Schüler:innen läuft
 name: Tests
 
 on:
@@ -30,6 +31,12 @@ jobs:
         run: |
           sudo apt-get install -y -qq libatomic1
           node tools/smoke-test.js dist/planeten-erdbeben-setup-linux-x64
+      - name: Lern-Cockpit testen und bauen (Windows, Linux x64, Linux arm64)
+        run: |
+          node --test lern-cockpit/
+          npm run build-cockpit
+      - name: Lern-Cockpit (Linux) starten und prüfen
+        run: node tools/smoke-test-cockpit.js dist/planeten-lern-cockpit-linux-x64
       - uses: actions/upload-artifact@v7
         with:
           name: setup-programme
@@ -37,7 +44,31 @@ jobs:
             dist/planeten-erdbeben-setup-windows-x64.exe
             dist/planeten-erdbeben-setup-linux-x64
             dist/planeten-erdbeben-setup-linux-arm64
+            dist/planeten-lern-cockpit-windows-x64.exe
+            dist/planeten-lern-cockpit-linux-x64
+            dist/planeten-lern-cockpit-linux-arm64
           retention-days: 7
+
+  linux-node24:
+    name: Lern-Cockpit mit Node 24 (Linux)
+    needs: build-linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24' # Node.js wie bei den Schüler:innen (LTS); das Programm bringt Node 26 mit
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v8
+        with:
+          name: setup-programme
+          path: dist
+      - name: Lern-Cockpit (Linux) mit Node 24 im Terminal starten und prüfen
+        run: |
+          sudo apt-get install -y -qq libatomic1
+          chmod +x dist/planeten-lern-cockpit-linux-x64
+          node tools/smoke-test-cockpit.js dist/planeten-lern-cockpit-linux-x64
 
   windows:
     name: Windows
@@ -60,3 +91,5 @@ jobs:
           path: dist
       - name: Setup-Programm (.exe) starten und prüfen
         run: node tools/smoke-test.js dist/planeten-erdbeben-setup-windows-x64.exe
+      - name: Lern-Cockpit (.exe) starten und prüfen
+        run: node tools/smoke-test-cockpit.js dist/planeten-lern-cockpit-windows-x64.exe

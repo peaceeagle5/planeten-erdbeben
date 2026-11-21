@@ -73,6 +73,8 @@ npm install
 npm run build-setup                       # dist/: Windows x64, Linux x64, Linux arm64
 node setup-wizard/build.js darwin-arm64   # optional: macOS
 npm run setup                             # run the wizard from source instead
+npm run build-cockpit                     # dist/: Lern-Cockpit for Windows x64, Linux x64, Linux arm64
+npm run lernen:ui                         # run the Lern-Cockpit from source instead
 ```
 
 ## Project layout

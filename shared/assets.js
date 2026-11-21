@@ -3,11 +3,17 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-function readAsset(relPath) {
+/** True inside a built single-file program (Node SEA). */
+function isSea() {
   try {
-    const sea = require('node:sea');
-    if (sea.isSea()) return sea.getAsset(relPath, 'utf8');
-  } catch { /* not running as SEA */ }
+    return require('node:sea').isSea();
+  } catch {
+    return false; // node:sea does not exist outside a SEA on older Node versions
+  }
+}
+
+function readAsset(relPath) {
+  if (isSea()) return require('node:sea').getAsset(relPath, 'utf8');
   return fs.readFileSync(path.join(__dirname, '..', relPath), 'utf8');
 }
 
@@ -24,4 +30,4 @@ const ASSET_FILES = [
   'setup-wizard/ui.html',
 ];
 
-module.exports = { readAsset, ASSET_FILES };
+module.exports = { readAsset, isSea, ASSET_FILES };

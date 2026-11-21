@@ -5,6 +5,7 @@
     "node-red": "node-red --userDir node-red/data ../flow.json",
     "setup": "node setup-wizard/server.js",
     "build-setup": "node setup-wizard/build.js",
+    "build-cockpit": "node lern-cockpit/build.js",
     "flow-import": "node node-red/flow-builder.js",
     "dashboard": "node grafana/dashboard-builder.js",
     "lernen": "node --test \"lernen/**/*.test.js\"",

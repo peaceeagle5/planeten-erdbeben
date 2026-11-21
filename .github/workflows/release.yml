@@ -1,4 +1,4 @@
-# Veröffentlicht einen Release mit den Setup-Programmen und dem Lernpaket.
+# Veröffentlicht einen Release mit den Setup-Programmen, dem Lern-Cockpit und dem Lernpaket.
 # Auslöser: eine Versionsmarke (Tag), z. B.
 #   git tag v1.1.0 && git push origin v1.1.0
 # Ablauf: bauen (Linux) → testen (Linux + Windows) → nur wenn alles grün ist: Release anlegen.
@@ -32,6 +32,12 @@ jobs:
         run: |
           sudo apt-get install -y -qq libatomic1
           node tools/smoke-test.js dist/planeten-erdbeben-setup-linux-x64
+      - name: Lern-Cockpit testen und bauen
+        run: |
+          node --test lern-cockpit/
+          npm run build-cockpit
+      - name: Lern-Cockpit (Linux) starten und prüfen
+        run: node tools/smoke-test-cockpit.js dist/planeten-lern-cockpit-linux-x64
       - name: Lernpaket packen
         run: node tools/lernpaket.js
       - uses: actions/upload-artifact@v7
@@ -41,6 +47,9 @@ jobs:
             dist/planeten-erdbeben-setup-windows-x64.exe
             dist/planeten-erdbeben-setup-linux-x64
             dist/planeten-erdbeben-setup-linux-arm64
+            dist/planeten-lern-cockpit-windows-x64.exe
+            dist/planeten-lern-cockpit-linux-x64
+            dist/planeten-lern-cockpit-linux-arm64
             dist/PlanetenErdbeben-Lernpaket.zip
 
   windows:
@@ -64,6 +73,8 @@ jobs:
           path: dist
       - name: Setup-Programm (.exe) starten und prüfen
         run: node tools/smoke-test.js dist/planeten-erdbeben-setup-windows-x64.exe
+      - name: Lern-Cockpit (.exe) starten und prüfen
+        run: node tools/smoke-test-cockpit.js dist/planeten-lern-cockpit-windows-x64.exe
 
   publish:
     name: Release veröffentlichen
@@ -85,6 +96,9 @@ jobs:
             dist/planeten-erdbeben-setup-windows-x64.exe \
             dist/planeten-erdbeben-setup-linux-x64 \
             dist/planeten-erdbeben-setup-linux-arm64 \
+            dist/planeten-lern-cockpit-windows-x64.exe \
+            dist/planeten-lern-cockpit-linux-x64 \
+            dist/planeten-lern-cockpit-linux-arm64 \
             dist/PlanetenErdbeben-Lernpaket.zip \
             praesentation/Planeten-Erdbeben.pptx \
             praesentation/Setup-Assistent-erklaert.pdf \

@@ -5,43 +5,53 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lern-Cockpit – Planeten &amp; Erdbeben</title>
 <style>
+  /* Claude look: warm ivory / charcoal, terracotta accent, serif headings */
   :root {
-    --bg: #f5f6f8; --card: #ffffff; --text: #1c2330; --muted: #5d6778; --line: #d9dde4;
-    --accent: #3b5bdb; --accent-text: #ffffff; --accent-soft: #edf2ff; --ok: #2b8a3e; --warn: #b35c00; --err: #c92a2a;
-    --ok-bg: #ebfbee; --warn-bg: #fff4e6; --err-bg: #fff5f5; --code: #eef0f4; --input: #ffffff;
-    --term-bg: #0f1218; --term-text: #d8dee9; --term-muted: #7b8496;
+    --bg: #faf9f5; --card: #ffffff; --nav: #f5f4ed; --text: #141413; --muted: #6b6a64; --line: #e6e3d9;
+    --accent: #d97757; --accent-strong: #c6613f; --accent-text: #ffffff; --accent-soft: #f9ece5; --link: #b5552f;
+    --ok: #3f7d3a; --warn: #9a5b14; --err: #b3372e;
+    --ok-bg: #edf4e6; --warn-bg: #fbf0df; --err-bg: #fbeae7; --code: #f0eee6; --input: #ffffff;
+    --term-bg: #1f1e1d; --term-text: #e8e6dc; --term-muted: #8f8c83; --term-line: #34332f;
+    --term-prompt: #e08a6d; --term-cmd: #faf9f5; --term-info: #d9b38c;
+    --serif: "Tiempos Headline", "Copernicus", Charter, "Iowan Old Style", Georgia, ui-serif, serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #12151b; --card: #1b2029; --text: #e4e7ec; --muted: #9aa3b2; --line: #2e3542;
-      --accent: #5c7cfa; --accent-text: #ffffff; --accent-soft: #1f2640; --ok: #51cf66; --warn: #fcc419; --err: #ff6b6b;
-      --ok-bg: #14281a; --warn-bg: #2b2210; --err-bg: #2d1515; --code: #252b36; --input: #12151b;
-      --term-bg: #0b0d12;
+      --bg: #262624; --card: #30302e; --nav: #1f1e1d; --text: #f0eee6; --muted: #a6a39a; --line: #3e3d39;
+      --accent: #d97757; --accent-strong: #e08a6d; --accent-text: #ffffff; --accent-soft: #3a2b25; --link: #e8957a;
+      --ok: #8fbf72; --warn: #e2ad5f; --err: #ec7b70;
+      --ok-bg: #263021; --warn-bg: #352b1c; --err-bg: #3a2522; --code: #1f1e1d; --input: #262624;
+      --term-bg: #191817; --term-line: #2e2d2a;
     }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+  h1, h2, .doc h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -.01em; }
+  ::selection { background: var(--accent-soft); }
+  .term ::selection { background: #5a3a2c; }
   button { font: inherit; border-radius: 6px; padding: 6px 12px; cursor: pointer; border: 1px solid var(--line); background: var(--card); color: var(--text); }
   button:hover { border-color: var(--muted); }
   button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
   button:disabled { opacity: .5; cursor: default; }
   code, pre, textarea, .term { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; }
 
   .app { display: grid; grid-template-columns: 270px 1fr; grid-template-rows: 52px 1fr; height: 100vh; }
   header { grid-column: 1 / 3; display: flex; align-items: center; gap: 16px; padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--card); }
-  header h1 { font-size: 16px; margin: 0; white-space: nowrap; }
-  header h1 span { color: var(--muted); font-weight: 400; }
+  header h1 { font-size: 18px; margin: 0; white-space: nowrap; }
+  header h1::before { content: "✳"; color: var(--accent); margin-right: 8px; font-family: system-ui, sans-serif; }
+  header h1 span { color: var(--muted); font-weight: 400; font-family: system-ui, sans-serif; font-size: 14px; }
   .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
   .seg button { border: 0; border-radius: 0; padding: 4px 12px; font-size: 13.5px; background: transparent; }
   .seg button.on { background: var(--accent); color: var(--accent-text); }
   .spacer { flex: 1; }
   .where { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  nav { border-right: 1px solid var(--line); overflow-y: auto; padding: 10px 8px 24px; background: var(--card); }
+  nav { border-right: 1px solid var(--line); overflow-y: auto; padding: 10px 8px 24px; background: var(--nav); }
   nav .item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: 0; background: transparent; padding: 7px 8px; border-radius: 6px; font-size: 14px; }
-  nav .item:hover { background: var(--code); }
-  nav .item.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  nav .item:hover { background: var(--line); }
+  nav .item.on { background: var(--accent-soft); color: var(--accent-strong); font-weight: 600; }
   nav .item.dim { opacity: .55; }
   nav .num { font-variant-numeric: tabular-nums; color: var(--muted); width: 20px; flex: none; font-size: 13px; }
   nav .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -53,7 +63,7 @@
 
   .main { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
   .unit-head { display: flex; align-items: center; gap: 12px; padding: 10px 18px 0; flex-wrap: wrap; }
-  .unit-head h2 { font-size: 18px; margin: 0; }
+  .unit-head h2 { font-size: 21px; margin: 0; }
   .unit-head .meta { color: var(--muted); font-size: 13px; }
   .tabs { display: flex; gap: 2px; padding: 8px 14px 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
   .tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; padding: 6px 12px; font-size: 14px; color: var(--muted); white-space: nowrap; }
@@ -62,8 +72,8 @@
   .content { flex: 1; overflow: auto; min-height: 0; }
 
   .doc { max-width: 860px; padding: 18px 26px 48px; }
-  .doc h1 { font-size: 24px; } .doc h2 { font-size: 19px; margin-top: 28px; } .doc h3 { font-size: 16px; }
-  .doc a { color: var(--accent); }
+  .doc h1 { font-size: 28px; } .doc h2 { font-size: 22px; margin-top: 30px; } .doc h3 { font-size: 17px; }
+  .doc a { color: var(--link); text-decoration-color: color-mix(in srgb, var(--link) 40%, transparent); text-underline-offset: 2px; }
   .doc code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: .9em; }
   .doc pre { background: var(--code); padding: 10px 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
   .doc pre code { background: none; padding: 0; }
@@ -74,7 +84,7 @@
   .doc blockquote p { margin: 6px 0; }
   .doc hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
   .doc li { margin: 3px 0; }
-  .note { background: var(--accent-soft); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0 0 18px; font-size: 14px; }
+  .note { background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 10px; padding: 12px 14px; margin: 0 0 18px; font-size: 14px; }
   .note.warn { background: var(--warn-bg); }
   .note p { margin: 4px 0; }
 
@@ -86,6 +96,7 @@
   .gutter { padding: 10px 8px 10px 12px; text-align: right; color: var(--muted); font-size: 13px; line-height: 20px; user-select: none; overflow: hidden; background: var(--code); min-width: 44px; white-space: pre; font-family: ui-monospace, Menlo, Consolas, monospace; }
   textarea.code { flex: 1; border: 0; resize: none; padding: 10px 12px; font-size: 13px; line-height: 20px; background: var(--input); color: var(--text); outline: none; white-space: pre; overflow: auto; tab-size: 2; }
   pre.view { margin: 0; padding: 10px 14px; font-size: 13px; line-height: 20px; white-space: pre; overflow: auto; }
+  pre.view.solution { background: var(--code); border-radius: 6px; }
 
   .results { padding: 16px 22px 40px; max-width: 920px; }
   .results h3 { font-size: 14px; margin: 18px 0 6px; font-family: ui-monospace, Menlo, Consolas, monospace; display: flex; gap: 10px; align-items: baseline; }
@@ -102,21 +113,21 @@
 
   .resizer { height: 6px; cursor: row-resize; background: var(--line); flex: none; }
   .term { flex: none; height: 36vh; background: var(--term-bg); color: var(--term-text); font-size: 13px; line-height: 1.45; display: flex; flex-direction: column; min-height: 80px; }
-  .term-bar { display: flex; align-items: center; gap: 10px; padding: 4px 10px; color: var(--term-muted); font: 12.5px system-ui, sans-serif; border-bottom: 1px solid #222836; }
-  .term-bar button { background: transparent; color: var(--term-text); border-color: #2e3542; padding: 2px 9px; font-size: 12.5px; }
-  .term-out { flex: 1; overflow-y: auto; padding: 8px 12px 4px; white-space: pre-wrap; word-break: break-word; }
+  .term-bar { display: flex; align-items: center; gap: 10px; padding: 4px 10px; color: var(--term-muted); font: 12.5px system-ui, sans-serif; border-bottom: 1px solid var(--term-line); }
+  .term-bar button { background: transparent; color: var(--term-text); border-color: var(--term-line); padding: 2px 9px; font-size: 12.5px; }
+  .term-out { flex: 1; overflow-y: auto; padding: 8px 12px 4px; white-space: pre-wrap; overflow-wrap: anywhere; }
   .term-line { display: flex; gap: 8px; padding: 2px 12px 10px; }
-  .term-line .p { color: #69db7c; white-space: nowrap; }
-  .term-line input { flex: 1; background: transparent; border: 0; outline: none; color: var(--term-text); font: inherit; caret-color: #ffd43b; min-width: 0; }
-  .term .cmd { color: #ffffff; } .term .cmd .p { color: #69db7c; }
-  .term .info { color: #74c0fc; } .term .muted { color: var(--term-muted); }
+  .term-line .p { color: var(--term-prompt); white-space: nowrap; }
+  .term-line input { flex: 1; background: transparent; border: 0; outline: none; color: var(--term-text); font: inherit; caret-color: var(--accent); min-width: 0; }
+  .term .cmd { color: var(--term-cmd); } .term .cmd .p { color: var(--term-prompt); }
+  .term .info { color: var(--term-info); } .term .muted { color: var(--term-muted); }
   .a1 { font-weight: 700; } .a2 { opacity: .7; } .a3 { font-style: italic; }
-  .a30 { color: #868e96; } .a31 { color: #ff6b6b; } .a32 { color: #69db7c; } .a33 { color: #ffd43b; } .a34 { color: #74c0fc; } .a35 { color: #da77f2; } .a36 { color: #66d9e8; } .a37 { color: #f1f3f5; }
-  .a90 { color: #7b8496; } .a91 { color: #ff8787; } .a92 { color: #8ce99a; } .a93 { color: #ffe066; } .a94 { color: #a5d8ff; } .a95 { color: #e599f7; } .a96 { color: #99e9f2; } .a97 { color: #ffffff; }
+  .a30 { color: #8f8c83; } .a31 { color: #ec7b70; } .a32 { color: #9cc57f; } .a33 { color: #e6c07b; } .a34 { color: #8fb3d9; } .a35 { color: #c99bd6; } .a36 { color: #86c5c0; } .a37 { color: #e8e6dc; }
+  .a90 { color: #8f8c83; } .a91 { color: #f29a90; } .a92 { color: #b5d69c; } .a93 { color: #f0d39a; } .a94 { color: #adc9e6; } .a95 { color: #dbb6e5; } .a96 { color: #a5d6d2; } .a97 { color: #faf9f5; }
 
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 10; }
+  .modal { position: fixed; inset: 0; background: rgba(20,20,19,.5); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 10; }
   .modal.open { display: flex; }
-  .modal .box { background: var(--card); border-radius: 10px; width: min(960px, 100%); max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); }
+  .modal .box { background: var(--bg); border-radius: 12px; width: min(960px, 100%); max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); }
   .modal .box-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
   .modal .box-head b { flex: 1; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13.5px; }
   .modal .box-body { overflow: auto; }
@@ -158,672 +169,6 @@
 </div>
 <div class="modal" id="modal"><div class="box"><div class="box-head"><b id="modalTitle"></b><button id="modalClose">Schließen</button></div><div class="box-body" id="modalBody"></div></div></div>
 
-<script>
-'use strict';
-const TOKEN = new URLSearchParams(location.search).get('t') || '';
-const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const store = {
-  get(k, d) { try { const v = localStorage.getItem(`lc.${k}`); return v === null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v) { try { localStorage.setItem(`lc.${k}`, JSON.stringify(v)); } catch { /* private mode */ } },
-};
-
-async function api(path, body) {
-  const r = await fetch(path, {
-    method: body ? 'POST' : 'GET',
-    headers: { 'X-Token': TOKEN, 'Content-Type': 'application/json' },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(j.error || `Fehler ${r.status}`);
-  return j;
-}
-
-// ---------------------------------------------------------------------------
-// Markdown (just what the READMEs use)
-// ---------------------------------------------------------------------------
-const slug = (s) => s.toLowerCase().replace(/<[^>]+>/g, '').replace(/[^\p{L}\p{N}\s-]/gu, '').trim().replace(/\s/g, '-');
-
-function joinPath(base, href) {
-  const parts = base ? base.split('/') : [];
-  for (const seg of href.split('/')) {
-    if (seg === '..') parts.pop(); else if (seg !== '.' && seg !== '') parts.push(seg);
-  }
-  return parts.join('/');
-}
-
-function inline(s, base) {
-  const codes = [];
-  s = s.replace(/(`+)(.+?)\1/g, (_, t, c) => { codes.push(/^ .* $/.test(c) ? c.slice(1, -1) : c); return `\u0001${codes.length - 1}\u0002`; });
-  s = esc(s)
-    .replace(/&lt;br\s*\/?&gt;/g, '<br>')
-    .replace(/&lt;sup&gt;(.*?)&lt;\/sup&gt;/g, '<sup>$1</sup>')
-    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, text, href) => {
-      const h = href.replace(/&amp;/g, '&');
-      if (/^https?:/.test(h)) return `<a href="${esc(h)}" target="_blank" rel="noopener">${text}</a>`;
-      if (h.startsWith('#')) return `<a href="#" data-anchor="${esc(h.slice(1))}">${text}</a>`;
-      const [file, anchor] = h.split('#');
-      return `<a href="#" data-target="${esc(joinPath(base, file))}" data-anchor="${esc(anchor || '')}">${text}</a>`;
-    })
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?!\w)/g, '$1<em>$2</em>');
-  return s.replace(/\u0001(\d+)\u0002/g, (_, i) => `<code>${esc(codes[i])}</code>`);
-}
-
-/** Splits a table row at "|" but not inside `code`. */
-function cells(row) {
-  const out = []; let cur = ''; let tick = false;
-  const r = row.trim().replace(/^\|/, '').replace(/\|$/, '');
-  for (let i = 0; i < r.length; i++) {
-    const c = r[i];
-    if (c === '`') tick = !tick;
-    if (c === '\\' && r[i + 1] === '|') { cur += '|'; i++; continue; }
-    if (c === '|' && !tick) { out.push(cur.trim()); cur = ''; } else cur += c;
-  }
-  out.push(cur.trim());
-  return out;
-}
-
-const LIST = /^(\s*)([-*]|\d+\.)\s+(.*)$/;
-
-function list(lines, base) {
-  const first = lines[0].match(LIST);
-  const baseIndent = first[1].length;
-  const ordered = /\d/.test(first[2]);
-  const items = [];
-  for (const l of lines) {
-    const m = l.match(LIST);
-    if (m && m[1].length <= baseIndent + 1) {
-      items.push({ off: m[1].length + m[2].length + 1, lines: [m[3]] });
-    } else if (items.length) {
-      const it = items[items.length - 1];
-      const lead = l.match(/^\s*/)[0].length;
-      it.lines.push(l.slice(Math.min(it.off, lead)));
-    }
-  }
-  const tag = ordered ? 'ol' : 'ul';
-  const start = ordered ? parseInt(first[2], 10) : 1;
-  const lis = items.map((it) => {
-    const inner = it.lines.length === 1 ? inline(it.lines[0], base) : md(it.lines.join('\n'), base).replace(/^<p>([\s\S]*?)<\/p>/, '$1');
-    return `<li>${inner}</li>`;
-  }).join('');
-  return `<${tag}${start !== 1 ? ` start="${start}"` : ''}>${lis}</${tag}>`;
-}
-
-function md(text, base) {
-  const lines = text.replace(/\r/g, '').split('\n');
-  const out = [];
-  let i = 0;
-  const isBlockStart = (l) => /^(#{1,6}\s|\s*```|\s*>|\s*\|)/.test(l) || LIST.test(l) || /^\s*(---|\*\*\*)\s*$/.test(l);
-  while (i < lines.length) {
-    const line = lines[i];
-    let m;
-    if (!line.trim()) { i++; continue; }
-    if (/^\s*```/.test(line)) {
-      const lang = line.trim().slice(3).trim();
-      const buf = []; i++;
-      while (i < lines.length && !/^\s*```\s*$/.test(lines[i])) buf.push(lines[i++]);
-      i++;
-      out.push(`<pre data-lang="${esc(lang)}"><code>${esc(buf.join('\n'))}</code></pre>`);
-      continue;
-    }
-    if ((m = line.match(/^(#{1,6})\s+(.*)$/))) {
-      out.push(`<h${m[1].length} id="${esc(slug(m[2]))}">${inline(m[2], base)}</h${m[1].length}>`);
-      i++; continue;
-    }
-    if (/^\s*(---|\*\*\*)\s*$/.test(line)) { out.push('<hr>'); i++; continue; }
-    if (/^\s*>/.test(line)) {
-      const buf = [];
-      while (i < lines.length && /^\s*>/.test(lines[i])) buf.push(lines[i++].replace(/^\s*>\s?/, ''));
-      out.push(`<blockquote>${md(buf.join('\n'), base)}</blockquote>`);
-      continue;
-    }
-    if (/^\s*\|/.test(line) && /^\s*\|?\s*:?-{2,}/.test(lines[i + 1] || '')) {
-      const head = cells(line);
-      const align = cells(lines[i + 1]).map((c) => (/^:-+:$/.test(c) ? 'center' : /-:$/.test(c) ? 'right' : ''));
-      i += 2;
-      const rows = [];
-      while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(cells(lines[i++]));
-      const td = (tag, c, k) => `<${tag}${align[k] ? ` style="text-align:${align[k]}"` : ''}>${inline(c, base)}</${tag}>`;
-      out.push(`<table><thead><tr>${head.map((c, k) => td('th', c, k)).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c, k) => td('td', c, k)).join('')}</tr>`).join('')}</tbody></table>`);
-      continue;
-    }
-    if (LIST.test(line)) {
-      const buf = [];
-      while (i < lines.length) {
-        const l = lines[i];
-        if (!l.trim()) {
-          const next = lines[i + 1] || '';
-          if (/^\s+\S/.test(next) || LIST.test(next)) { buf.push(l); i++; continue; }
-          break;
-        }
-        if (LIST.test(l) || /^\s+\S/.test(l)) { buf.push(l); i++; continue; }
-        break;
-      }
-      out.push(list(buf, base));
-      continue;
-    }
-    const buf = [lines[i++]];
-    while (i < lines.length && lines[i].trim() && !isBlockStart(lines[i])) buf.push(lines[i++]);
-    out.push(`<p>${inline(buf.join('\n'), base).replace(/\n/g, ' ')}</p>`);
-  }
-  return out.join('\n');
-}
-
-// ---------------------------------------------------------------------------
-// State
-// ---------------------------------------------------------------------------
-const S = {
-  units: [], filter: store.get('filter', 'alle'), view: store.get('view', { unit: null, tab: 'readme' }),
-  editor: null, // { path, saved, dirty }
-};
-
-const unitByDir = (dir) => S.units.find((u) => u.dir === dir);
-const editFiles = (u) => u.files.filter((f) => f.kind === 'edit');
-
-function badge(p) {
-  if (!p || !p.total) return '<span class="badge" title="Noch nicht geprüft">–</span>';
-  let cls = '';
-  if (p.pass === p.total) cls = 'ok';
-  else if (p.pass > 0) cls = 'part';
-  return `<span class="badge ${cls}" title="${progressText(p)}">${p.pass}/${p.total}</span>`;
-}
-
-/** Skipped tests (answer still empty, database not reachable …) count as open. */
-function progressText(p) {
-  if (!p.total) return 'noch nicht geprüft';
-  const open = p.total - p.pass;
-  return `${p.pass} von ${p.total} Tests bestanden${open ? `, ${open} offen` : ''}`;
-}
-
-function inFilter(u) {
-  if (S.filter === 'fiae') return u.fiae === '●';
-  if (S.filter === 'fisi') return u.fisi === '●' || u.fisi === '○';
-  return true;
-}
-
-function renderNav() {
-  for (const b of $('filter').children) b.classList.toggle('on', b.dataset.f === S.filter);
-  const v = S.view;
-  let h = `<button class="item ${!v.unit ? 'on' : ''}" data-unit=""><span class="num">≡</span><span class="t">Übersicht</span></button>`;
-  h += `<button class="item ${v.unit === '@spick' ? 'on' : ''}" data-unit="@spick"><span class="num">✎</span><span class="t">Spickzettel</span></button><div class="sep"></div>`;
-  for (const u of S.units.filter(inFilter)) {
-    const reading = S.filter === 'fisi' && u.fisi === '○';
-    h += `<button class="item ${v.unit === u.dir ? 'on' : ''} ${reading ? 'dim' : ''}" data-unit="${u.dir}" title="${esc(u.topic)}${reading ? ' (zum Lesen)' : ''}">`
-      + `<span class="num">${u.num}</span><span class="t">${esc(u.title)}</span>${badge(u.progress)}</button>`;
-  }
-  $('nav').innerHTML = h;
-}
-
-function tabsFor(u) {
-  const t = [['readme', 'Erklärung']];
-  for (const f of editFiles(u)) t.push([`file:${f.name}`, f.name]);
-  t.push(['results', 'Ergebnis']);
-  if (u.files.some((f) => f.kind === 'solution')) t.push(['solution', 'Lösung']);
-  return t;
-}
-
-function renderHead() {
-  const v = S.view;
-  const u = unitByDir(v.unit);
-  if (!u) { $('unitHead').innerHTML = ''; $('tabs').innerHTML = ''; $('tabs').style.display = 'none'; return; }
-  $('tabs').style.display = '';
-  const status = progressText(u.progress);
-  $('unitHead').innerHTML = `<div class="unit-head"><h2>${u.num} · ${esc(u.title)}</h2>`
-    + `<span class="meta">${esc(u.exercises)}${u.time ? ` · ${esc(u.time)}` : ''} · ${status}</span><span class="spacer"></span>`
-    + `<button class="primary" id="checkBtn" title="Speichert und führt die Tests dieser Einheit im Terminal aus (Strg+Enter)">Prüfen ▶</button></div>`;
-  $('checkBtn').onclick = () => checkUnit(u.dir);
-  $('tabs').innerHTML = tabsFor(u).map(([id, label]) => {
-    const dirty = S.editor && S.editor.dirty && id === `file:${S.editor.path.split('/')[1]}`;
-    return `<button class="${v.tab === id ? 'on' : ''}" data-tab="${esc(id)}">${esc(label)}${dirty ? ' <span class="dot">●</span>' : ''}</button>`;
-  }).join('');
-}
-
-async function render() {
-  renderNav();
-  renderHead();
-  const v = S.view;
-  const c = $('content');
-  try {
-    if (!v.unit) return renderOverview(c);
-    if (v.unit === '@spick') {
-      const { content } = await api('/api/file?path=spickzettel.md');
-      c.innerHTML = `<div class="doc">${md(content, 'lernen')}</div>`;
-      return;
-    }
-    const u = unitByDir(v.unit);
-    if (!u) { S.view = { unit: null, tab: 'readme' }; return render(); }
-    if (!tabsFor(u).some(([id]) => id === v.tab)) v.tab = 'readme';
-    if (v.tab === 'readme') {
-      const { content } = await api(`/api/file?path=${encodeURIComponent(`${u.dir}/README.md`)}`);
-      c.innerHTML = `<div class="doc">${md(content, `lernen/${u.dir}`)}</div>`;
-    } else if (v.tab.startsWith('file:')) {
-      await renderEditor(c, `${u.dir}/${v.tab.slice(5)}`);
-    } else if (v.tab === 'results') {
-      await renderResults(c, u);
-    } else if (v.tab === 'solution') {
-      await renderSolution(c, u);
-    }
-    if (v.anchor) { document.getElementById(v.anchor)?.scrollIntoView(); v.anchor = null; } else c.scrollTop = 0;
-  } catch (err) {
-    c.innerHTML = `<div class="doc"><div class="note warn">${esc(err.message)}</div></div>`;
-  }
-}
-
-async function renderOverview(c) {
-  const { content } = await api('/api/file?path=README.md');
-  c.innerHTML = `<div class="doc"><div class="note">
-    <p><strong>So arbeitest du hier:</strong> Links eine Einheit wählen, die <em>Erklärung</em> lesen, dann die Übungsdatei
-    (z. B. <code>uebung.js</code>) bearbeiten und auf <strong>Prüfen ▶</strong> klicken.</p>
-    <p>Unten ist ein echtes Terminal. <strong>Prüfen</strong> tippt dort z. B. <code>node --test "01-js-werkzeuge/*.test.js"</code> für dich –
-    du kannst die Befehle auch selbst eingeben. <code>hilfe</code> zeigt alle Befehle.</p>
-    <p>Deine Lösungen liegen im Ordner <code>${esc(S.workDir)}</code>. Der Ordner gehört dir: <code>git pull</code> überschreibt
-    ihn nicht, und er kommt nicht ins Git-Repository.</p></div>${md(content, 'lernen')}</div>`;
-  S.editor = null;
-}
-
-async function renderEditor(c, path) {
-  const { content } = await api(`/api/file?path=${encodeURIComponent(path)}`);
-  const keep = S.editor && S.editor.path === path && S.editor.dirty ? S.editor.text : null;
-  S.editor = { path, saved: content, text: keep ?? content, dirty: keep !== null };
-  c.innerHTML = `<div class="editor-bar"><span class="name">meine-uebungen/${esc(path)}</span><span class="state" id="edState"></span>
-    <span class="spacer"></span>
-    <button id="edReset" title="Ersetzt die Datei durch die leere Vorlage. Deine Version wird vorher gesichert.">Vorlage wiederherstellen</button>
-    <button id="edSave">Speichern (Strg+S)</button></div>
-    <div class="editor"><div class="gutter" id="gutter"></div><textarea class="code" id="ed" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea></div>`;
-  c.scrollTop = 0;
-  const ed = $('ed');
-  ed.value = S.editor.text;
-  const gut = $('gutter');
-  const lines = () => { gut.textContent = Array.from({ length: ed.value.split('\n').length }, (_, k) => k + 1).join('\n'); };
-  lines();
-  updateEdState();
-  ed.addEventListener('input', () => { S.editor.text = ed.value; setDirty(ed.value !== S.editor.saved); lines(); });
-  ed.addEventListener('scroll', () => { gut.scrollTop = ed.scrollTop; });
-  ed.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab' && !e.shiftKey) {
-      e.preventDefault();
-      document.execCommand('insertText', false, '  ');
-    }
-  });
-  $('edSave').onclick = () => save();
-  $('edReset').onclick = async () => {
-    if (!confirm(`Deine Version von ${path.split('/')[1]} wird durch die leere Vorlage ersetzt.\nSie wird vorher in meine-uebungen/.cockpit/sicherungen gesichert.\n\nWirklich?`)) return;
-    try {
-      const r = await api('/api/reset', { path });
-      S.editor = null;
-      await render();
-      term.info(`Vorlage wiederhergestellt. Deine alte Version: meine-uebungen/${r.backup}`);
-    } catch (err) { alert(err.message); }
-  };
-}
-
-function setDirty(d) {
-  if (!S.editor || S.editor.dirty === d) return;
-  S.editor.dirty = d;
-  updateEdState();
-  renderHead();
-}
-
-function updateEdState() {
-  const el = $('edState');
-  if (!el || !S.editor) return;
-  el.textContent = S.editor.dirty ? '● nicht gespeichert' : 'gespeichert';
-  el.className = `state ${S.editor.dirty ? 'dirty' : ''}`;
-}
-
-async function save() {
-  if (!S.editor || !S.editor.dirty) return true;
-  try {
-    await api('/api/file', { path: S.editor.path, content: S.editor.text });
-    S.editor.saved = S.editor.text;
-    setDirty(false);
-    return true;
-  } catch (err) {
-    alert(`Speichern fehlgeschlagen: ${err.message}`);
-    return false;
-  }
-}
-
-function colorDiff(msg) {
-  return esc(msg).split('\n').map((l) => (/^\s*\+ /.test(l) ? `<span class="add">${l}</span>` : /^\s*- /.test(l) ? `<span class="del">${l}</span>` : l)).join('\n');
-}
-
-async function renderResults(c, u) {
-  const { results } = await api(`/api/results?unit=${encodeURIComponent(u.dir)}`);
-  S.editor = null;
-  if (!results.length) {
-    c.innerHTML = `<div class="results"><div class="note"><p>Diese Einheit wurde noch nicht geprüft.</p>
-      <p>Klick oben auf <strong>Prüfen ▶</strong> oder tippe unten im Terminal: <code>node --test "${esc(u.dir)}/*.test.js"</code></p></div></div>`;
-    return;
-  }
-  let h = '<div class="results"><p class="legend">Bei Fehlern: Zeilen mit <b style="color:var(--err)">+</b> zeigen, was dein Code liefert,'
-    + ' Zeilen mit <b style="color:var(--ok)">−</b>, was erwartet wird.</p>';
-  for (const r of results) {
-    h += `<h3>${esc(r.file)} <small>geprüft ${new Date(r.at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}</small></h3>`;
-    for (const t of r.tests) {
-      const ic = t.status === 'pass' ? '✔' : t.status === 'fail' ? '✖' : '–';
-      const pad = `style="padding-left:${t.nesting * 22}px"`;
-      let extra = '';
-      if (t.status === 'fail' && t.message && t.leaf) extra = `<pre>${colorDiff(t.message)}</pre>`;
-      if (t.status === 'skip' && t.message) extra = `<div class="skipmsg">übersprungen: ${esc(t.message)}</div>`;
-      h += `<div class="test ${t.status} ${t.leaf ? '' : 'parent'}" ${pad}><span class="ic">${ic}</span><div class="body">${esc(t.name)}${extra}</div></div>`;
-    }
-    h += `<details><summary>Testdatei ansehen</summary><pre class="view" data-load="${esc(`${u.dir}/${r.file}`)}"></pre></details>`;
-  }
-  c.innerHTML = `${h}</div>`;
-  c.querySelectorAll('details').forEach((d) => d.addEventListener('toggle', async () => {
-    const pre = d.querySelector('pre');
-    if (d.open && !pre.textContent) pre.textContent = (await api(`/api/file?path=${encodeURIComponent(pre.dataset.load)}`)).content;
-  }));
-}
-
-async function renderSolution(c, u) {
-  S.editor = null;
-  const files = u.files.filter((f) => f.kind === 'solution');
-  const parts = await Promise.all(files.map(async (f) => [f.name, (await api(`/api/file?path=${encodeURIComponent(`${u.dir}/${f.name}`)}`)).content]));
-  c.innerHTML = `<div class="results"><div class="note"><p><strong>Musterlösung.</strong> Am meisten lernst du, wenn du es erst selbst versuchst
-    und danach deine Version mit dieser vergleichst. Prüfen gegen die Lösung: <code>LOESUNG=1 node --test "${esc(u.dir)}/*.test.js"</code></p></div>
-    ${parts.map(([name, text]) => `<h3>${esc(name)}</h3><pre class="view" style="background:var(--code);border-radius:6px">${esc(text)}</pre>`).join('')}</div>`;
-}
-
-async function openRepoFile(target, anchor) {
-  try {
-    const { content } = await api(`/api/repofile?path=${encodeURIComponent(target)}`);
-    const base = target.split('/').slice(0, -1).join('/');
-    $('modalTitle').textContent = target;
-    $('modalBody').innerHTML = target.endsWith('.md') ? `<div class="doc">${md(content, base)}</div>` : `<pre class="view">${esc(content)}</pre>`;
-    $('modal').classList.add('open');
-    if (anchor) document.getElementById(anchor)?.scrollIntoView();
-  } catch (err) { alert(err.message); }
-}
-
-async function go(view) {
-  if (S.editor && S.editor.dirty) await save();
-  S.view = view;
-  store.set('view', { unit: view.unit, tab: view.tab });
-  await render();
-}
-
-/** Link inside an explanation: other unit, a file of a unit, or any other project file. */
-function followLink(target, anchor) {
-  $('modal').classList.remove('open');
-  let m;
-  if (target === 'lernen/README.md' || target === 'lernen') return go({ unit: null, tab: 'readme', anchor });
-  if (target === 'lernen/spickzettel.md') return go({ unit: '@spick', tab: 'readme', anchor });
-  if ((m = target.match(/^lernen\/(\d\d-[^/]+)\/?(.*)$/)) && unitByDir(m[1])) {
-    const u = unitByDir(m[1]);
-    const file = u.files.find((f) => f.name === m[2]);
-    if (!m[2] || m[2] === 'README.md') return go({ unit: u.dir, tab: 'readme', anchor });
-    if (file && file.kind === 'edit') return go({ unit: u.dir, tab: `file:${file.name}` });
-    if (file && file.kind === 'solution') return go({ unit: u.dir, tab: 'solution' });
-  }
-  return openRepoFile(target, anchor);
-}
-
-// ---------------------------------------------------------------------------
-// Terminal
-// ---------------------------------------------------------------------------
-const term = (() => {
-  const out = $('termOut');
-  const input = $('termIn');
-  let running = false;
-  let carry = '';
-  let style = { fg: null, b: false, d: false, i: false };
-  const history = store.get('history', []);
-  let hpos = history.length;
-
-  function trim() {
-    while (out.childNodes.length > 4000) out.removeChild(out.firstChild);
-  }
-  const atBottom = () => out.scrollHeight - out.scrollTop - out.clientHeight < 40;
-
-  function append(node) {
-    const stick = atBottom();
-    out.appendChild(node);
-    trim();
-    if (stick) out.scrollTop = out.scrollHeight;
-  }
-
-  function span(text) {
-    const s = document.createElement('span');
-    const cls = [];
-    if (style.fg) cls.push(`a${style.fg}`);
-    if (style.b) cls.push('a1');
-    if (style.d) cls.push('a2');
-    if (style.i) cls.push('a3');
-    if (cls.length) s.className = cls.join(' ');
-    s.textContent = text;
-    return s;
-  }
-
-  /** Writes program output and turns ANSI colour codes into spans. */
-  function write(text) {
-    text = (carry + text).replace(/\r\n/g, '\n').replace(/\r/g, '');
-    carry = '';
-    const cut = text.lastIndexOf('\x1b');
-    if (cut >= 0 && !/^\x1b\[[0-9;?]*[A-Za-z]/.test(text.slice(cut))) { carry = text.slice(cut); text = text.slice(0, cut); }
-    const frag = document.createDocumentFragment();
-    const re = /\x1b\[([0-9;?]*)([A-Za-z])/g;
-    let last = 0; let m;
-    while ((m = re.exec(text))) {
-      if (m.index > last) frag.appendChild(span(text.slice(last, m.index)));
-      last = re.lastIndex;
-      if (m[2] !== 'm') continue;
-      for (const code of (m[1] || '0').split(';').map(Number)) {
-        if (code === 0) style = { fg: null, b: false, d: false, i: false };
-        else if (code === 1) style.b = true;
-        else if (code === 2) style.d = true;
-        else if (code === 3) style.i = true;
-        else if (code === 22) { style.b = false; style.d = false; }
-        else if (code === 23) style.i = false;
-        else if (code === 39) style.fg = null;
-        else if ((code >= 30 && code <= 37) || (code >= 90 && code <= 97)) style.fg = code;
-      }
-    }
-    if (last < text.length) frag.appendChild(span(text.slice(last)));
-    append(frag);
-  }
-
-  function line(text, cls) {
-    const d = document.createElement('div');
-    d.className = cls;
-    d.textContent = text;
-    append(d);
-  }
-  const info = (t) => line(t, 'info');
-
-  function echo(cmd) {
-    const d = document.createElement('div');
-    d.className = 'cmd';
-    d.innerHTML = `<span class="p">${esc($('termPrompt').textContent)}</span> ${esc(cmd)}`;
-    append(d);
-  }
-
-  function setPrompt(p) { $('termPrompt').textContent = `${p} $`; $('where').textContent = `Terminal-Ordner: ${p}`; }
-
-  function setRunning(r) {
-    running = r;
-    $('termStop').disabled = !r;
-    $('termState').textContent = r ? '· läuft …' : '';
-  }
-
-  async function run(cmd) {
-    cmd = cmd.trim();
-    if (running) { info('Es läuft noch ein Befehl. Strg+C bricht ihn ab.'); return; }
-    if (!cmd) { echo(''); return; }
-    if (history[history.length - 1] !== cmd) history.push(cmd);
-    if (history.length > 200) history.splice(0, history.length - 200);
-    store.set('history', history);
-    hpos = history.length;
-    if (cmd === 'clear' || cmd === 'cls') { out.innerHTML = ''; return; }
-    await save();
-    echo(cmd);
-    setRunning(true);
-    style = { fg: null, b: false, d: false, i: false };
-    let meta = null;
-    try {
-      const r = await fetch('/api/run', { method: 'POST', headers: { 'X-Token': TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify({ line: cmd }) });
-      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `Fehler ${r.status}`);
-      const reader = r.body.getReader();
-      const dec = new TextDecoder();
-      let tail = null;
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const s = dec.decode(value, { stream: true });
-        if (tail !== null) { tail += s; continue; }
-        const z = s.indexOf('\u0000');
-        if (z >= 0) { write(s.slice(0, z)); tail = s.slice(z + 1); } else write(s);
-      }
-      write(dec.decode());
-      if (tail) meta = JSON.parse(tail);
-    } catch (err) {
-      line(`Verbindung zum Lern-Cockpit verloren: ${err.message}`, 'a31');
-    }
-    if (carry) { write(''); carry = ''; }
-    setRunning(false);
-    if (meta) {
-      setPrompt(meta.prompt);
-      if (meta.exit === 130) line('^C abgebrochen', 'muted');
-      for (const up of meta.updated) {
-        const u = unitByDir(up.dir);
-        const name = `Einheit ${up.dir.slice(0, 2)}${u ? ` (${u.title})` : ''}`;
-        const done = up.pass === up.total;
-        const text = done
-          ? `✔ ${name}: alle ${up.total} Tests bestanden.`
-          : `→ ${name}: ${up.pass} von ${up.total} Tests bestanden. Details im Tab „Ergebnis“.`;
-        line(text, done ? 'a32' : 'info');
-      }
-      if (meta.updated.length) await refresh(meta.updated.some((up) => up.dir === S.view.unit) && S.view.tab === 'results');
-    }
-    input.focus();
-  }
-
-  async function completeInput() {
-    const v = input.value;
-    const m = v.match(/(\S*)$/);
-    try {
-      const { matches } = await api('/api/complete', { word: m[1] });
-      if (matches.length === 1) input.value = v.slice(0, v.length - m[1].length) + matches[0];
-      else if (matches.length > 1) {
-        let common = matches[0];
-        for (const x of matches) while (!x.startsWith(common)) common = common.slice(0, -1);
-        if (common.length > m[1].length) input.value = v.slice(0, v.length - m[1].length) + common;
-        else { echo(v); line(matches.join('   '), 'muted'); }
-      }
-    } catch { /* ignore */ }
-  }
-
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { const v = input.value; input.value = ''; run(v); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); if (hpos > 0) input.value = history[--hpos]; }
-    else if (e.key === 'ArrowDown') { e.preventDefault(); if (hpos < history.length - 1) input.value = history[++hpos]; else { hpos = history.length; input.value = ''; } }
-    else if (e.key === 'Tab') { e.preventDefault(); completeInput(); }
-    else if (e.ctrlKey && e.key === 'c' && input.selectionStart === input.selectionEnd) {
-      e.preventDefault();
-      if (running) api('/api/stop', {}); else { echo(`${input.value}^C`); input.value = ''; }
-    } else if (e.ctrlKey && e.key === 'l') { e.preventDefault(); out.innerHTML = ''; }
-  });
-  $('term').addEventListener('mouseup', () => { if (!getSelection().toString()) input.focus(); });
-  $('termStop').onclick = () => api('/api/stop', {});
-  $('termClear').onclick = () => { out.innerHTML = ''; input.focus(); };
-
-  return { run, info, setPrompt, isRunning: () => running, typeAndRun: (cmd) => { input.value = ''; return run(cmd); } };
-})();
-
-/**
- * Prüfen: the same command the pupil could type, relative to the terminal's folder.
- * A glob pattern, because Node 24 no longer accepts a folder after "node --test".
- */
-async function checkUnit(dir) {
-  const cur = $('termPrompt').textContent.replace(/ \$$/, '').split('/').slice(1);
-  const prefix = cur.length === 1 && cur[0] === dir ? '' : `${'../'.repeat(cur.length)}${dir}/`;
-  await term.typeAndRun(`node --test "${prefix}*.test.js"`);
-}
-
-async function refresh(rerender) {
-  const st = await api('/api/state');
-  S.units = st.units;
-  S.workDir = st.workDir;
-  term.setPrompt(st.prompt);
-  if (rerender) await render(); else { renderNav(); renderHead(); }
-}
-
-// ---------------------------------------------------------------------------
-// Wiring
-// ---------------------------------------------------------------------------
-$('nav').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-unit]');
-  if (!b) return;
-  const unit = b.dataset.unit || null;
-  const sameUnit = unit === S.view.unit;
-  go({ unit, tab: sameUnit ? S.view.tab : (store.get(`tab.${unit}`, 'readme')) });
-});
-$('tabs').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-tab]');
-  if (!b) return;
-  store.set(`tab.${S.view.unit}`, b.dataset.tab);
-  go({ unit: S.view.unit, tab: b.dataset.tab });
-});
-$('filter').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-f]');
-  if (!b) return;
-  S.filter = b.dataset.f;
-  store.set('filter', S.filter);
-  renderNav();
-});
-document.addEventListener('click', (e) => {
-  const a = e.target.closest('a[data-target], a[data-anchor]');
-  if (!a) return;
-  e.preventDefault();
-  if (a.dataset.target) followLink(a.dataset.target, a.dataset.anchor || null);
-  else if (a.dataset.anchor) a.closest('.doc, .box-body, .content')?.querySelector(`#${CSS.escape(a.dataset.anchor)}`)?.scrollIntoView();
-});
-$('modalClose').onclick = () => $('modal').classList.remove('open');
-$('modal').addEventListener('click', (e) => { if (e.target === $('modal')) $('modal').classList.remove('open'); });
-document.addEventListener('keydown', (e) => {
-  const mod = e.ctrlKey || e.metaKey;
-  if (mod && e.key === 's') { e.preventDefault(); save(); }
-  if (mod && e.key === 'Enter' && unitByDir(S.view.unit)) { e.preventDefault(); checkUnit(S.view.unit); }
-  if (e.key === 'Escape') $('modal').classList.remove('open');
-});
-window.addEventListener('beforeunload', (e) => { if (S.editor && S.editor.dirty) { e.preventDefault(); e.returnValue = ''; } });
-
-// Terminal height: drag the bar above it.
-(() => {
-  const termEl = $('term');
-  const h = store.get('termHeight', null);
-  if (h) termEl.style.height = `${h}px`;
-  $('resizer').addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    const startY = e.clientY; const startH = termEl.offsetHeight;
-    const move = (ev) => { termEl.style.height = `${Math.max(80, Math.min(window.innerHeight - 160, startH - (ev.clientY - startY)))}px`; };
-    const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); store.set('termHeight', termEl.offsetHeight); };
-    addEventListener('pointermove', move);
-    addEventListener('pointerup', up);
-  });
-})();
-
-(async () => {
-  if (!TOKEN) {
-    document.body.innerHTML = '<p style="padding:24px">Bitte die Adresse aus dem Fenster öffnen, in dem <code>npm run lernen:ui</code> läuft.</p>';
-    return;
-  }
-  try {
-    await refresh(false);
-  } catch (err) {
-    document.body.innerHTML = `<p style="padding:24px">${esc(err.message)}</p>`;
-    return;
-  }
-  // Deep link: #01-js-werkzeuge, #01-js-werkzeuge/results, #01-js-werkzeuge/file:uebung.js
-  const [hashUnit, hashTab] = decodeURIComponent(location.hash.slice(1)).split('/');
-  if (hashUnit && unitByDir(hashUnit)) S.view = { unit: hashUnit, tab: hashTab || 'readme' };
-  term.info('Willkommen im Lern-Cockpit. Hier tippst du Befehle wie in einem echten Terminal.');
-  term.info('Probier zum Beispiel:  node --test "01-js-werkzeuge/*.test.js"   ·   npm run lernen   ·   hilfe');
-  await render();
-  $('termIn').focus();
-})();
-</script>
+<script type="module" src="ui/app.mjs"></script>
 </body>
 </html>

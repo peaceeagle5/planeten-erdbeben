@@ -101,6 +101,6 @@ const SOURCES = [
   'setup-wizard/server.js', 'setup-wizard/ui.html', 'setup-wizard/build.js', 'setup-wizard/lib',
 ];
 
-const GITIGNORE = 'node_modules/\n.env\nnode-red/flow_cred.json\ndist/\nsetup-wizard/.cache/\n*.zip\n';
+const GITIGNORE = 'node_modules/\n.env\nnode-red/flow_cred.json\ndist/\nsetup-wizard/.cache/\n*.zip\nmeine-uebungen/\nsmoke-uebungen/\n';
 
 module.exports = { buildPackage, SOURCES, GITIGNORE };

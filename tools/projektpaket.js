@@ -23,7 +23,10 @@ buildPackage({
   include: [...SOURCES, ...EXES],
   gitignore: GITIGNORE,
   jsonEdits: {
-    'package.json': (p) => { delete p.scripts.lernen; },
+    'package.json': (p) => {
+      // no learning units, so no Lern-Cockpit either
+      for (const s of ['lernen', 'lernen:fisi', 'lernen:ui', 'build-cockpit']) delete p.scripts[s];
+    },
   },
   edits: {
     'README.md': [
