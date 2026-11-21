@@ -1,5 +1,5 @@
 // Einheit 09 – Bausteine aus dem Setup-Assistenten
-// Prüfen: node --test lernen/09-setup-assistent/
+// Prüfen: node --test "lernen/09-setup-assistent/*.test.js"
 
 // 1. Adresse vereinheitlichen wie baseUrl() in setup-wizard/lib/nodered.js:
 //    Leerzeichen weg, Schrägstriche am Ende weg, http:// davor, falls kein http:// oder https:// da ist.

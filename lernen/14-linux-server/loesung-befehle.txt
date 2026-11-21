@@ -1,6 +1,6 @@
 # Einheit 14 – Musterlösung Befehle (andere Schreibweisen sind oft auch richtig)
 # Mit oder ohne sudo, wo es egal ist. Leer lassen = noch offen.
-# Prüfen: node --test lernen/14-linux-server/
+# Prüfen: node --test "lernen/14-linux-server/*.test.js"
 
 # Als Benutzer pi auf dem Pi mit der IP 192.168.100.133 anmelden
 ssh-anmelden: ssh pi@192.168.100.133

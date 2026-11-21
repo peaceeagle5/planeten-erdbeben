@@ -1,5 +1,5 @@
 // Einheit 05 – Winkelrechnung wie in src/planets.js
-// Prüfen: node --test lernen/05-planeten/
+// Prüfen: node --test "lernen/05-planeten/*.test.js"
 
 const ZODIAC = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',

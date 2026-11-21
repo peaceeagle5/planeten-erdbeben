@@ -1,5 +1,5 @@
 // Einheit 04 – Asynchrones JavaScript
-// Prüfen: node --test lernen/04-async/
+// Prüfen: node --test "lernen/04-async/*.test.js"
 //
 // fetchFn verhält sich wie fetch: fetchFn(url) gibt ein Promise auf { ok, status, json() } zurück,
 // und json() gibt wieder ein Promise zurück.

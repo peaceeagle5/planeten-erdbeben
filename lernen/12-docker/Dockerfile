@@ -1,5 +1,5 @@
 # Einheit 12 – Dockerfile für die Planeten-API (app.js)
-# Ersetze jedes TODO durch die passende Zeile. Prüfen: node --test lernen/12-docker/
+# Ersetze jedes TODO durch die passende Zeile. Prüfen: node --test "lernen/12-docker/*.test.js"
 # Bauen (im Projektordner): docker build -f lernen/12-docker/Dockerfile -t planeten-api .
 
 # TODO 1: Grundlage: Node.js 24 auf Alpine Linux (Image node, Tag 24-alpine)

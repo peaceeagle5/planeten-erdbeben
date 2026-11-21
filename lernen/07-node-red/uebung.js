@@ -1,6 +1,6 @@
 // Einheit 07 – Function-Nodes
 // Jede Funktion bekommt (msg, node) wie im Node-RED-Function-Node und gibt zurück, was der Node ausgeben soll.
-// Prüfen: node --test lernen/07-node-red/
+// Prüfen: node --test "lernen/07-node-red/*.test.js"
 
 // 1. Hängt die Empfangszeit an: msg.receivedAt = new Date().toISOString(), dann msg weitergeben.
 function addTimestamp(msg, node) {

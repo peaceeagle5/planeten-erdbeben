@@ -1,5 +1,5 @@
 // Einheit 03 – HTTP und APIs
-// Prüfen: node --test lernen/03-http-api/
+// Prüfen: node --test "lernen/03-http-api/*.test.js"
 
 // 1. Wie parseNumber in app.js:
 //    - value ist null oder ''  → throw new Error(`Missing parameter: ${name}`)

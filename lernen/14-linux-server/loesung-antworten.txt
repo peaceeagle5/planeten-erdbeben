@@ -1,6 +1,6 @@
 # Einheit 14 – Musterlösung Quiz
 # Schreib deine Antwort hinter den Doppelpunkt. Leer lassen = noch offen.
-# Prüfen: node --test lernen/14-linux-server/
+# Prüfen: node --test "lernen/14-linux-server/*.test.js"
 
 # Wie heißt 755 als Text (z. B. rw-r--r--)?
 rechte-755: rwxr-xr-x

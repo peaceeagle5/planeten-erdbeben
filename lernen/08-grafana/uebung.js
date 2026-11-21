@@ -1,5 +1,5 @@
 // Einheit 08 – Was Grafana mit deinen Abfragen macht
-// Prüfen: node --test lernen/08-grafana/
+// Prüfen: node --test "lernen/08-grafana/*.test.js"
 
 // 1. Variablen ersetzen wie Grafana.
 //    interpolate("WHERE body = '$body' AND magnitude >= $minmag", { body: 'Moon', minmag: 5 })

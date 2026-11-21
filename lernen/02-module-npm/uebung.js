@@ -1,5 +1,5 @@
 // Einheit 02 – Module und npm
-// Prüfen: node --test lernen/02-module-npm/
+// Prüfen: node --test "lernen/02-module-npm/*.test.js"
 //
 // Der Test lädt diese Datei mit require('./uebung.js'). Er sieht nur, was du unten exportierst.
 

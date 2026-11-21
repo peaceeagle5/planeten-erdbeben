@@ -1,5 +1,5 @@
 // Einheit 12 – Docker-Angaben verstehen
-// Prüfen: node --test lernen/12-docker/
+// Prüfen: node --test "lernen/12-docker/*.test.js"
 
 // 1. Image-Namen zerlegen.
 //    parseImage('nodered/node-red:5.0.10') → { repository: 'nodered/node-red', tag: '5.0.10' }

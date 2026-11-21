@@ -1,6 +1,6 @@
 # Einheit 15 – Musterlösung Subnetze
 # Schreib deine Antwort hinter den Doppelpunkt (Adressen wie 192.168.1.0, Zahlen, ja/nein oder a/b/c).
-# Leer lassen = noch offen. Prüfen: node --test lernen/15-netzwerk-praxis/
+# Leer lassen = noch offen. Prüfen: node --test "lernen/15-netzwerk-praxis/*.test.js"
 
 # --- 192.168.100.133/24 ---
 # Netzadresse:

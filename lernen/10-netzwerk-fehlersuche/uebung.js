@@ -1,5 +1,5 @@
 // Einheit 10 – Fehler einordnen
-// Prüfen: node --test lernen/10-netzwerk-fehlersuche/
+// Prüfen: node --test "lernen/10-netzwerk-fehlersuche/*.test.js"
 
 // 1. Zeigt die Adresse auf "diesen Rechner"?
 //    true für 'localhost', '::1' und alles, was mit '127.' beginnt. Groß-/Kleinschreibung egal.

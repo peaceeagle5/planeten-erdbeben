@@ -1,5 +1,5 @@
 // Einheit 13 – Git verstehen
-// Prüfen: node --test lernen/13-git-github/
+// Prüfen: node --test "lernen/13-git-github/*.test.js"
 
 // 1. Ein vereinfachtes .gitignore: Wird dieser Pfad ignoriert?
 //    Regeln für ein Muster:

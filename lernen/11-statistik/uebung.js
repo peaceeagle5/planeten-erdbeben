@@ -1,5 +1,5 @@
 // Einheit 11 – Statistik
-// Prüfen: node --test lernen/11-statistik/
+// Prüfen: node --test "lernen/11-statistik/*.test.js"
 
 // 1. Zählt, wie oft jede Gruppe vorkommt.
 //    countBy(['Leo', 'Aries', 'Leo']) → { Leo: 2, Aries: 1 }

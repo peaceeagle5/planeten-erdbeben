@@ -1,6 +1,6 @@
 # Einheit 00 – Quiz zum Gesamtbild
 # Schreib deine Antwort hinter den Doppelpunkt. Leer lassen = noch offen.
-# Prüfen: node --test lernen/00-gesamtbild/
+# Prüfen: node --test "lernen/00-gesamtbild/*.test.js"
 
 # Auf welchem Port läuft Grafana standardmäßig?
 port-grafana:

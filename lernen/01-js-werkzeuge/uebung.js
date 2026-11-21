@@ -1,5 +1,5 @@
 // Einheit 01 – JavaScript-Werkzeuge
-// Ersetze jedes TODO. Prüfen: node --test lernen/01-js-werkzeuge/
+// Ersetze jedes TODO. Prüfen: node --test "lernen/01-js-werkzeuge/*.test.js"
 
 // 1. Template-String
 // formatFood({ name: 'Apple', calories: 52 }) → "Apple: 52 kcal"
