@@ -52,7 +52,10 @@ Each part can be switched off. Running the wizard again is safe.
 Several people on one Pi:
 - The wizard writes "Eingerichtet von: <name>" into the Node-RED tab. If someone else's name is already there
   (wrong port), it stops and only continues after "Trotzdem überschreiben" is ticked.
-- Every person gets their own Grafana dashboard, "Planeten & Erdbeben (<name>)".
+- Every person gets their own Grafana dashboard, "Planeten & Erdbeben (<name>)". Click a quake on the map:
+  the sky panel and the solar system show that quake. In Grafana 13 (dynamic dashboards) the "View" switch at
+  the top changes between Earth map and solar system ([grafana/dynamic-layout.js](grafana/dynamic-layout.js));
+  older Grafana versions show both side by side.
 - Grafana **Admins** get their own data source. **Editors** cannot create data sources; they choose an
   existing one. So the teacher runs the wizard once with an admin account, and pupils then pick
   that data source. Viewers cannot create dashboards.

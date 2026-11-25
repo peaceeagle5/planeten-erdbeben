@@ -164,6 +164,31 @@
           "value": ""
         },
         "hide": 2
+      },
+      {
+        "type": "custom",
+        "name": "view",
+        "label": "View",
+        "query": "Earth map : earth,Solar system : solar",
+        "multi": false,
+        "includeAll": false,
+        "hide": 2,
+        "current": {
+          "text": "Earth map",
+          "value": "earth"
+        },
+        "options": [
+          {
+            "text": "Earth map",
+            "value": "earth",
+            "selected": true
+          },
+          {
+            "text": "Solar system",
+            "value": "solar",
+            "selected": false
+          }
+        ]
       }
     ]
   },
@@ -173,7 +198,7 @@
       "title": "Latest quake",
       "icon": "sync",
       "tooltip": "Show the sky at the latest earthquake again",
-      "url": "/d/planeten-erdbeben?var-event=&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}",
+      "url": "/d/planeten-erdbeben?var-event=&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}&${view:queryparam}",
       "keepTime": true,
       "includeVars": false,
       "targetBlank": false,
@@ -1920,7 +1945,7 @@
           "links": [
             {
               "title": "Show the sky at this quake",
-              "url": "/d/${__dashboard.uid}?var-event=${__data.fields.event_id}&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}&${__url_time_range}",
+              "url": "/d/${__dashboard.uid}?var-event=${__data.fields.event_id}&var-view=solar&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}&${__url_time_range}",
               "oneClick": true
             }
           ]
@@ -2136,7 +2161,7 @@
           "editorMode": "code",
           "rawQuery": true,
           "format": "table",
-          "rawSql": "SELECT p.name AS plate, COUNT(*) AS quakes\nFROM events e\nJOIN plates p ON ST_Contains(p.geom, POINT(e.longitude, e.latitude))\nWHERE e.kind = 'earthquake' AND $__timeFilter(e.time_utc) AND e.magnitude >= $minmag\nGROUP BY p.code, p.name\nORDER BY quakes DESC\nLIMIT 15"
+          "rawSql": "SELECT p.name AS plate, COUNT(*) AS quakes\nFROM events e\nJOIN plates p IGNORE INDEX (sp_geom) ON ST_Contains(p.geom, POINT(e.longitude, e.latitude))\nWHERE e.kind = 'earthquake' AND $__timeFilter(e.time_utc) AND e.magnitude >= $minmag\nGROUP BY p.code, p.name\nORDER BY quakes DESC\nLIMIT 15"
         }
       ],
       "description": "Number of quakes in the time range on each plate (the 15 plates with the most). Most quakes happen where plates meet, so plates with long, active boundaries lead.",

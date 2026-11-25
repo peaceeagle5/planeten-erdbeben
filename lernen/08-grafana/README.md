@@ -47,6 +47,12 @@ Auswahl das neueste. Weil jeder `var-event=...` in die Adresse tippen kann, steh
 `${event:sqlstring}` (Grafana setzt den Wert in Anführungszeichen und entschärft `'`) und
 `CAST(... AS UNSIGNED)` (macht eine Zahl daraus). So kann niemand über die Adresse eigenes SQL einschleusen.
 
+`$view` (Earth map / Solar system) schaltet zwischen Karte und Sonnensystem um. Dafür hat Grafana 13
+**Ein-/Ausblende-Regeln** („show/hide rules“): Eine Zeile des Dashboards ist nur sichtbar, wenn eine Variable
+einen bestimmten Wert hat. Das gibt es nur im neuen Dashboard-Format (Schema v2). Der Setup-Assistent lädt
+deshalb erst das klassische Dashboard hoch, lässt Grafana es in v2 übersetzen und ordnet die Panels in
+Zeilen mit Regeln an (`grafana/dynamic-layout.js`). Ältere Grafana-Versionen zeigen beides nebeneinander.
+
 ## 3. Makros und Zeit
 
 `$__timeFilter(time_utc)` ist ein **Makro**: Grafana ersetzt es durch den oben rechts gewählten Zeitbereich:

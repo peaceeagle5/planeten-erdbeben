@@ -123,10 +123,12 @@ FROM plate_points;
 -- =====================================================================
 -- 9) Bar chart: earthquakes per tectonic plate (time range, M >= $minmag)
 --    ST_Contains finds the plate whose outline contains the quake.
+--    IGNORE INDEX: with the spatial index MariaDB 11.8 sometimes fails ("Update locks cannot be
+--    acquired during a READ UNCOMMITTED transaction", e.g. at M >= 7). 52 plates need no index.
 -- =====================================================================
 SELECT p.name AS plate, COUNT(*) AS quakes
 FROM events e
-JOIN plates p ON ST_Contains(p.geom, POINT(e.longitude, e.latitude))
+JOIN plates p IGNORE INDEX (sp_geom) ON ST_Contains(p.geom, POINT(e.longitude, e.latitude))
 WHERE e.kind = 'earthquake' AND $__timeFilter(e.time_utc) AND e.magnitude >= $minmag
 GROUP BY p.code, p.name
 ORDER BY quakes DESC

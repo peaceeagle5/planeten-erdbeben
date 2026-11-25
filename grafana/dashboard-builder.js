@@ -114,8 +114,9 @@ const custom = (name, label, values, current, description) => ({
   options: values.map((v) => ({ text: v, value: v, selected: v === current })),
 });
 
-// Clicking a quake on the map reopens this dashboard with var-event=<id> and keeps the other choices.
-const QUAKE_LINK = '/d/${__dashboard.uid}?var-event=${__data.fields.event_id}' +
+// Clicking a quake on the map reopens this dashboard with var-event=<id>, switches $view to the solar
+// system (only has an effect in the v2 layout, see dynamic-layout.js) and keeps the other choices.
+const QUAKE_LINK = '/d/${__dashboard.uid}?var-event=${__data.fields.event_id}&var-view=solar' +
   '&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}&${__url_time_range}';
 
 const COMPARE_NOTE = 'Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.';
@@ -146,10 +147,15 @@ const dashboard = {
     custom('orb', 'Aspect orb °', ['1', '2', '4', '8'], '8'),
     // hidden; set by the map's data link. Empty = latest quake (queries 6 and 10)
     { type: 'textbox', name: 'event', label: 'Selected quake', query: '', current: { text: '', value: '' }, hide: 2 },
+    // Earth map or solar system. Hidden here (side by side); grafana/dynamic-layout.js shows it and
+    // hides one of the two rows, where Grafana supports dynamic dashboards.
+    { type: 'custom', name: 'view', label: 'View', query: 'Earth map : earth,Solar system : solar', multi: false, includeAll: false, hide: 2,
+      current: { text: 'Earth map', value: 'earth' },
+      options: [{ text: 'Earth map', value: 'earth', selected: true }, { text: 'Solar system', value: 'solar', selected: false }] },
   ] },
   links: [{
     type: 'link', title: 'Latest quake', icon: 'sync', tooltip: 'Show the sky at the latest earthquake again',
-    url: `/d/${uid}?var-event=&\${ds:queryparam}&\${minmag:queryparam}&\${body:queryparam}&\${orb:queryparam}`,
+    url: `/d/${uid}?var-event=&\${ds:queryparam}&\${minmag:queryparam}&\${body:queryparam}&\${orb:queryparam}&\${view:queryparam}`,
     keepTime: true, includeVars: false, targetBlank: false, asDropdown: false, tags: [],
   }],
   panels: [
