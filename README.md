@@ -56,6 +56,11 @@ Several people on one Pi:
   the sky panel and the solar system show that quake. In Grafana 13 (dynamic dashboards) the "View" switch at
   the top changes between Earth map and solar system ([grafana/dynamic-layout.js](grafana/dynamic-layout.js));
   older Grafana versions show both side by side.
+- **Looking for correlations:** the "Correlation finder" panels at the bottom compare a Moon position (phase,
+  height above the quake region, distance) between quakes and control events, with or without aftershocks.
+  `npm run korrelation` does the same for every metric and body, with corrected p-values, a cross-check on
+  the second half of the data, and a refusal where the stored controls are no fair baseline
+  ([src/correlation.js](src/correlation.js), learning unit 11).
 - Grafana **Admins** get their own data source. **Editors** cannot create data sources; they choose an
   existing one. So the teacher runs the wizard once with an admin account, and pupils then pick
   that data source. Viewers cannot create dashboards.

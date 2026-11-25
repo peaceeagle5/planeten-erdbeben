@@ -176,3 +176,75 @@ WHERE id = IF(${event:sqlstring} = '',
               (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1
                ORDER BY time_utc DESC LIMIT 1),
               CAST(${event:sqlstring} AS UNSIGNED));
+
+-- =====================================================================
+-- 13) Correlation finder (bar chart + table): is a Moon position more common at quakes than at controls?
+--     $metric: moon-phase (0 = new, 180 = full), moon-altitude (height above the quake region),
+--              moon-distance (5 groups, nearest to farthest).  $step: bin size in degrees.
+--     $aftershocks: main = drop a quake if a stronger one was within 3 days and 300 km (as in
+--     src/correlation.js), keep = all quakes. Only the Moon: the controls lie in the 2 years before each
+--     quake, which is fair only for things that repeat many times in that time (tools/korrelation.js).
+--     diff_pct = how many % more (or fewer) quakes than chance. z = distance from chance in standard
+--     errors: |z| >= 2 happens by chance in 1 of 20 bins, |z| >= 3 in 1 of 370.
+--     The time picker selects the quakes: find an effect in one year, check it in another.
+-- =====================================================================
+WITH quakes AS (
+  SELECT e.source_id
+  FROM events e
+  WHERE e.kind = 'earthquake' AND e.sky_computed = 1 AND e.magnitude >= $minmag AND $__timeFilter(e.time_utc)
+    AND (${aftershocks:sqlstring} = 'keep' OR NOT EXISTS (
+      SELECT 1 FROM events s
+      WHERE s.kind = 'earthquake' AND s.id <> e.id
+        AND (s.magnitude > e.magnitude OR (s.magnitude = e.magnitude AND s.time_utc < e.time_utc))
+        AND s.time_utc BETWEEN e.time_utc - INTERVAL 3 DAY AND e.time_utc + INTERVAL 3 DAY
+        AND ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(e.longitude, e.latitude)) <= 300000))
+),
+vals AS (
+  SELECT e.kind,
+         CASE ${metric:sqlstring}
+           WHEN 'moon-phase' THEN e.moon_phase_deg
+           WHEN 'moon-altitude' THEN m.altitude_deg
+           ELSE m.distance_au
+         END AS v
+  FROM events e
+  JOIN quakes q ON q.source_id = IF(e.kind = 'earthquake', e.source_id, e.paired_with)
+  JOIN body_positions m ON m.event_id = e.id AND m.body = 'Moon'
+  WHERE e.sky_computed = 1
+),
+edges AS (
+  -- distance groups: the 5 fifths of the CONTROL events (how close the Moon is by chance)
+  SELECT MAX(CASE WHEN t = 1 THEN v END) AS e1, MAX(CASE WHEN t = 2 THEN v END) AS e2,
+         MAX(CASE WHEN t = 3 THEN v END) AS e3, MAX(CASE WHEN t = 4 THEN v END) AS e4
+  FROM (SELECT v, NTILE(5) OVER (ORDER BY v) AS t FROM vals WHERE kind = 'control' AND v IS NOT NULL) ctl
+),
+binned AS (
+  SELECT kind,
+         CASE ${metric:sqlstring}
+           WHEN 'moon-phase' THEN LEAST(FLOOR(v / CAST(${step:sqlstring} AS UNSIGNED)), CEIL(360 / CAST(${step:sqlstring} AS UNSIGNED)) - 1)
+           WHEN 'moon-altitude' THEN LEAST(FLOOR((v + 90) / CAST(${step:sqlstring} AS UNSIGNED)), CEIL(180 / CAST(${step:sqlstring} AS UNSIGNED)) - 1)
+           ELSE CASE WHEN v <= e1 THEN 0 WHEN v <= e2 THEN 1 WHEN v <= e3 THEN 2 WHEN v <= e4 THEN 3 ELSE 4 END
+         END AS bin
+  FROM vals CROSS JOIN edges
+  WHERE v IS NOT NULL
+),
+counts AS (
+  SELECT bin, SUM(kind = 'earthquake') AS q, SUM(kind = 'control') AS c
+  FROM binned GROUP BY bin
+),
+shares AS (
+  SELECT bin, q, c, q / SUM(q) OVER () AS qs, c / SUM(c) OVER () AS cs,
+         (q + c) / (SUM(q) OVER () + SUM(c) OVER ()) AS pooled, SUM(q) OVER () AS nq, SUM(c) OVER () AS nc
+  FROM counts
+)
+SELECT CASE ${metric:sqlstring}
+         WHEN 'moon-phase' THEN CONCAT(bin * CAST(${step:sqlstring} AS UNSIGNED), '…', LEAST(360, (bin + 1) * CAST(${step:sqlstring} AS UNSIGNED)), '°')
+         WHEN 'moon-altitude' THEN CONCAT(bin * CAST(${step:sqlstring} AS UNSIGNED) - 90, '…', LEAST(90, (bin + 1) * CAST(${step:sqlstring} AS UNSIGNED) - 90), '°')
+         ELSE ELT(bin + 1, 'nearest 20 %', '20–40 %', '40–60 %', '60–80 %', 'farthest 20 %')
+       END AS bin,
+       100 * qs AS quakes_pct,
+       100 * cs AS control_pct,
+       100 * (qs / cs - 1) AS diff_pct,
+       q AS quakes,
+       (qs - cs) / SQRT(pooled * (1 - pooled) * (1 / nq + 1 / nc)) AS z
+FROM shares
+ORDER BY shares.bin;

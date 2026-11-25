@@ -119,6 +119,21 @@ const custom = (name, label, values, current, description) => ({
 const QUAKE_LINK = '/d/${__dashboard.uid}?var-event=${__data.fields.event_id}&var-view=solar' +
   '&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}&${__url_time_range}';
 
+// Correlation finder (query 13): Moon only, see the query's comment and tools/korrelation.js
+const CORRELATION_NOTE = 'Is a Moon position more common at earthquakes than at control events (same place, random time)? ' +
+  '"Difference" = how many % more or fewer quakes than chance. z = distance from chance: |z| ≥ 2 happens by chance in 1 of 20 bins, ' +
+  '|z| ≥ 3 in 1 of 370, so with many bins a single |z| of 2 means little. Choose a time range to find an effect, then check it in another. ' +
+  'Aftershocks: "Main shocks only" drops a quake if a stronger one was within 3 days and 300 km. ' +
+  'Only the Moon: the controls lie in the 2 years before each quake, a fair baseline only for things that repeat often in that time. ' +
+  'Full analysis with p-values and a search over everything: npm run korrelation.';
+const Z_COLORS = [
+  { type: 'range', options: { from: 3, to: null, result: { color: 'red', index: 0 } } },
+  { type: 'range', options: { from: null, to: -3, result: { color: 'red', index: 1 } } },
+  { type: 'range', options: { from: 2, to: 3, result: { color: 'orange', index: 2 } } },
+  { type: 'range', options: { from: -3, to: -2, result: { color: 'orange', index: 3 } } },
+];
+const hidden = (name) => ({ matcher: { id: 'byName', options: name }, properties: [{ id: 'custom.hideFrom', value: { viz: true, legend: true, tooltip: false } }] });
+
 const COMPARE_NOTE = 'Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.';
 
 /**
@@ -145,6 +160,15 @@ const dashboard = {
     custom('minmag', 'Min. magnitude', ['4.5', '5', '6', '7'], '4.5'),
     custom('body', 'Body', ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'], 'Moon'),
     custom('orb', 'Aspect orb °', ['1', '2', '4', '8'], '8'),
+    { type: 'custom', name: 'metric', label: 'Correlation', multi: false, includeAll: false, hide: 0,
+      query: 'Moon phase : moon-phase,Moon height above the quake region : moon-altitude,Moon distance : moon-distance',
+      current: { text: 'Moon phase', value: 'moon-phase' },
+      options: [['Moon phase', 'moon-phase'], ['Moon height above the quake region', 'moon-altitude'], ['Moon distance', 'moon-distance']]
+        .map(([text, value]) => ({ text, value, selected: value === 'moon-phase' })) },
+    custom('step', 'Step °', ['15', '30', '45', '60'], '30'),
+    { type: 'custom', name: 'aftershocks', label: 'Aftershocks', multi: false, includeAll: false, hide: 0,
+      query: 'Main shocks only : main,All quakes : keep', current: { text: 'Main shocks only', value: 'main' },
+      options: [{ text: 'Main shocks only', value: 'main', selected: true }, { text: 'All quakes', value: 'keep', selected: false }] },
     // hidden; set by the map's data link. Empty = latest quake (queries 6 and 10)
     { type: 'textbox', name: 'event', label: 'Selected quake', query: '', current: { text: '', value: '' }, hide: 2 },
     // Earth map or solar system. Hidden here (side by side); grafana/dynamic-layout.js shows it and
@@ -256,6 +280,29 @@ const dashboard = {
           { id: 'custom.cellOptions', value: { type: 'color-text' } },
           { id: 'color', value: { mode: 'continuous-RdYlGr' } }] },
         { matcher: { id: 'byName', options: 'n' }, properties: [{ id: 'displayName', value: 'Count' }, { id: 'decimals', value: 0 }] },
+      ] },
+      options: { showHeader: true, cellHeight: 'sm' },
+    },
+    {
+      ...barChart(10, 'Correlation finder: ${metric:text} (M ≥ $minmag, ${aftershocks:text})', CORRELATION_NOTE, Q[13], 'bin', { x: 0, y: 48, w: 12, h: 11 }),
+      fieldConfig: { defaults: { unit: 'percent', decimals: 1, min: 0, custom: { fillOpacity: 80, lineWidth: 0 } },
+        overrides: [...comparisonOverrides, hidden('diff_pct'), hidden('quakes'), hidden('z')] },
+    },
+    {
+      id: 11, type: 'table', title: 'Correlation finder: numbers (${metric:text}, ${step}° steps)', gridPos: { x: 12, y: 48, w: 12, h: 11 },
+      datasource: DS, targets: [target(Q[13])], description: CORRELATION_NOTE,
+      fieldConfig: { defaults: { decimals: 1 }, overrides: [
+        ...comparisonOverrides,
+        { matcher: { id: 'byName', options: 'bin' }, properties: [{ id: 'displayName', value: 'Range' }] },
+        { matcher: { id: 'byName', options: 'quakes_pct' }, properties: [{ id: 'unit', value: 'percent' }] },
+        { matcher: { id: 'byName', options: 'control_pct' }, properties: [{ id: 'unit', value: 'percent' }, { id: 'displayName', value: 'Control' }] },
+        { matcher: { id: 'byName', options: 'diff_pct' }, properties: [{ id: 'displayName', value: 'Difference' }, { id: 'unit', value: 'percent' }, { id: 'decimals', value: 0 }] },
+        { matcher: { id: 'byName', options: 'quakes' }, properties: [{ id: 'displayName', value: 'Quakes' }, { id: 'decimals', value: 0 }] },
+        // |z| < 2 stays neutral (no colour), 2..3 orange, >= 3 red
+        { matcher: { id: 'byName', options: 'z' }, properties: [
+          { id: 'mappings', value: Z_COLORS },
+          { id: 'thresholds', value: { mode: 'absolute', steps: [{ color: 'transparent', value: null }] } },
+          { id: 'custom.cellOptions', value: { type: 'color-background' } }] },
       ] },
       options: { showHeader: true, cellHeight: 'sm' },
     },
