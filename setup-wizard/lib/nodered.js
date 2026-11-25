@@ -94,7 +94,10 @@ class NodeRed {
 
   /** Creates or replaces the "Planeten & Erdbeben" tab. Other tabs are not touched. */
   async deployTab(dbForNodeRed, existingTabId, owner) {
-    const tab = buildFlowTab({ dbHost: dbForNodeRed.host, dbPort: dbForNodeRed.port, dbName: dbForNodeRed.database, owner });
+    const tab = buildFlowTab({
+      dbHost: dbForNodeRed.host, dbPort: dbForNodeRed.port, dbName: dbForNodeRed.database, owner,
+      tablePrefix: dbForNodeRed.tablePrefix,
+    });
     const cfgNode = tab.configs.find((n) => n.id === DB_CONFIG_ID);
     cfgNode.credentials = { user: dbForNodeRed.user, password: dbForNodeRed.password };
     if (existingTabId) {

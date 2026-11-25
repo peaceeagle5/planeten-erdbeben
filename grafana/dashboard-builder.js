@@ -5,7 +5,9 @@
 //   GRAFANA_URL=http://127.0.0.1:3000 GRAFANA_USER=admin GRAFANA_PASSWORD=... \
 //     node grafana/dashboard-builder.js                   # write + upload
 //   (or GRAFANA_TOKEN=<service account token> instead of user/password)
+//   TABLE_PREFIX=anna_ node grafana/dashboard-builder.js  # queries read anna_events, ...
 const { readAsset } = require('../shared/assets');
+const { normalizePrefix, withPrefix } = require('../shared/tables');
 
 // ---------------------------------------------------------------------------
 // Parse queries.sql: blocks start with "-- ====", "-- N) Title", "-- ===="
@@ -113,12 +115,14 @@ const custom = (name, label, values, current, description) => ({
 const COMPARE_NOTE = 'Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.';
 
 /**
- * @param {{dsUid?:string, dsName?:string, uid?:string, title?:string}} [opts]
+ * @param {{dsUid?:string, dsName?:string, uid?:string, title?:string, tablePrefix?:string}} [opts]
  *   dsUid/dsName: data source preselected in the $ds variable;
- *   uid/title: one dashboard per person when several people share a Grafana.
+ *   uid/title: one dashboard per person when several people share a Grafana;
+ *   tablePrefix: this person's tables, e.g. "anna_" -> anna_events (see shared/tables.js).
  */
-function buildDashboard({ dsUid, dsName, uid = 'planeten-erdbeben', title = 'Planeten & Erdbeben' } = {}) {
-const Q = loadQueries();
+function buildDashboard({ dsUid, dsName, uid = 'planeten-erdbeben', title = 'Planeten & Erdbeben', tablePrefix } = {}) {
+const prefix = normalizePrefix(tablePrefix);
+const Q = Object.fromEntries(Object.entries(loadQueries()).map(([k, sql]) => [k, withPrefix(sql, prefix)]));
 const dashboard = {
   uid,
   title,
@@ -242,7 +246,7 @@ module.exports = { buildDashboard, uploadDashboard, grafanaAuthHeader, DASHBOARD
 if (require.main === module) {
   const fs = require('node:fs');
   const path = require('node:path');
-  const dashboard = buildDashboard({ dsUid: process.env.GRAFANA_DS_UID });
+  const dashboard = buildDashboard({ dsUid: process.env.GRAFANA_DS_UID, tablePrefix: process.env.TABLE_PREFIX });
   const outFile = path.join(__dirname, 'dashboard.json');
   fs.writeFileSync(outFile, JSON.stringify(dashboard, null, 2) + '\n');
   console.log(`Wrote ${outFile} (${dashboard.panels.length} panels)`);

@@ -1,6 +1,7 @@
 // Database step: test the connection, create the database and tables.
 const mysql = require('mysql2/promise');
 const { readAsset } = require('../../shared/assets');
+const { normalizePrefix, withPrefix, tableNames } = require('../../shared/tables');
 
 function checkName(name, user) {
   if (!/^[A-Za-z0-9_]{1,64}$/.test(name || '')) throw new Error('Datenbankname darf nur Buchstaben, Ziffern und _ enthalten.');
@@ -40,7 +41,8 @@ function explain(err, cfg) {
 }
 
 async function testDb(cfg) {
-  try { checkName(cfg.database, cfg.user || ""); } catch (err) { return { ok: false, message: err.message }; }
+  let prefix;
+  try { checkName(cfg.database, cfg.user || ""); prefix = normalizePrefix(cfg.tablePrefix); } catch (err) { return { ok: false, message: err.message }; }
   let conn;
   try {
     conn = await connect(cfg, false);
@@ -49,10 +51,17 @@ async function testDb(cfg) {
     let tables = [];
     if (dbs.length) [tables] = await conn.query(`SHOW TABLES FROM \`${cfg.database}\``);
     const exists = dbs.length > 0;
+    const names = new Set(tables.map((r) => Object.values(r)[0].toLowerCase()));
+    const events = tableNames(prefix).events;
+    let mine = `Deine Tabellen (${events}, ...) werden angelegt.`;
+    if (names.has(events)) {
+      const [[{ n }]] = await conn.query(`SELECT COUNT(*) AS n FROM \`${cfg.database}\`.\`${events}\` WHERE kind = 'earthquake'`);
+      mine = `Deine Tabellen (${events}, ...) gibt es schon, mit ${n} Erdbeben. Sie werden weiterverwendet.`;
+    }
     return {
       ok: true,
       message: `Verbunden mit ${v.includes('MariaDB') ? 'MariaDB' : 'MySQL'} ${v.split('-')[0]}. ` +
-        (exists ? `Datenbank "${cfg.database}" gibt es schon (${tables.length} Tabellen).` : `Datenbank "${cfg.database}" wird angelegt.`),
+        (exists ? `Datenbank "${cfg.database}" gibt es schon (${tables.length} Tabellen). ` : `Datenbank "${cfg.database}" wird angelegt. `) + mine,
     };
   } catch (err) {
     return { ok: false, message: explain(err, cfg) };
@@ -61,16 +70,21 @@ async function testDb(cfg) {
   }
 }
 
-/** Schema statements without CREATE DATABASE / USE (the wizard handles those). */
-function schemaStatements() {
+/**
+ * Schema statements without CREATE DATABASE / USE (the wizard handles those),
+ * with the personal tables renamed for this person (see shared/tables.js).
+ */
+function schemaStatements(prefix = '') {
   return readAsset('db/schema.sql')
     .split(';\n')
     .map((s) => s.split('\n').filter((l) => !l.trim().startsWith('--')).join('\n').trim())
-    .filter((s) => s && !/^(CREATE DATABASE|USE)\b/i.test(s));
+    .filter((s) => s && !/^(CREATE DATABASE|USE)\b/i.test(s))
+    .map((s) => withPrefix(s, prefix));
 }
 
 async function setupDb(cfg, log) {
   checkName(cfg.database, cfg.user || "");
+  const prefix = normalizePrefix(cfg.tablePrefix);
   let conn;
   try {
     conn = await connect(cfg, false);
@@ -86,7 +100,7 @@ async function setupDb(cfg, log) {
     await conn.query(`USE \`${cfg.database}\``);
     const [rows] = await conn.query('SHOW TABLES');
     const existing = new Set(rows.map((r) => Object.values(r)[0].toLowerCase()));
-    for (const sql of schemaStatements()) {
+    for (const sql of schemaStatements(prefix)) {
       const table = (sql.match(/CREATE TABLE IF NOT EXISTS (\w+)/i) || [])[1];
       if (table && existing.has(table.toLowerCase())) { log(`Tabelle ${table} gibt es schon.`); continue; }
       await conn.query(sql);
@@ -100,15 +114,16 @@ async function setupDb(cfg, log) {
 }
 
 async function countEvents(cfg) {
+  const events = tableNames(normalizePrefix(cfg.tablePrefix)).events;
   const conn = await connect(cfg, true);
   try {
     const [[row]] = await conn.query(
       "SELECT SUM(kind = 'earthquake') AS quakes, COUNT(*) AS total, " +
-      'COALESCE(SUM(sky_computed = 1), 0) AS computed, COALESCE(SUM(sky_computed = 0), 0) AS pending FROM events');
+      `COALESCE(SUM(sky_computed = 1), 0) AS computed, COALESCE(SUM(sky_computed = 0), 0) AS pending FROM \`${events}\``);
     return { quakes: Number(row.quakes || 0), total: Number(row.total), computed: Number(row.computed), pending: Number(row.pending) };
   } finally {
     await conn.end().catch(() => {});
   }
 }
 
-module.exports = { testDb, setupDb, countEvents, explainDbError: explain };
+module.exports = { testDb, setupDb, countEvents, schemaStatements, explainDbError: explain };

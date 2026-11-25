@@ -112,6 +112,7 @@ async function setupGrafana(cfg, dbForGrafana, owner, log) {
 
   const dashboard = buildDashboard({
     dsUid, dsName, uid: `pe-${slug(who)}`, title: `Planeten & Erdbeben (${who})`,
+    tablePrefix: dbForGrafana.tablePrefix,
   });
   const url = await uploadDashboard(baseUrl(cfg.url), cfg, dashboard);
   log(`Dashboard „${dashboard.title}“ ist angelegt: ${url}`);

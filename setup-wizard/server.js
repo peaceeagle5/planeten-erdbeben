@@ -24,7 +24,7 @@ function dbForServers(db) {
   return {
     host: (db.serverHost || '').trim() || db.host,
     port: Number(db.serverPort) || Number(db.port) || 3306,
-    user: db.user, password: db.password, database: db.database,
+    user: db.user, password: db.password, database: db.database, tablePrefix: db.tablePrefix,
   };
 }
 

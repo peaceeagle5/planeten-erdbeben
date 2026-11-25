@@ -103,7 +103,9 @@
         <label class="f">Adresse<input type="text" id="db-host" data-auto="host"></label>
         <label class="f">Port<input type="number" id="db-port" value="3306"></label>
         <label class="f">Datenbankname<input type="text" id="db-database" value="planeten_erdbeben"></label>
+        <label class="f">Tabellen-Präfix<input type="text" id="db-tablePrefix" autocomplete="off" spellcheck="false"></label>
       </div>
+      <p class="hint" id="prefix-hint"></p>
       <h3 class="sub">Anmeldung an der Datenbank</h3>
       <p class="hint">Das ist <b>nicht</b> dein Grafana-Login, sondern der Zugang zu MariaDB. Wenn du ihn nicht kennst,
         frag deine Lehrkraft. Das Passwort wird nirgends gespeichert.</p>
@@ -216,7 +218,7 @@
 <script>
 const TOKEN = '__SETUP_TOKEN__';
 const $ = (id) => document.getElementById(id);
-const FIELDS = ['owner', 'server', 'scan-from', 'scan-to', 'db-host', 'db-port', 'db-user', 'db-database', 'db-serverHost', 'db-serverPort',
+const FIELDS = ['owner', 'server', 'scan-from', 'scan-to', 'db-host', 'db-port', 'db-user', 'db-database', 'db-tablePrefix', 'db-serverHost', 'db-serverPort',
   'nodered-host', 'nodered-port', 'nodered-user', 'grafana-host', 'grafana-port', 'grafana-user'];
 const STORE_KEY = 'planeten-erdbeben-setup';
 
@@ -245,6 +247,36 @@ $('server').addEventListener('input', () => {
 });
 document.addEventListener('input', save);
 document.addEventListener('change', save);
+
+// ---- table prefix: everyone gets their own tables in the shared database (same rules as shared/tables.js)
+function prefixFromName(name) {
+  let p = String(name || '').toLowerCase()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+    .slice(0, 23).replace(/_+$/, '');
+  if (!p) return '';
+  if (!/^[a-z]/.test(p)) p = `t${p}`.slice(0, 23);
+  return `${p}_`;
+}
+const prefixEl = $('db-tablePrefix');
+prefixEl.dataset.manual = prefixEl.value !== prefixFromName($('owner').value) ? '1' : '';
+function showPrefix() {
+  let p = prefixEl.value.trim().toLowerCase();
+  if (p && !p.endsWith('_')) p += '_';
+  $('prefix-hint').textContent = p
+    ? `Deine eigenen Tabellen: ${p}events, ${p}body_positions, ${p}aspects. Die Plattengrenzen (plates) sind für alle gemeinsam.`
+    : 'Leer: alle teilen sich die Tabellen events, body_positions und aspects (doppelte Erdbeben werden ignoriert).';
+}
+$('owner').addEventListener('input', () => {
+  if (!prefixEl.dataset.manual) prefixEl.value = prefixFromName($('owner').value);
+  showPrefix(); save();
+});
+prefixEl.addEventListener('input', () => {
+  prefixEl.dataset.manual = prefixEl.value !== prefixFromName($('owner').value) ? '1' : '';
+  showPrefix();
+});
+showPrefix();
 
 // Values from compose.yaml. Inside Docker, Node-RED and Grafana reach the database by its
 // service name "mariadb", not by 127.0.0.1 (that would be the container itself).
@@ -289,6 +321,7 @@ function config() {
     db: {
       host: $('db-host').value.trim(), port: Number($('db-port').value) || 3306,
       user: $('db-user').value.trim(), password: $('db-password').value, database: $('db-database').value.trim(),
+      tablePrefix: prefixEl.value.trim(),
       serverHost: $('db-serverHost').value.trim(), serverPort: $('db-serverPort').value.trim(),
     },
     nodered: {

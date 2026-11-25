@@ -56,7 +56,13 @@ Several people on one Pi:
 - Grafana **Admins** get their own data source. **Editors** cannot create data sources; they choose an
   existing one. So the teacher runs the wizard once with an admin account, and pupils then pick
   that data source. Viewers cannot create dashboards.
-- Everyone can write into the same database: duplicate quakes are ignored.
+- Everyone shares **one database but has their own tables**: the wizard puts the name in front, e.g.
+  "Anna Müller" gets `anna_mueller_events`, `anna_mueller_body_positions` and `anna_mueller_aspects`
+  (field "Tabellen-Präfix", filled in from the name and editable). The tectonic plates (`plates`,
+  `plate_points`) are shared. Node-RED reads the prefix from the tab variable `TABLE_PREFIX`, and the
+  dashboard queries are built with it. Clear the field to share the plain tables `events`, ... instead
+  (duplicate quakes are then ignored). Classes set up before the prefix existed: running the wizard again
+  starts new, empty personal tables; the old shared tables stay untouched.
 
 Requirements on the servers:
 - **MariaDB/MySQL** must be reachable from the network. On Raspberry Pi OS set
