@@ -64,6 +64,7 @@ services:
 | `127.0.0.1:3306:3306` | Port 3306 im Container ist auf deinem PC unter 3306 erreichbar, aber **nur von deinem PC** (127.0.0.1). Ohne die IP vorne wäre er für das ganze Netz offen, mit dem Passwort `planeten-lernen`. |
 | `${DB_PORT:-3306}` | Nimm die Variable `DB_PORT` aus der `.env`-Datei; wenn es sie nicht gibt, `3306`. Dieselbe Idee wie `??` in JavaScript. |
 | `db-data:/var/lib/mysql` | **benanntes Volume**: Docker verwaltet den Speicherort |
+| `GF_PLUGINS_PREINSTALL: volkovlabs-echarts-panel` | beim `grafana`-Dienst: Grafana installiert dieses Plugin bei jedem Start selbst (Business Charts, für das Sonnensystem) |
 | `./db/schema.sql:…:ro` | **Bind-Mount**: eine Datei aus dem Projektordner, `ro` = nur lesen |
 | `/docker-entrypoint-initdb.d/` | Besonderheit des MariaDB-Images: Alle `.sql`-Dateien darin werden beim **allerersten** Start ausgeführt (bei leerem Volume) |
 

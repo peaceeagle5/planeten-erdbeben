@@ -68,3 +68,6 @@ Im Labor mit Pi gilt dasselbe Bild, nur mit der IP des Pi statt `127.0.0.1` und 
 - **Nachbeben** verzerren alles. Beispiel aus unseren Daten: Kamtschatka (M8,8, Juli 2025) erzeugte allein
   ein scheinbares „Mondphasen-Signal“, das ohne Nachbeben verschwindet.
 - Auffällig heißt nicht **verursacht**. Physikalisch plausibel sind nur die Gezeiten von Mond und Sonne.
+- Selbst ausprobieren: im Dashboard unten „Correlation finder“, „Aftershocks“ auf „All quakes“ stellen und
+  zusehen, wie ein „Effekt“ entsteht. Mit „Main shocks only“ ist er weg. Gründlich: `npm run korrelation`.
+- Für langsame Planeten (Jupiter bis Pluto) sagen unsere Kontroll-Events nichts: Sie liegen in anderen Jahren.

@@ -27,3 +27,4 @@ smoke-uebungen/
 # Betriebssystem und Editor
 .DS_Store
 .vscode/
+__pycache__/

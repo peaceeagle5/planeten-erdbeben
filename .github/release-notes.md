@@ -24,6 +24,10 @@ auf **„Lokale Docker-Umgebung“** klicken.
 - **Linux / Raspberry Pi:** Nach dem Herunterladen einmal ausführbar machen: `chmod +x planeten-erdbeben-setup-linux-*`.
   Meldet das Programm `libatomic.so.1: cannot open shared object file`: `sudo apt install libatomic1`.
 - **Ohne Programmdatei:** Im entpackten Lernpaket `npm install` und dann `npm run setup`.
+- **Windows im Schulnetz mit Proxy:** Scheitern `npm install`, git oder winget, zuerst die Skripte im Ordner
+  `proxy-windows/` des Lernpakets ausführen (Anleitung als PDF dabei).
+- **Sonnensystem-Panel:** braucht in Grafana das Plugin „Business Charts“. Der Assistent installiert es mit einem
+  Grafana-Server-Admin; die Docker-Umgebung bringt es mit.
 - **Lern-Cockpit:** Übungsseite mit Editor, Prüfen-Knopf und eingebautem Terminal. Braucht ein installiertes Node.js (LTS)
   und einmal `npm install` im Lernpaket-Ordner. Ohne Programmdatei: `npm run lernen:ui`.
   Die Lösungen landen in `meine-uebungen/` und nicht im Git-Repository.

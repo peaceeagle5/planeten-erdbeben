@@ -37,13 +37,17 @@ for example on a Raspberry Pi at `192.168.100.133`. Nothing has to be installed 
      server and lists every Node-RED with who set it up. Plus the editor login, if one is enabled.
    - **the MariaDB login** (from the teacher; not the Grafana login),
    - **your own Grafana account**.
+   - The **table prefix** fills itself from your name (`anna_mueller_`): everyone gets their own tables in the
+     shared database. "Lokale Docker-Umgebung" also reads the ports from `.env` (e.g. `DB_PORT=3307`).
 
    Click **Verbindung testen** for each part, then **Alles einrichten**.
 3. The wizard then
-   - creates the database and tables (only missing ones; existing data is kept),
+   - creates the database and your own tables (only missing ones; existing data is kept). Older tables get
+     the new columns (positions seen from the Sun), and Node-RED recomputes their events,
    - installs `node-red-node-mysql` in Node-RED and adds or updates the tab "Planeten & Erdbeben"
      (other flows are not touched),
-   - creates the Grafana data source and dashboard,
+   - creates the Grafana data source and dashboard, installs the plugin Business Charts for the solar system
+     panel (needs a Grafana *server* admin), and in Grafana 13 sets up the "View" switch (map / solar system),
    - waits until the first earthquakes arrive with computed positions.
 4. On the last page you can load older years of earthquakes (backfill) and watch the counters.
 
@@ -101,12 +105,17 @@ npm run lernen:ui                         # run the Lern-Cockpit from source ins
 
 | Path | What |
 |---|---|
-| `src/planets.js` | The calculation (astronomy-engine). Used by the API and copied into the Node-RED flow. |
+| `src/planets.js` | The calculation (astronomy-engine): positions seen from the quake location and from the Sun. Used by the API and copied into the Node-RED flow. |
+| `src/correlation.js` | Correlation finder: quakes vs. control events per bin, declustering, corrected p-values, fairness check. `npm run korrelation` ([tools/korrelation.js](tools/korrelation.js)) |
 | `app.js` | Optional HTTP API: `GET /api/sky?lat=&lon=&date=` (port 3001; Grafana uses 3000). `npm run api` |
-| `db/schema.sql` | Tables: `events` (quakes + control events), `body_positions`, `aspects` |
+| `db/schema.sql` | Tables: `events` (quakes + control events), `body_positions` (incl. `helio_lon_deg`, `helio_dist_au`), `aspects`, shared `plates`, `plate_points`. The wizard creates the first three per person with a prefix ([shared/tables.js](shared/tables.js)) |
 | `node-red/flow-builder.js` | Builds the Node-RED tab from `node-red/functions/*.js`. `npm run flow-import` writes `flow-import.json` for Menu > Import |
 | `grafana/queries.sql` | All panel queries. `grafana/dashboard-builder.js` turns them into the dashboard (`npm run dashboard`) |
-| `setup-wizard/` | The wizard: `server.js` (local web server), `ui.html` (page), `lib/` (one module per server), `build.js` |
+| `grafana/solar-system.echarts.js` | Drawing code of the solar system panel (Business Charts / Apache ECharts) |
+| `grafana/dynamic-layout.js` | Rows with show/hide rules for the "View" switch (dashboard schema v2, Grafana 13) |
+| `setup-wizard/` | The wizard: `server.js` (local web server), `ui.html` (page), `lib/` (one module per server, `docker-env.js` for the Docker ports), `build.js` |
+| `proxy-windows/` | Windows scripts for the school proxy (npm, git, winget) |
+| `praesentation/quellen/` | Python scripts (ReportLab) that generate the PDF handouts in `praesentation/` and `proxy-windows/`; how to run them: `stil.py` |
 
 After changing a function, a query or `src/planets.js`, run the wizard again (or rebuild the programs) to
 update Node-RED and Grafana.
@@ -140,9 +149,11 @@ Since 2026-11-19 this Mac uses the same Docker environment as the pupils ([compo
 - Compare earthquakes (red) with control events (grey). With 12 signs × 10 bodies × 45 body pairs × 5 aspects,
   a few will differ by chance alone; treat a difference as real only if it holds up on a new time range.
 - Aftershocks cluster in time, so one big quake can add hundreds of events with nearly the same sky.
-  For statistics, filter to M6+ or decluster.
-- Slow planets (Jupiter to Pluto) barely move within the 2-year control window, so for them
-  quakes and controls will look almost identical by design.
+  For statistics, decluster: "Aftershocks: Main shocks only" in the correlation finder, or `npm run korrelation`
+  (default: a quake drops out if a stronger one was within 3 days and 300 km).
+- The control events lie in the 2 years before each quake. That is a fair baseline only for things that repeat
+  many times in that time (the Moon). For slow planets quakes and controls see different years, so any
+  difference says nothing; `npm run korrelation` refuses those comparisons.
 - The physically plausible link is **tides** (Sun + Moon). Published studies find small effects of
   tidal stress on quake timing. Moon phase, Moon distance and Moon altitude are the most promising
   variables. Tidal forces from the planets are many orders of magnitude weaker.

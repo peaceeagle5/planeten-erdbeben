@@ -28,6 +28,10 @@ Falls es passiert ist: `npm uninstall docker`.
 
 Node.js unter Windows geht auch per Befehl: `winget install -e --id OpenJS.NodeJS.LTS`.
 
+**Im Schulnetz mit Proxy (Windows):** Dort scheitern Downloads mit npm, git und winget, bis der Proxy eingetragen
+ist. Dafür gibt es zwei Doppelklick-Skripte im Ordner [proxy-windows/](proxy-windows/README.md): erst
+`proxy-setup.cmd`, dann `install-pakete.cmd` (Node.js, Git), dann noch einmal `proxy-setup.cmd`.
+
 **Windows:** Docker Desktop braucht **WSL 2**. Der Installer bietet es an; falls nicht, in einer PowerShell
 „Als Administrator ausführen“: `wsl --install`, danach neu starten. Meldet Docker „Virtualization not enabled“,
 muss die Virtualisierung im BIOS eingeschaltet werden (meist „Intel VT-x“ oder „AMD-V/SVM“).
@@ -78,8 +82,9 @@ Alle drei Dienste (`mariadb`, `nodered`, `grafana`) sollten „running“ zeigen
 npm run setup
 ```
 Im Browser öffnet sich der Setup-Assistent:
-1. **Dein Name** eintragen.
-2. Auf **„Lokale Docker-Umgebung“** klicken. Alle Felder füllen sich.
+1. **Dein Name** eintragen. Daraus entsteht der **Tabellen-Präfix** (z. B. `anna_`): Deine Erdbeben landen in
+   eigenen Tabellen wie `anna_events`.
+2. Auf **„Lokale Docker-Umgebung“** klicken. Alle Felder füllen sich, die Ports kommen aus der `.env`, falls es eine gibt.
 3. **„Alles einrichten“**. Nach etwa einer Minute sind alle Schritte grün.
 4. Unten bei **„Ältere Erdbeben laden“** das Jahr **2025** wählen und auf **„Erdbeben laden“** klicken.
    Nach ein paar Minuten zeigen die Zähler rund 1500 Erdbeben.
@@ -91,6 +96,12 @@ Jetzt kannst du öffnen:
 |---|---|---|
 | Node-RED | http://127.0.0.1:1880 | keiner |
 | Grafana | http://127.0.0.1:3000 | `admin` / `admin-lernen` |
+
+Im Dashboard „Planeten & Erdbeben (Dein Name)“:
+- **Auf ein Erdbeben in der Karte klicken**, dann „Show the sky at this quake“: Oben steht der Himmel bei diesem
+  Beben, darunter das **Sonnensystem** in diesem Moment. Oben bei **„View“** zwischen Karte und Sonnensystem wechseln.
+- Ganz unten der **„Correlation finder“**: Gibt es eine Mondstellung bei Erdbeben häufiger als zufällig?
+  Ausführlicher im Terminal: `npm run korrelation` (Lerneinheit 11).
 
 ## 6. Jeden Tag
 
@@ -130,5 +141,8 @@ PC aus erreichbar (`127.0.0.1`), nicht aus dem Netzwerk.
 | Labor: Node-RED auf dem Raspberry Pi bekommt keine Daten, das Netz hat einen Proxy | [LABOR-PROXY.md](LABOR-PROXY.md) |
 | SQL-Übungen werden übersprungen: „Datenbank nicht erreichbar“ | Docker-Umgebung starten. Bei geändertem Port: der Wert aus `.env` wird automatisch benutzt. |
 | Grafana zeigt „No data“ | Backfill (Schritt 5.4) gemacht? Zeitbereich oben rechts auf „Last 2 years“. |
+| Sonnensystem-Panel: „Positions seen from the Sun are still being computed“ | Node-RED rechnet die Beben gerade (neu). Zähler „pending“ im Pipeline-Panel beobachten, nach ein paar Minuten ist es fertig. |
+| Sonnensystem-Panel leer oder „Panel plugin not found“ | Das Plugin Business Charts fehlt. In Docker: `docker compose up -d grafana` (installiert es beim Start). Sonst siehe [README.md](README.md), Abschnitt Grafana. |
+| `npm install`: `ETIMEDOUT`, `ECONNRESET` oder `self-signed certificate` im Schulnetz | Der Proxy ist nicht eingetragen: [proxy-windows/](proxy-windows/README.md). |
 
 Mehr zur Fehlersuche: [lernen/10-netzwerk-fehlersuche](lernen/10-netzwerk-fehlersuche/README.md).

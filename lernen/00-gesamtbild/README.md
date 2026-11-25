@@ -42,10 +42,12 @@ Moment Sonne, Mond und Planeten? Dann vergleichen wir mit Zeitpunkten **ohne** E
    das echte Beben und ein **Kontroll-Event** (gleicher Ort, zufällige Zeit).
 3. **Node-RED** schaut jede Minute nach Events ohne Planetendaten (`sky_computed = 0`)
    und berechnet sie ([compute-sky.js](../../node-red/functions/compute-sky.js), mit [src/planets.js](../../src/planets.js)).
-4. Das Ergebnis landet in den Tabellen `body_positions` (10 Zeilen: Sonne, Mond, 8 Planeten)
-   und `aspects` (Winkelbeziehungen zwischen den Himmelskörpern).
+4. Das Ergebnis landet in den Tabellen `body_positions` (10 Zeilen: Sonne, Mond, 8 Planeten, von der Erde
+   und von der Sonne aus gesehen) und `aspects` (Winkelbeziehungen zwischen den Himmelskörpern).
+   Im Unterricht hat jede:r eigene Tabellen mit dem Namen davor, z. B. `anna_events`.
 5. **Grafana** fragt die Datenbank per SQL ab ([queries.sql](../../grafana/queries.sql)) und zeigt
-   z. B. „Mondphase bei Erdbeben vs. bei Kontroll-Events“.
+   z. B. „Mondphase bei Erdbeben vs. bei Kontroll-Events“. Ein Klick auf das Beben in der Karte zeigt den
+   Himmel und das Sonnensystem in genau diesem Moment.
 
 ## Wichtige Begriffe
 
