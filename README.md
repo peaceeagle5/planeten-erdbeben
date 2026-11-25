@@ -79,6 +79,9 @@ Requirements on the servers:
 - **Node-RED** needs internet access (USGS, GitHub for the plate boundaries, and npm for `astronomy-engine`/`node-red-node-mysql`), and
   `functionExternalModules: true` in `settings.js`, which is the default.
   Behind a proxy: see [LABOR-PROXY.md](LABOR-PROXY.md) (German).
+- **Windows PCs behind the school proxy:** `npm install`, git and winget need the proxy too.
+  [proxy-windows/](proxy-windows/README.md) (German) has two double-click scripts: one enters the proxy into
+  npm, git, pip, winget and the environment, the other installs Node.js, Git and ripgrep.
 - **Grafana** needs an Admin login. The solar system panel needs the plugin **Business Charts**
   (`volkovlabs-echarts-panel`, Apache ECharts). The wizard installs it if the login is a Grafana *server* admin
   and Grafana has internet; otherwise: `sudo grafana cli plugins install volkovlabs-echarts-panel` and restart

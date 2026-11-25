@@ -99,7 +99,7 @@ const SOURCES = [
   'src', 'shared', 'db', 'grafana', 'docker',
   'node-red/flow-builder.js', 'node-red/flow-import.json', 'node-red/functions',
   'setup-wizard/server.js', 'setup-wizard/ui.html', 'setup-wizard/build.js', 'setup-wizard/lib',
-  'tools/korrelation.js',
+  'tools/korrelation.js', 'proxy-windows', '.gitattributes',
 ];
 
 const GITIGNORE = 'node_modules/\n.env\nnode-red/flow_cred.json\ndist/\nsetup-wizard/.cache/\n*.zip\nmeine-uebungen/\nsmoke-uebungen/\n';

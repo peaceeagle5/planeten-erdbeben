@@ -3,6 +3,9 @@
 Diese Anleitung ist für das Labor: Node-RED läuft auf dem Raspberry Pi, und das Netz geht nur über einen
 Proxy ins Internet. Du brauchst dafür **keine** lokale Node-RED-Installation auf deinem PC.
 
+**Dein eigener Windows-PC** braucht den Proxy auch, damit `npm install` (z. B. `mysql2`), git und winget
+funktionieren. Dafür gibt es zwei Doppelklick-Skripte: [proxy-windows/](proxy-windows/README.md).
+
 ## Worum es geht
 
 Das Node-RED auf dem Pi muss selbst ins Internet:
