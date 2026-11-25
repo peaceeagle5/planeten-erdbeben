@@ -87,8 +87,9 @@
     </div>
     <div class="row">
       <button type="button" id="preset-docker">Lokale Docker-Umgebung</button>
-      <span class="hint" style="margin:0">Füllt alles für <code>docker compose up -d</code> auf diesem PC aus (Werte aus <code>compose.yaml</code>).</span>
+      <span class="hint" style="margin:0">Füllt alles für <code>docker compose up -d</code> auf diesem PC aus (Werte aus <code>compose.yaml</code>, Ports aus <code>.env</code>).</span>
     </div>
+    <p class="hint" id="preset-info" aria-live="polite"></p>
   </section>
 
   <!-- 1 Database -->
@@ -287,8 +288,18 @@ const DOCKER_PRESET = {
   'nodered-host': '127.0.0.1', 'nodered-port': '1880', 'nodered-user': '', 'nodered-password': '',
   'grafana-host': '127.0.0.1', 'grafana-port': '3000', 'grafana-user': 'admin', 'grafana-password': 'admin-lernen',
 };
-$('preset-docker').addEventListener('click', () => {
+$('preset-docker').addEventListener('click', async () => {
   for (const [id, value] of Object.entries(DOCKER_PRESET)) $(id).value = value;
+  // compose.yaml can move the ports with DB_PORT / NODERED_PORT / GRAFANA_PORT in .env (e.g. 3307 next to XAMPP)
+  try {
+    const r = await (await api('/api/docker-preset', {})).json();
+    if (r.ok) {
+      $('db-port').value = r.ports.db; $('nodered-port').value = r.ports.nodered; $('grafana-port').value = r.ports.grafana;
+      $('preset-info').textContent = r.envFile
+        ? `Ports aus ${r.envFile}: Datenbank ${r.ports.db}, Node-RED ${r.ports.nodered}, Grafana ${r.ports.grafana}.`
+        : `Keine .env gefunden, Standard-Ports: Datenbank ${r.ports.db}, Node-RED ${r.ports.nodered}, Grafana ${r.ports.grafana}.`;
+    }
+  } catch { /* keep the standard ports from DOCKER_PRESET */ }
   for (const el of autoHosts) el.dataset.manual = '';
   for (const s of ['db', 'nodered', 'grafana']) $(`step-${s}`).checked = true;
   $('db-serverHost').closest('details').open = true;

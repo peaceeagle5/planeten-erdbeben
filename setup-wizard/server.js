@@ -11,6 +11,7 @@ const { readAsset } = require('../shared/assets');
 const { testDb, setupDb, countEvents } = require('./lib/db');
 const { NodeRed, testNodeRed, scanNodeRed } = require('./lib/nodered');
 const { testGrafana, setupGrafana } = require('./lib/grafana');
+const { dockerPorts } = require('./lib/docker-env');
 
 const TOKEN = crypto.randomBytes(16).toString('hex');
 const PREFERRED_PORT = Number(process.env.SETUP_PORT) || 8790;
@@ -158,6 +159,11 @@ async function handle(req, res) {
         send({ type: 'error', message: err.message });
       }
       return res.end();
+    }
+    case '/api/docker-preset': {
+      // ports from .env next to compose.yaml (only the port keys, never passwords)
+      const { ports, envFile } = dockerPorts();
+      return sendJson(res, 200, { ok: true, ports, envFile });
     }
     case '/api/backfill': {
       try {
