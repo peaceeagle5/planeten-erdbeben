@@ -77,7 +77,7 @@ function canvasElements() {
   const fixed = (t) => ({ mode: 'fixed', fixed: t });
 
   // header row
-  rect('Title', fixed('Latest earthquake'), box(1, 2, 20, 20), { size: 14, color: '#9fa7b3' });
+  rect('Title', field('selection'), box(1, 2, 20, 20), { size: 14, color: '#9fa7b3' });
   rect('Place', field('place'), box(1, 14, 40, 18), { size: 20 });
   rect('Magnitude label', fixed('Magnitude'), box(43, 2, 12, 12), { size: 12, color: '#9fa7b3' });
   rect('Magnitude', field('magnitude'), box(43, 12, 12, 20), { size: 26, color: '#ff7383' });
@@ -112,6 +112,10 @@ const custom = (name, label, values, current, description) => ({
   options: values.map((v) => ({ text: v, value: v, selected: v === current })),
 });
 
+// Clicking a quake on the map reopens this dashboard with var-event=<id> and keeps the other choices.
+const QUAKE_LINK = '/d/${__dashboard.uid}?var-event=${__data.fields.event_id}' +
+  '&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}&${__url_time_range}';
+
 const COMPARE_NOTE = 'Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.';
 
 /**
@@ -138,7 +142,14 @@ const dashboard = {
     custom('minmag', 'Min. magnitude', ['4.5', '5', '6', '7'], '4.5'),
     custom('body', 'Body', ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'], 'Moon'),
     custom('orb', 'Aspect orb °', ['1', '2', '4', '8'], '8'),
+    // hidden; set by the map's data link. Empty = latest quake (queries 6 and 10)
+    { type: 'textbox', name: 'event', label: 'Selected quake', query: '', current: { text: '', value: '' }, hide: 2 },
   ] },
+  links: [{
+    type: 'link', title: 'Latest quake', icon: 'sync', tooltip: 'Show the sky at the latest earthquake again',
+    url: `/d/${uid}?var-event=&\${ds:queryparam}&\${minmag:queryparam}&\${body:queryparam}&\${orb:queryparam}`,
+    keepTime: true, includeVars: false, targetBlank: false, asDropdown: false, tags: [],
+  }],
   panels: [
     {
       id: 1, type: 'stat', title: 'Pipeline', gridPos: { x: 0, y: 0, w: 24, h: 4 }, datasource: DS, targets: [target(Q[7])],
@@ -148,8 +159,9 @@ const dashboard = {
       options: { reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false }, colorMode: 'value', graphMode: 'none', textMode: 'value_and_name', justifyMode: 'center', orientation: 'vertical' },
     },
     {
-      id: 2, type: 'canvas', title: 'Sky at the latest earthquake', gridPos: { x: 0, y: 4, w: 24, h: 10 }, datasource: DS, targets: [target(Q[6])],
-      description: 'Zodiac position of every body when the most recent quake happened. R = retrograde.',
+      id: 2, type: 'canvas', title: 'Sky at the selected earthquake (latest if none)', gridPos: { x: 0, y: 4, w: 24, h: 10 }, datasource: DS, targets: [target(Q[6])],
+      description: 'Zodiac position of every body when the selected quake happened. Click a quake on the map to select it; ' +
+        '"Latest quake" (top right) goes back to the most recent one. R = retrograde.',
       fieldConfig: { defaults: {}, overrides: [] },
       options: { inlineEditing: true, showAdvancedTypes: true, panZoom: false, infinitePan: false, root: {
         type: 'frame', name: 'Element root', elements: canvasElements(),
@@ -158,10 +170,14 @@ const dashboard = {
       } },
     },
     {
-      id: 3, type: 'geomap', title: 'Earthquakes (time range, M ≥ $minmag)', gridPos: { x: 0, y: 14, w: 16, h: 13 }, datasource: DS,
-      targets: [target(Q[1]), { ...target(Q[8]), refId: 'B' }],
-      description: 'Red dots: earthquakes. Blue lines: boundaries of the tectonic plates (PB2002, loaded by Node-RED).',
-      fieldConfig: { defaults: { color: { mode: 'continuous-YlRd' }, decimals: 1 }, overrides: [] },
+      id: 3, type: 'geomap', title: 'Earthquakes (time range, M ≥ $minmag): click a quake to see its sky', gridPos: { x: 0, y: 14, w: 16, h: 13 }, datasource: DS,
+      targets: [target(Q[1]), { ...target(Q[8]), refId: 'B' }, { ...target(Q[10]), refId: 'C' }],
+      description: 'Red dots: earthquakes. Blue lines: boundaries of the tectonic plates (PB2002, loaded by Node-RED). ' +
+        'White ring: the quake shown in the sky panel above. Click a quake, then "Show the sky at this quake".',
+      fieldConfig: { defaults: { color: { mode: 'continuous-YlRd' }, decimals: 1,
+        links: [{ title: 'Show the sky at this quake', url: QUAKE_LINK, oneClick: true }] }, overrides: [
+        { matcher: { id: 'byName', options: 'event_id' }, properties: [{ id: 'displayName', value: 'Event ID' }, { id: 'decimals', value: 0 }] },
+      ] },
       options: {
         view: { id: 'zero', lat: 0, lon: 0, zoom: 1, allLayers: true },
         controls: { showZoom: true, mouseWheelZoom: true, showAttribution: true },
@@ -184,6 +200,14 @@ const dashboard = {
             size: { field: 'magnitude', fixed: 5, min: 3, max: 18 },
             color: { field: 'magnitude', fixed: 'dark-red' },
             opacity: 0.6, symbol: { mode: 'fixed', fixed: 'img/icons/marker/circle.svg' },
+          } },
+        }, {
+          type: 'markers', name: 'Selected quake', tooltip: false,
+          filterData: { id: 'byRefId', options: 'C' },
+          location: { mode: 'coords', latitude: 'latitude', longitude: 'longitude' },
+          config: { showLegend: false, style: {
+            size: { fixed: 24 }, color: { fixed: 'white' }, opacity: 0.45, lineWidth: 3,
+            symbol: { mode: 'fixed', fixed: 'img/icons/marker/circle.svg' },
           } },
         }],
       },

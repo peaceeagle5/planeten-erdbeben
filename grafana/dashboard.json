@@ -153,9 +153,34 @@
             "selected": true
           }
         ]
+      },
+      {
+        "type": "textbox",
+        "name": "event",
+        "label": "Selected quake",
+        "query": "",
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "hide": 2
       }
     ]
   },
+  "links": [
+    {
+      "type": "link",
+      "title": "Latest quake",
+      "icon": "sync",
+      "tooltip": "Show the sky at the latest earthquake again",
+      "url": "/d/planeten-erdbeben?var-event=&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}",
+      "keepTime": true,
+      "includeVars": false,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    }
+  ],
   "panels": [
     {
       "id": 1,
@@ -243,7 +268,7 @@
     {
       "id": 2,
       "type": "canvas",
-      "title": "Sky at the latest earthquake",
+      "title": "Sky at the selected earthquake (latest if none)",
       "gridPos": {
         "x": 0,
         "y": 4,
@@ -264,10 +289,10 @@
           "editorMode": "code",
           "rawQuery": true,
           "format": "table",
-          "rawSql": "SELECT e.time_utc, e.place, e.magnitude, e.depth_km, ROUND(e.moon_phase_deg, 1) AS moon_phase_deg,\n  MAX(CASE WHEN bp.body = 'Sun'     THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Sun,\n  MAX(CASE WHEN bp.body = 'Moon'    THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Moon,\n  MAX(CASE WHEN bp.body = 'Mercury' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Mercury,\n  MAX(CASE WHEN bp.body = 'Venus'   THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Venus,\n  MAX(CASE WHEN bp.body = 'Mars'    THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Mars,\n  MAX(CASE WHEN bp.body = 'Jupiter' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Jupiter,\n  MAX(CASE WHEN bp.body = 'Saturn'  THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Saturn,\n  MAX(CASE WHEN bp.body = 'Uranus'  THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Uranus,\n  MAX(CASE WHEN bp.body = 'Neptune' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Neptune,\n  MAX(CASE WHEN bp.body = 'Pluto'   THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Pluto\nFROM events e\nJOIN body_positions bp ON bp.event_id = e.id\nWHERE e.id = (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1\n              ORDER BY time_utc DESC LIMIT 1)\nGROUP BY e.id"
+          "rawSql": "SELECT IF(${event:sqlstring} = '', 'Latest earthquake', 'Selected earthquake') AS selection,\n  e.time_utc, e.place, e.magnitude, e.depth_km, ROUND(e.moon_phase_deg, 1) AS moon_phase_deg,\n  MAX(CASE WHEN bp.body = 'Sun'     THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Sun,\n  MAX(CASE WHEN bp.body = 'Moon'    THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Moon,\n  MAX(CASE WHEN bp.body = 'Mercury' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Mercury,\n  MAX(CASE WHEN bp.body = 'Venus'   THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Venus,\n  MAX(CASE WHEN bp.body = 'Mars'    THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Mars,\n  MAX(CASE WHEN bp.body = 'Jupiter' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Jupiter,\n  MAX(CASE WHEN bp.body = 'Saturn'  THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Saturn,\n  MAX(CASE WHEN bp.body = 'Uranus'  THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Uranus,\n  MAX(CASE WHEN bp.body = 'Neptune' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Neptune,\n  MAX(CASE WHEN bp.body = 'Pluto'   THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Pluto\nFROM events e\nJOIN body_positions bp ON bp.event_id = e.id\nWHERE e.id = IF(${event:sqlstring} = '',\n              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1\n               ORDER BY time_utc DESC LIMIT 1),\n              CAST(${event:sqlstring} AS UNSIGNED))\nGROUP BY e.id"
         }
       ],
-      "description": "Zodiac position of every body when the most recent quake happened. R = retrograde.",
+      "description": "Zodiac position of every body when the selected quake happened. Click a quake on the map to select it; \"Latest quake\" (top right) goes back to the most recent one. R = retrograde.",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -286,8 +311,9 @@
               "name": "Title",
               "config": {
                 "text": {
-                  "mode": "fixed",
-                  "fixed": "Latest earthquake"
+                  "mode": "field",
+                  "field": "selection",
+                  "fixed": ""
                 },
                 "color": {
                   "fixed": "#9fa7b3"
@@ -1838,7 +1864,7 @@
     {
       "id": 3,
       "type": "geomap",
-      "title": "Earthquakes (time range, M ≥ $minmag)",
+      "title": "Earthquakes (time range, M ≥ $minmag): click a quake to see its sky",
       "gridPos": {
         "x": 0,
         "y": 14,
@@ -1859,7 +1885,7 @@
           "editorMode": "code",
           "rawQuery": true,
           "format": "table",
-          "rawSql": "SELECT time_utc AS time, latitude, longitude, magnitude, depth_km, place, moon_phase_deg\nFROM events\nWHERE kind = 'earthquake' AND $__timeFilter(time_utc) AND magnitude >= $minmag"
+          "rawSql": "SELECT id AS event_id, time_utc AS time, latitude, longitude, magnitude, depth_km, place, moon_phase_deg\nFROM events\nWHERE kind = 'earthquake' AND $__timeFilter(time_utc) AND magnitude >= $minmag"
         },
         {
           "refId": "B",
@@ -1871,17 +1897,52 @@
           "rawQuery": true,
           "format": "table",
           "rawSql": "SELECT latitude, longitude, code AS plate\nFROM plate_points"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT latitude, longitude, place\nFROM events\nWHERE id = IF(${event:sqlstring} = '',\n              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1\n               ORDER BY time_utc DESC LIMIT 1),\n              CAST(${event:sqlstring} AS UNSIGNED))"
         }
       ],
-      "description": "Red dots: earthquakes. Blue lines: boundaries of the tectonic plates (PB2002, loaded by Node-RED).",
+      "description": "Red dots: earthquakes. Blue lines: boundaries of the tectonic plates (PB2002, loaded by Node-RED). White ring: the quake shown in the sky panel above. Click a quake, then \"Show the sky at this quake\".",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "continuous-YlRd"
           },
-          "decimals": 1
+          "decimals": 1,
+          "links": [
+            {
+              "title": "Show the sky at this quake",
+              "url": "/d/${__dashboard.uid}?var-event=${__data.fields.event_id}&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}&${__url_time_range}",
+              "oneClick": true
+            }
+          ]
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Event ID"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "view": {
@@ -1964,6 +2025,37 @@
                   "fixed": "dark-red"
                 },
                 "opacity": 0.6,
+                "symbol": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/marker/circle.svg"
+                }
+              }
+            }
+          },
+          {
+            "type": "markers",
+            "name": "Selected quake",
+            "tooltip": false,
+            "filterData": {
+              "id": "byRefId",
+              "options": "C"
+            },
+            "location": {
+              "mode": "coords",
+              "latitude": "latitude",
+              "longitude": "longitude"
+            },
+            "config": {
+              "showLegend": false,
+              "style": {
+                "size": {
+                  "fixed": 24
+                },
+                "color": {
+                  "fixed": "white"
+                },
+                "opacity": 0.45,
+                "lineWidth": 3,
                 "symbol": {
                   "mode": "fixed",
                   "fixed": "img/icons/marker/circle.svg"

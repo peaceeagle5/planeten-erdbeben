@@ -3,6 +3,10 @@
 --   minmag : 4.5,5,6,7
 --   body   : Sun,Moon,Mercury,Venus,Mars,Jupiter,Saturn,Uranus,Neptune,Pluto
 --   orb    : 1,2,4,8
+--   event  : type "Text box", hidden. Set by clicking a quake on the map (data link).
+--            Empty = the latest quake. ${event:sqlstring} puts it in quotes and escapes it,
+--            and CAST(... AS UNSIGNED) turns it into a number, so nothing typed into the URL
+--            can change the SQL.
 --
 -- Every comparison shows quakes_pct next to control_pct. Only the DIFFERENCE matters:
 -- the control events are the same places at random times, so they show what the
@@ -10,8 +14,9 @@
 
 -- =====================================================================
 -- 1) Geomap panel: where the quakes happened (Format: Table)
+--    event_id is used by the data link: click a quake -> var-event=<event_id>
 -- =====================================================================
-SELECT time_utc AS time, latitude, longitude, magnitude, depth_km, place, moon_phase_deg
+SELECT id AS event_id, time_utc AS time, latitude, longitude, magnitude, depth_km, place, moon_phase_deg
 FROM events
 WHERE kind = 'earthquake' AND $__timeFilter(time_utc) AND magnitude >= $minmag;
 
@@ -78,10 +83,11 @@ WHERE bp.body = 'Moon' AND e.magnitude >= $minmag
 GROUP BY bp.above_horizon;
 
 -- =====================================================================
--- 6) Canvas panel: the latest quake and its sky (one wide row;
+-- 6) Canvas panel: the selected quake (latest if none) and its sky (one wide row;
 --    bind Canvas text elements to these field names)
 -- =====================================================================
-SELECT e.time_utc, e.place, e.magnitude, e.depth_km, ROUND(e.moon_phase_deg, 1) AS moon_phase_deg,
+SELECT IF(${event:sqlstring} = '', 'Latest earthquake', 'Selected earthquake') AS selection,
+  e.time_utc, e.place, e.magnitude, e.depth_km, ROUND(e.moon_phase_deg, 1) AS moon_phase_deg,
   MAX(CASE WHEN bp.body = 'Sun'     THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Sun,
   MAX(CASE WHEN bp.body = 'Moon'    THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Moon,
   MAX(CASE WHEN bp.body = 'Mercury' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Mercury,
@@ -94,8 +100,10 @@ SELECT e.time_utc, e.place, e.magnitude, e.depth_km, ROUND(e.moon_phase_deg, 1) 
   MAX(CASE WHEN bp.body = 'Pluto'   THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Pluto
 FROM events e
 JOIN body_positions bp ON bp.event_id = e.id
-WHERE e.id = (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1
-              ORDER BY time_utc DESC LIMIT 1)
+WHERE e.id = IF(${event:sqlstring} = '',
+              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1
+               ORDER BY time_utc DESC LIMIT 1),
+              CAST(${event:sqlstring} AS UNSIGNED))
 GROUP BY e.id;
 
 -- =====================================================================
@@ -123,3 +131,14 @@ WHERE e.kind = 'earthquake' AND $__timeFilter(e.time_utc) AND e.magnitude >= $mi
 GROUP BY p.code, p.name
 ORDER BY quakes DESC
 LIMIT 15;
+
+-- =====================================================================
+-- 10) Geomap panel, third query (refId C): ring around the quake shown in the sky panel
+--     (same selection as query 6: the clicked quake, or the latest one)
+-- =====================================================================
+SELECT latitude, longitude, place
+FROM events
+WHERE id = IF(${event:sqlstring} = '',
+              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1
+               ORDER BY time_utc DESC LIMIT 1),
+              CAST(${event:sqlstring} AS UNSIGNED));

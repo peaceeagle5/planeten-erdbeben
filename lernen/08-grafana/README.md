@@ -15,7 +15,7 @@ Grafana
  ├─ Datenquelle "Planeten-Erdbeben (planeten_erdbeben)"   ← WIE kommt Grafana an die Daten? (Host, Port, Login)
  └─ Dashboard "Planeten & Erdbeben (Pascal)"               ← eine Seite
      ├─ Panel "Pipeline"            (Stat)       ┐
-     ├─ Panel "Sky at the latest…"  (Canvas)     │  jedes Panel = eine SQL-Abfrage + eine Darstellung
+     ├─ Panel "Sky at the selected…" (Canvas)    │  jedes Panel = eine SQL-Abfrage + eine Darstellung
      ├─ Panel "Earthquakes"         (Geomap)     │
      └─ Panel "Moon phase …"        (Bar chart)  ┘
 ```
@@ -39,6 +39,13 @@ Das ist einfaches **Text-Ersetzen**. Darum stehen um `'$body'` Anführungszeiche
 
 `$ds` ist eine besondere Variable vom Typ „Datenquelle“: Damit kann man dasselbe Dashboard mit einer anderen
 Datenbank benutzen.
+
+`$event` ist eine **versteckte** Variable (Typ „Text box“). Man setzt sie nicht oben, sondern durch einen
+Klick auf ein Erdbeben in der Karte: Der **Daten-Link** des Karten-Panels öffnet dasselbe Dashboard noch einmal,
+mit `var-event=<id>` in der Adresse. Das Panel „Sky at the selected earthquake“ zeigt dann dieses Beben, ohne
+Auswahl das neueste. Weil jeder `var-event=...` in die Adresse tippen kann, steht in der Abfrage
+`${event:sqlstring}` (Grafana setzt den Wert in Anführungszeichen und entschärft `'`) und
+`CAST(... AS UNSIGNED)` (macht eine Zahl daraus). So kann niemand über die Adresse eigenes SQL einschleusen.
 
 ## 3. Makros und Zeit
 
