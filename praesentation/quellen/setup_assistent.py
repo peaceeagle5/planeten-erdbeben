@@ -107,36 +107,42 @@ story = [
     Paragraph('Was beim Doppelklick passiert', h2),
     *steps([
         '<b>Die .exe startet.</b> Ein Konsolenfenster öffnet sich, dazu ein kleiner Webserver, der nur auf dem eigenen '
-        'PC erreichbar ist. Der Browser zeigt die Setup-Seite.',
+        'PC erreichbar ist. Der Browser zeigt die Setup-Seite (sonst die Adresse aus dem Konsolenfenster kopieren).',
         '<b>Adressen und Logins eingeben.</b> Der Assistent testet jede Verbindung und erklärt Fehler auf Deutsch. '
         'Aus deinem Namen entsteht der <b>Tabellen-Präfix</b> (z. B. ' + code('anna_') + '): Alle teilen sich eine '
         'Datenbank, aber jede:r hat eigene Tabellen. An der Workstation füllt der Knopf „Lokale Docker-Umgebung“ alles '
         'aus, die Ports kommen aus der ' + code('.env') + '.',
-        '<b>„Alles einrichten“.</b> Der Assistent schickt dieselben Anfragen, die man sonst per Maus in Node-RED und '
-        'Grafana auslösen würde: <b>MariaDB</b> bekommt die Datenbank und deine fehlenden Tabellen; alten Tabellen fügt er '
-        'neue Spalten hinzu. <b>Node-RED</b> bekommt das Zusatzpaket ' + code('node-red-node-mysql') + ' und den Tab '
-        '„Planeten &amp; Erdbeben“ mit dem Datenbank-Login und deinem Präfix. Beim Deployen lädt Node-RED selbst die '
-        'Rechenbibliothek ' + code('astronomy-engine') + '. <b>Grafana</b> bekommt die Datenquelle, das persönliche '
-        'Dashboard und, mit einem Server-Admin-Konto, das Plugin Business Charts für das Sonnensystem. In Grafana 13 '
-        'schaltet oben „View“ zwischen Erdkarte und Sonnensystem um.',
+        '<b>„Alles einrichten“.</b> Der Assistent schickt dieselben Anfragen, die man sonst per Maus auslösen würde: '
+        '<b>MariaDB</b> bekommt deine fehlenden Tabellen. <b>Node-RED</b> bekommt ' + code('node-red-node-mysql')
+        + ' und den Tab „Planeten &amp; Erdbeben“ mit Datenbank-Login und Präfix; beim Deployen lädt es selbst '
+        + code('astronomy-engine') + '. <b>Grafana</b> bekommt Datenquelle, Dashboard und, mit einem Server-Admin, '
+        'das Plugin Business Charts für das Sonnensystem.',
         '<b>Kontrolle.</b> Der Assistent wartet, bis die ersten Erdbeben berechnet in der Datenbank stehen.',
         '<b>„Setup beenden“.</b> Webserver und Programm schließen sich. Node-RED, Datenbank und Grafana arbeiten ohne '
         'die .exe weiter.',
     ]),
-    Paragraph('Was auf dem Windows-PC zurückbleibt', h2),
+    KeepTogether([
+        Paragraph('Zum Üben: selbst machen statt einrichten lassen', h2),
+        table([['Teil', 'Auswahl', 'Was man selbst tut'],
+               ['Datenbank', '„Tabellen: selbst schreiben“',
+                'Spalten und Schlüssel werden genannt, das ' + code('CREATE TABLE') + ' schreibt man selbst. „Tabellen '
+                'prüfen“ erklärt jeden Fehler mit Lösungsvorschlag (Einheit 06).'],
+               ['Datenbank', '„Tabellen: kopieren und einfügen“',
+                'Fertiges SQL mit eigenem Präfix einfügen und ausführen. Zugleich die Musterlösung.'],
+               ['Node-RED', '„Wie? Flow als JSON exportieren“',
+                'Flow mit eigenen Werten (ohne Passwort) im Editor importieren, Login eintragen, Deploy (Einheit 07).']],
+              [0.14, 0.28, 0.58]),
+    ]),
+    Paragraph('Was auf dem PC zurückbleibt, und warum die Datei rund 100 MB groß ist', h2),
     Paragraph('Praktisch nichts: keine Installation, kein Eintrag im Startmenü, nichts in der Registry. Nur der Browser '
-              'merkt sich die eingetippten Adressen und Namen für den nächsten Start, <b>Passwörter nie</b>. Die .exe kann '
-              'man danach löschen.', body),
-    Paragraph('Warum die Datei rund 100 MB groß ist', h2),
-    Paragraph('Sie enthält Node.js komplett. Deshalb muss auf dem PC vorher nichts installiert sein, nicht einmal '
-              'Node.js. Zusätzlich stecken die Setup-Seite, das Datenbank-Schema, der Node-RED-Flow, die Grafana-Abfragen '
-              'und das Zeichenprogramm für das Sonnensystem in der Datei.', body),
+              'merkt sich die eingetippten Adressen und Namen (und das eigene SQL), <b>Passwörter nie</b>. Die .exe kann '
+              'man danach löschen. Groß ist sie, weil Node.js komplett darin steckt; deshalb muss vorher nichts '
+              'installiert sein. Dazu kommen Setup-Seite, Datenbank-Schema, Node-RED-Flow und Grafana-Abfragen.', body),
     KeepTogether([
         Paragraph('Häufige Stolpersteine', h2),
         table([['Beobachtung', 'Was tun?'],
                ['Windows: „Der Computer wurde durch Windows geschützt“',
                 'Die Datei ist nicht signiert: „Weitere Informationen“ → „Trotzdem ausführen“.'],
-               ['Der Browser öffnet sich nicht', 'Die Adresse aus dem Konsolenfenster in den Browser kopieren.'],
                ['„Keine Datenbank unter … erreichbar“',
                 'Workstation: Port in der ' + code('.env') + ' geändert (z. B. 3307)? Dann noch einmal „Lokale '
                 'Docker-Umgebung“ klicken. Labor: ' + code('bind-address') + ' auf dem Pi.'],
@@ -151,10 +157,9 @@ story = [
                 'Einmal ' + code('sudo apt install libatomic1') + ', vorher ' + code('chmod +x') + ' auf die Datei.']],
               [0.4, 0.6], first_bold=False),
     ]),
-    Paragraph('Download und mehr', h2),
-    Paragraph('Die Programme für Windows, Linux und den Raspberry Pi gibt es auf GitHub unter <b>Releases</b> (Zugang nur '
-              'auf Einladung). Ausführlich erklärt ist der Assistent in der Lerneinheit ' + code('lernen/09-setup-assistent')
-              + ', die Installation in ' + code('ERSTE-SCHRITTE.md') + '.', body),
+    Spacer(1, 6),
+    Paragraph('<b>Download und mehr:</b> Programme für Windows, Linux und den Raspberry Pi auf GitHub unter <b>Releases</b> '
+              '(Zugang nur auf Einladung). Mehr in Lerneinheit 09 und in ' + code('ERSTE-SCHRITTE.md') + '.', body),
 ]
 
 build(os.path.join(ROOT, 'praesentation', 'Setup-Assistent-erklaert.pdf'), story,

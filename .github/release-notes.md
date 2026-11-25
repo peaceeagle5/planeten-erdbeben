@@ -8,7 +8,7 @@
 | `planeten-lern-cockpit-windows-x64.exe` | Lern-Cockpit für **Windows 10/11**: in den entpackten Lernpaket-Ordner legen und doppelklicken |
 | `planeten-lern-cockpit-linux-x64` / `-linux-arm64` | Lern-Cockpit für Linux und den Raspberry Pi |
 | `PlanetenErdbeben-Lernpaket.zip` | Quellcode, Lerneinheiten, Docker-Umgebung und Anleitung `ERSTE-SCHRITTE.md` |
-| `Planeten-Erdbeben.pptx` | Präsentation für den Beamer (18 Folien, mit Sprechernotizen) |
+| `Planeten-Erdbeben.pptx` | Präsentation für den Beamer (21 Folien, mit Sprechernotizen) |
 | `Setup-Assistent-erklaert.pdf` | Handout: was der Setup-Assistent macht und was nicht (2 Seiten) |
 | `Lerneinheiten-Inhaltsuebersicht.pdf` | alle 16 Lerneinheiten und die zwei Lernwege für Anwendungsentwicklung und Systemintegration (3 Seiten) |
 | `Setup-Ablauf.png` | Ablaufgrafik auf einer Seite: was man im Setup-Assistenten eingibt und was im Hintergrund passiert (für Folie oder Aushang) |
