@@ -12,9 +12,16 @@ function isSea() {
   }
 }
 
+/**
+ * Returns the file as text with LF line endings. On Windows, git (core.autocrlf) checks files
+ * out with CRLF; the code that edits these texts (e.g. removing the require line from
+ * src/planets.js for Node-RED) expects "\n".
+ */
 function readAsset(relPath) {
-  if (isSea()) return require('node:sea').getAsset(relPath, 'utf8');
-  return fs.readFileSync(path.join(__dirname, '..', relPath), 'utf8');
+  const text = isSea()
+    ? require('node:sea').getAsset(relPath, 'utf8')
+    : fs.readFileSync(path.join(__dirname, '..', relPath), 'utf8');
+  return text.replace(/\r\n/g, '\n');
 }
 
 /** Every file the setup wizard needs at runtime (also the SEA asset list). */
