@@ -8,7 +8,10 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const { execFile } = require('node:child_process');
 const { readAsset } = require('../shared/assets');
-const { testDb, setupDb, countEvents, requeueOldEvents } = require('./lib/db');
+const { testDb, setupDb, verifyDb, checkTables, runSql, schemaSql, tableMode, countEvents, requeueOldEvents } = require('./lib/db');
+const { SPEC } = require('../shared/schema-spec');
+const { normalizePrefix } = require('../shared/tables');
+const { buildFlowImport } = require('../node-red/flow-builder');
 const { NodeRed, testNodeRed, scanNodeRed } = require('./lib/nodered');
 const { testGrafana, setupGrafana } = require('./lib/grafana');
 const { dockerPorts } = require('./lib/docker-env');
@@ -31,6 +34,37 @@ function dbForServers(db) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/** The task "write the tables yourself", in everyday words: what each column holds, not which SQL type. */
+function tableTask(prefix) {
+  const kind = (c) => {
+    if (c.values) return `nur ${c.values.map((v) => `'${v}'`).join(' oder ')}`;
+    if (c.autoIncrement) return 'Ganzzahl, zählt von selbst hoch';
+    if (c.default0) return 'Ganzzahl 0 oder 1, von selbst 0';
+    if (c.family === 'int') return 'Ganzzahl';
+    if (c.family === 'number') return 'Kommazahl';
+    if (c.family === 'datetime') return 'Datum und Uhrzeit mit Millisekunden';
+    return `Text, mind. ${c.minLen} Zeichen`;
+  };
+  return Object.entries(SPEC).map(([base, s]) => ({
+    table: prefix + base, purpose: s.purpose,
+    columns: s.columns.map((c) => ({ name: c.name, kind: kind(c), empty: c.nullable ? 'ja' : 'nein', desc: c.desc })),
+    keys: [
+      `Primärschlüssel: ${s.primaryKey.join(' + ')}`,
+      ...s.unique.map((u) => `jeder Wert nur einmal (UNIQUE): ${u.join(', ')}`),
+      ...s.foreignKeys.map((f) => `Fremdschlüssel (empfohlen): ${f.column} → ${prefix}${f.table}(id), beim Löschen mitlöschen`),
+    ],
+  }));
+}
+
+/** Flow for Menu > Import in the Node-RED editor, with this person's database address and table prefix. */
+function flowExport(db, owner) {
+  const s = dbForServers(db);
+  const prefix = normalizePrefix(db.tablePrefix);
+  const flow = buildFlowImport({ dbHost: s.host, dbPort: s.port, dbName: s.database, owner, tablePrefix: prefix });
+  const slug = (prefix || 'alle').replace(/_+$/, '').replace(/_/g, '-');
+  return { json: JSON.stringify(flow, null, 2), filename: `planeten-erdbeben-flow-${slug}.json`, nodes: flow.length - 1 };
+}
+
 // ---------------------------------------------------------------------------
 // Install: runs the selected steps and streams progress as NDJSON lines
 // ---------------------------------------------------------------------------
@@ -42,9 +76,15 @@ async function install(cfg, send) {
   if (!owner) throw new Error('Bitte oben deinen Namen eintragen.');
 
   if (cfg.steps.db) {
-    step('db', 'running', 'Datenbank wird eingerichtet ...');
-    await setupDb(cfg.db, log);
-    step('db', 'ok', 'Datenbank und Tabellen sind bereit.');
+    if (tableMode(cfg.db) === 'auto') {
+      step('db', 'running', 'Datenbank wird eingerichtet ...');
+      await setupDb(cfg.db, log);
+      step('db', 'ok', 'Datenbank und Tabellen sind bereit.');
+    } else {
+      step('db', 'running', 'Prüfe deine Tabellen ...');
+      await verifyDb(cfg.db, log);
+      step('db', 'ok', 'Deine Tabellen sind in Ordnung.');
+    }
   }
 
   let before = null;
@@ -167,6 +207,36 @@ async function handle(req, res) {
       // ports from .env next to compose.yaml (only the port keys, never passwords)
       const { ports, envFile } = dockerPorts();
       return sendJson(res, 200, { ok: true, ports, envFile });
+    }
+    case '/api/schema': {
+      // SQL to copy and the task to write it yourself, for this person's prefix (no connection needed)
+      try {
+        const prefix = normalizePrefix(body.db && body.db.tablePrefix);
+        return sendJson(res, 200, { ok: true, prefix, sql: schemaSql(body.db || {}), task: tableTask(prefix) });
+      } catch (err) {
+        return sendJson(res, 200, { ok: false, message: err.message });
+      }
+    }
+    case '/api/run-sql': {
+      try {
+        return sendJson(res, 200, await runSql(body.db || {}, body.sql));
+      } catch (err) {
+        return sendJson(res, 200, { ok: false, message: err.message });
+      }
+    }
+    case '/api/check-tables': {
+      try {
+        return sendJson(res, 200, { ok: true, check: await checkTables(body.db || {}) });
+      } catch (err) {
+        return sendJson(res, 200, { ok: false, message: err.message });
+      }
+    }
+    case '/api/flow': {
+      try {
+        return sendJson(res, 200, { ok: true, ...flowExport(body.db || {}, String(body.owner || '').trim()) });
+      } catch (err) {
+        return sendJson(res, 200, { ok: false, message: err.message });
+      }
     }
     case '/api/backfill': {
       try {

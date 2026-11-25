@@ -86,6 +86,8 @@ Im Browser öffnet sich der Setup-Assistent:
    eigenen Tabellen wie `anna_events`.
 2. Auf **„Lokale Docker-Umgebung“** klicken. Alle Felder füllen sich, die Ports kommen aus der `.env`, falls es eine gibt.
 3. **„Alles einrichten“**. Nach etwa einer Minute sind alle Schritte grün.
+   Wer üben möchte: bei der Datenbank „Tabellen: **selbst schreiben**“ oder „**kopieren und einfügen**“ wählen, und
+   bei Node-RED „**Flow als JSON exportieren**“, dann selbst importieren (Lerneinheiten 06 und 07).
 4. Unten bei **„Ältere Erdbeben laden“** das Jahr **2025** wählen und auf **„Erdbeben laden“** klicken.
    Nach ein paar Minuten zeigen die Zähler rund 1500 Erdbeben.
 5. **„Setup beenden“**.

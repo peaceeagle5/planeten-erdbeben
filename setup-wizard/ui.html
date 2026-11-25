@@ -68,6 +68,22 @@
   table.scan td button { padding: 4px 10px; }
   footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 24px; }
   .hidden { display: none !important; }
+  textarea { font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text); background: var(--input);
+    border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; width: 100%; resize: vertical; }
+  pre.sql { background: var(--code); border-radius: 6px; padding: 10px; font-size: 12.5px; max-height: 320px; overflow: auto; margin: 8px 0 0; }
+  table.task { width: 100%; border-collapse: collapse; margin: 6px 0 4px; font-size: 13.5px; }
+  table.task th, table.task td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.task th { color: var(--muted); font-weight: 500; font-size: 12.5px; }
+  table.task td:first-child { font-family: ui-monospace, Menlo, Consolas, monospace; white-space: nowrap; }
+  .task h4 { margin: 14px 0 2px; font-size: 14.5px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .task .keys { margin: 2px 0 0 18px; padding: 0; font-size: 13.5px; }
+  .checklist { list-style: none; padding: 0; margin: 10px 0 0; font-size: 14px; }
+  .checklist li { padding: 6px 8px; border-radius: 6px; margin-bottom: 6px; }
+  .checklist li.e { background: var(--err-bg); } .checklist li.h { background: var(--warn-bg); }
+  .checklist code { display: block; margin-top: 4px; font-size: 12.5px; white-space: pre-wrap; }
+  ol.howto { margin: 8px 0; padding-left: 22px; font-size: 14px; } ol.howto li { margin-bottom: 4px; }
+  .mode { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+  .mode select { width: auto; }
 </style>
 </head>
 <body>
@@ -96,7 +112,12 @@
   <section class="card" id="card-db">
     <div class="head">
       <h2><span class="num">1</span> Datenbank (MySQL / MariaDB)</h2>
-      <label class="toggle"><input type="checkbox" id="step-db" checked> Tabellen anlegen/prüfen</label>
+      <label class="mode">Tabellen:
+        <select id="db-mode">
+          <option value="auto">automatisch anlegen</option>
+          <option value="write">selbst schreiben (Übung)</option>
+          <option value="copy">kopieren und einfügen</option>
+        </select></label>
     </div>
     <div class="body">
       <p class="hint">Hier landen die Erdbeben. Node-RED schreibt hinein, Grafana liest daraus. Vorhandene Daten bleiben erhalten.</p>
@@ -125,6 +146,34 @@
       </details>
       <div class="row"><button data-test="db">Verbindung testen</button></div>
       <div class="msg" id="msg-db"></div>
+
+      <div id="tables-box" class="hidden">
+        <h3 class="sub" id="tables-title">Deine Tabellen</h3>
+        <div id="task-copy" class="hidden">
+          <p class="hint">Das ist das SQL für deine Tabellen, schon mit deinem Präfix. Kopieren und unten in das Feld einfügen,
+            oder in ein anderes SQL-Programm (HeidiSQL, DBeaver, VS Code, <code>mariadb</code> im Terminal). Lies beim Einfügen
+            mit: Was bedeuten <code>PRIMARY KEY</code>, <code>UNIQUE</code> und <code>FOREIGN KEY</code>?</p>
+          <div class="row" style="margin-top:0"><button type="button" id="sql-copy">SQL kopieren</button></div>
+          <pre class="sql" id="schema-sql"></pre>
+        </div>
+        <div id="task-write" class="hidden">
+          <p class="hint">Schreibe die <code>CREATE TABLE</code>-Befehle für diese drei Tabellen selbst. Die Datentypen wählst du
+            (z. B. <code>INT UNSIGNED</code>, <code>DOUBLE</code>, <code>VARCHAR(…)</code>, <code>DATETIME(3)</code>, <code>ENUM(…)</code>).
+            Hilfe: Lerneinheit 06 (Datenbank und SQL). „Tabellen prüfen“ sagt dir, was noch fehlt. Wenn du festhängst:
+            oben „kopieren und einfügen“ wählen, das ist die Musterlösung.</p>
+          <div class="task" id="task"></div>
+        </div>
+        <h3 class="sub">Dein SQL</h3>
+        <p class="hint">Hier schreiben oder einfügen, dann „Ausführen“. Wird in diesem Browser gespeichert. Mehrere Befehle mit
+          <code>;</code> trennen. Ändern statt neu anlegen: <code>ALTER TABLE</code>.</p>
+        <textarea id="sql-input" rows="12" spellcheck="false" placeholder="CREATE TABLE ..."></textarea>
+        <div class="row">
+          <button type="button" id="sql-run">Ausführen</button>
+          <button type="button" id="tables-check">Tabellen prüfen</button>
+        </div>
+        <div class="msg" id="msg-sql" style="white-space:pre-wrap"></div>
+        <ul class="checklist" id="check-result"></ul>
+      </div>
     </div>
   </section>
 
@@ -135,6 +184,12 @@
       <label class="toggle"><input type="checkbox" id="step-nodered" checked> einrichten</label>
     </div>
     <div class="body">
+      <label class="mode" style="margin-top:8px">Wie?
+        <select id="nodered-mode">
+          <option value="auto">automatisch einrichten</option>
+          <option value="export">Flow als JSON exportieren und selbst importieren</option>
+        </select></label>
+      <div id="nodered-auto">
       <p class="hint">Installiert den MySQL-Knoten und legt den Tab „Planeten &amp; Erdbeben“ an. Andere Flows bleiben unverändert.
         Jede:r hat ein eigenes Node-RED mit eigenem Port (z. B. 1892, 1893, …). Achte darauf, <b>deinen</b> Port zu nehmen.</p>
       <div class="grid">
@@ -158,6 +213,28 @@
       <div class="msg" id="msg-nodered"></div>
       <label class="toggle hidden" id="overwrite-wrap" style="margin-top:8px"><input type="checkbox" id="nodered-overwrite">
         <span>Trotzdem überschreiben: das ist wirklich mein Node-RED</span></label>
+      </div>
+      <div id="export-box" class="hidden">
+        <p class="hint">Der Flow kommt mit deinen Werten: Datenbank-Adresse aus Sicht von Node-RED (oben bei der Datenbank,
+          „Erweitert“), Datenbankname und dein Tabellen-Präfix. Benutzer und Passwort der Datenbank stehen <b>nicht</b> darin,
+          die trägst du in Node-RED ein.</p>
+        <div class="row" style="margin-top:0">
+          <button type="button" id="flow-make">Flow erzeugen</button>
+          <button type="button" id="flow-copy" disabled>Kopieren</button>
+          <button type="button" id="flow-download" disabled>Herunterladen</button>
+        </div>
+        <div class="msg" id="msg-flow"></div>
+        <textarea id="flow-json" rows="8" readonly class="hidden" style="margin-top:8px"></textarea>
+        <ol class="howto">
+          <li>Node-RED im Browser öffnen. Fehlt der MySQL-Knoten: Menü ☰ → <b>Palette verwalten</b> → <b>Installieren</b> →
+            <code>node-red-node-mysql</code> suchen und installieren.</li>
+          <li>Menü ☰ → <b>Import</b> → JSON einfügen (oder „Datei zum Importieren auswählen“) → <b>Import</b>.
+            Gibt es den Tab schon, „Ersetzen“ wählen.</li>
+          <li>Im neuen Tab doppelt auf einen MySQL-Knoten klicken (z. B. „INSERT …events“), beim Feld <b>Database</b> auf den
+            Stift: Benutzer und Passwort der Datenbank eintragen → <b>Aktualisieren</b> → <b>Fertig</b>.</li>
+          <li>Oben rechts <b>Deploy</b>. Nach ein bis zwei Minuten kommen die ersten Erdbeben an.</li>
+        </ol>
+      </div>
     </div>
   </section>
 
@@ -220,7 +297,7 @@
 const TOKEN = '__SETUP_TOKEN__';
 const $ = (id) => document.getElementById(id);
 const FIELDS = ['owner', 'server', 'scan-from', 'scan-to', 'db-host', 'db-port', 'db-user', 'db-database', 'db-tablePrefix', 'db-serverHost', 'db-serverPort',
-  'nodered-host', 'nodered-port', 'nodered-user', 'grafana-host', 'grafana-port', 'grafana-user'];
+  'db-mode', 'nodered-mode', 'nodered-host', 'nodered-port', 'nodered-user', 'grafana-host', 'grafana-port', 'grafana-user'];
 const STORE_KEY = 'planeten-erdbeben-setup';
 
 // ---- remember non-secret fields (passwords are never stored) --------------
@@ -230,12 +307,12 @@ function loadSaved() {
 function save() {
   const data = {};
   for (const id of FIELDS) data[id] = $(id).value;
-  for (const s of ['db', 'nodered', 'grafana']) data[`step-${s}`] = $(`step-${s}`).checked;
+  for (const s of ['nodered', 'grafana']) data[`step-${s}`] = $(`step-${s}`).checked;
   try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch { /* storage unavailable */ }
 }
 const saved = loadSaved();
 for (const id of FIELDS) if (saved[id] != null && saved[id] !== '') $(id).value = saved[id];
-for (const s of ['db', 'nodered', 'grafana']) if (typeof saved[`step-${s}`] === 'boolean') $(`step-${s}`).checked = saved[`step-${s}`];
+for (const s of ['nodered', 'grafana']) if (typeof saved[`step-${s}`] === 'boolean') $(`step-${s}`).checked = saved[`step-${s}`];
 
 // ---- the server address fills every host field that the user did not change
 const autoHosts = [...document.querySelectorAll('[data-auto=host]')];
@@ -301,7 +378,7 @@ $('preset-docker').addEventListener('click', async () => {
     }
   } catch { /* keep the standard ports from DOCKER_PRESET */ }
   for (const el of autoHosts) el.dataset.manual = '';
-  for (const s of ['db', 'nodered', 'grafana']) $(`step-${s}`).checked = true;
+  for (const s of ['nodered', 'grafana']) $(`step-${s}`).checked = true;
   $('db-serverHost').closest('details').open = true;
   syncCards();
   save();
@@ -320,7 +397,7 @@ document.querySelectorAll('[data-eye]').forEach((b) => b.addEventListener('click
 for (const id of ['nodered-host', 'nodered-port']) $(id).addEventListener('input', () => {
   $('nodered-overwrite').checked = false; $('overwrite-wrap').classList.add('hidden');
 });
-for (const s of ['db', 'nodered', 'grafana']) $(`step-${s}`).addEventListener('change', syncCards);
+for (const s of ['nodered', 'grafana']) $(`step-${s}`).addEventListener('change', syncCards);
 syncCards();
 
 // ---- config ---------------------------------------------------------------
@@ -328,11 +405,12 @@ const url = (host, port) => `http://${host.trim()}:${port}`;
 function config() {
   return {
     owner: $('owner').value.trim(),
-    steps: { db: $('step-db').checked, nodered: $('step-nodered').checked, grafana: $('step-grafana').checked },
+    // database: always (create the tables, or check the ones the pupil wrote); Node-RED only when set up automatically
+    steps: { db: true, nodered: $('step-nodered').checked && $('nodered-mode').value === 'auto', grafana: $('step-grafana').checked },
     db: {
       host: $('db-host').value.trim(), port: Number($('db-port').value) || 3306,
       user: $('db-user').value.trim(), password: $('db-password').value, database: $('db-database').value.trim(),
-      tablePrefix: prefixEl.value.trim(),
+      tablePrefix: prefixEl.value.trim(), mode: $('db-mode').value,
       serverHost: $('db-serverHost').value.trim(), serverPort: $('db-serverPort').value.trim(),
     },
     nodered: {
@@ -532,7 +610,11 @@ function showDone(c, result) {
     p.appendChild(a); $('links').appendChild(p);
   }
   $('backfill').disabled = !c.steps.nodered;
-  if (!c.steps.nodered) show('msg-backfill', 'info', 'Backfill braucht den Node-RED-Teil.');
+  if (!c.steps.nodered) {
+    show('msg-backfill', 'info', $('nodered-mode').value === 'export'
+      ? 'Du hast den Flow selbst importiert: Im Node-RED-Editor auf den Knopf links am Node „Backfill 2025 M5+“ klicken (Jahr per Doppelklick ändern).'
+      : 'Backfill braucht den Node-RED-Teil.');
+  }
   clearInterval(statusTimer);
   refreshStatus(c);
   statusTimer = setInterval(() => refreshStatus(c), 5000);
@@ -562,6 +644,127 @@ $('backfill').addEventListener('click', async () => {
       : r.message);
   } catch (err) { show('msg-backfill', 'err', err.message); }
   $('backfill').disabled = false;
+});
+
+// ---- tables by hand: write them yourself or copy and paste -------------------------
+const SQL_KEY = `${STORE_KEY}-sql`;
+try { $('sql-input').value = localStorage.getItem(SQL_KEY) || ''; } catch { /* storage unavailable */ }
+$('sql-input').addEventListener('input', () => { try { localStorage.setItem(SQL_KEY, $('sql-input').value); } catch { /* ignore */ } });
+
+function el(tag, text, cls) { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; }
+function renderTask(task) {
+  const box = $('task'); box.innerHTML = '';
+  for (const t of task) {
+    box.appendChild(el('h4', t.table));
+    box.appendChild(el('p', t.purpose, 'hint'));
+    const table = el('table', null, 'task');
+    const head = table.insertRow();
+    for (const h of ['Spalte', 'Was steht drin?', 'darf leer sein', 'Bedeutung']) head.appendChild(el('th', h));
+    for (const c of t.columns) {
+      const r = table.insertRow();
+      for (const v of [c.name, c.kind, c.empty, c.desc]) r.insertCell().textContent = v;
+    }
+    box.appendChild(table);
+    const keys = el('ul', null, 'keys');
+    for (const k of t.keys) keys.appendChild(el('li', k));
+    box.appendChild(keys);
+  }
+}
+let schemaTimer = null;
+async function loadSchema() {
+  try {
+    const r = await (await api('/api/schema', { db: config().db })).json();
+    if (!r.ok) { $('schema-sql').textContent = r.message; return; }
+    $('schema-sql').textContent = r.sql;
+    renderTask(r.task);
+    $('tables-title').textContent = r.prefix ? `Deine Tabellen: ${r.prefix}events, ${r.prefix}body_positions, ${r.prefix}aspects` : 'Deine Tabellen';
+  } catch (err) { $('schema-sql').textContent = err.message; }
+}
+function syncTables() {
+  const mode = $('db-mode').value;
+  $('tables-box').classList.toggle('hidden', mode === 'auto');
+  $('task-copy').classList.toggle('hidden', mode !== 'copy');
+  $('task-write').classList.toggle('hidden', mode !== 'write');
+  if (mode !== 'auto') { clearTimeout(schemaTimer); schemaTimer = setTimeout(loadSchema, 300); }
+}
+for (const id of ['db-tablePrefix', 'db-database', 'owner']) $(id).addEventListener('input', syncTables);
+$('db-mode').addEventListener('change', syncTables);
+syncTables();
+
+async function copyText(text, msgId) {
+  try { await navigator.clipboard.writeText(text); show(msgId, 'ok', 'Kopiert. Jetzt einfügen (Strg+V bzw. Cmd+V).'); }
+  catch { show(msgId, 'warn', 'Kopieren ging nicht automatisch: Text markieren und mit Strg+C kopieren.'); }
+}
+$('sql-copy').addEventListener('click', () => copyText($('schema-sql').textContent, 'msg-sql'));
+
+$('sql-run').addEventListener('click', async () => {
+  const c = config(); const problem = missing('db', c);
+  if (problem) { show('msg-sql', 'err', problem); return; }
+  $('sql-run').disabled = true; show('msg-sql', 'info', 'Führe aus ...');
+  try {
+    const r = await (await api('/api/run-sql', { db: c.db, sql: $('sql-input').value })).json();
+    show('msg-sql', r.ok ? 'ok' : 'err', r.message);
+  } catch (err) { show('msg-sql', 'err', err.message); }
+  $('sql-run').disabled = false;
+});
+
+$('tables-check').addEventListener('click', async () => {
+  const c = config(); const problem = missing('db', c);
+  if (problem) { show('msg-sql', 'err', problem); return; }
+  $('tables-check').disabled = true; show('msg-sql', 'info', 'Prüfe deine Tabellen ...');
+  const list = $('check-result'); list.innerHTML = '';
+  try {
+    const r = await (await api('/api/check-tables', { db: c.db })).json();
+    if (!r.ok) { show('msg-sql', 'err', r.message); return; }
+    const { errors, hints } = r.check;
+    show('msg-sql', errors.length ? 'err' : 'ok', errors.length
+      ? `Noch ${errors.length} Punkt${errors.length === 1 ? '' : 'e'} offen. Unter jedem steht ein Vorschlag, wie es geht.`
+      : `Deine Tabellen sind in Ordnung.${hints.length ? ' Unten noch Tipps, die nicht nötig sind.' : ''} Jetzt „Alles einrichten“.`);
+    for (const [items, cls] of [[errors, 'e'], [hints, 'h']]) {
+      for (const it of items) {
+        const li = el('li', null, cls);
+        li.appendChild(el('span', `${cls === 'e' ? '✗' : 'Tipp:'} ${it.table}: ${it.text}`));
+        if (it.fix) li.appendChild(el('code', it.fix));
+        list.appendChild(li);
+      }
+    }
+  } catch (err) { show('msg-sql', 'err', err.message); } finally { $('tables-check').disabled = false; }
+});
+
+// ---- Node-RED: set up automatically, or export the flow and import it by hand ----------
+function syncNodeRed() {
+  const exp = $('nodered-mode').value === 'export';
+  $('nodered-auto').classList.toggle('hidden', exp);
+  $('export-box').classList.toggle('hidden', !exp);
+}
+$('nodered-mode').addEventListener('change', syncNodeRed);
+syncNodeRed();
+let flowFile = null;
+$('flow-make').addEventListener('click', async () => {
+  const c = config();
+  if (!c.owner) { show('msg-flow', 'err', 'Bitte ganz oben deinen Namen eintragen.'); return; }
+  if (!c.db.host || !c.db.database) { show('msg-flow', 'err', 'Bitte oben bei der Datenbank Adresse und Datenbankname eintragen.'); return; }
+  try {
+    const r = await (await api('/api/flow', { db: c.db, owner: c.owner })).json();
+    if (!r.ok) { show('msg-flow', 'err', r.message); return; }
+    flowFile = r;
+    $('flow-json').value = r.json; $('flow-json').classList.remove('hidden');
+    $('flow-copy').disabled = false; $('flow-download').disabled = false;
+    const host = c.db.serverHost || c.db.host;
+    const port = c.db.serverPort || c.db.port;
+    const prefix = c.db.tablePrefix ? `, Tabellen ${c.db.tablePrefix.replace(/_?$/, '_')}events usw` : '';
+    show('msg-flow', 'ok', `Flow mit ${r.nodes} Nodes erzeugt: Datenbank ${host}:${port}/${c.db.database}${prefix}.`);
+  } catch (err) { show('msg-flow', 'err', err.message); }
+});
+$('flow-copy').addEventListener('click', () => copyText($('flow-json').value, 'msg-flow'));
+$('flow-download').addEventListener('click', () => {
+  if (!flowFile) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([flowFile.json], { type: 'application/json' }));
+  a.download = flowFile.filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  show('msg-flow', 'ok', `Gespeichert als ${flowFile.filename} (im Download-Ordner).`);
 });
 
 $('quit').addEventListener('click', async () => {

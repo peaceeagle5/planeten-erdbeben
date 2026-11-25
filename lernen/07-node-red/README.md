@@ -103,6 +103,10 @@ Deshalb kann man `flows.json` weitergeben, ohne Passwörter zu verraten. Der Sch
 2. **Im Editor** (http://127.0.0.1:1880 oder dein eigener Port): Baue den Flow
    `inject → http request (USGS-Feed) → function → debug`, der im Debug-Fenster ausgibt:
    „12 Beben, stärkstes: M6.1 bei …“. Musterlösung zum Importieren (Menü → Import): [loesung-flow.json](loesung-flow.json).
+3. **Den Projekt-Flow selbst importieren:** Im Setup-Assistenten bei Node-RED „Wie? **Flow als JSON exportieren**“ wählen,
+   „Flow erzeugen“, kopieren oder herunterladen. Dann im Editor: MySQL-Knoten über „Palette verwalten“ installieren,
+   Menü → Import, im MySQL-Konfigurations-Node Benutzer und Passwort eintragen, Deploy. Schau dir dabei an, wie
+   die Tab-Umgebungsvariable `TABLE_PREFIX` aussieht. (Ohne eigene Werte: [flow-import.json](../../node-red/flow-import.json).)
 
 ## So erklärst du es
 > „Node-RED ist wie eine Fließband-Fabrik. Jedes Kästchen ist eine Station, die Drähte sind das Band,

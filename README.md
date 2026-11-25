@@ -39,6 +39,11 @@ for example on a Raspberry Pi at `192.168.100.133`. Nothing has to be installed 
    - **your own Grafana account**.
    - The **table prefix** fills itself from your name (`anna_mueller_`): everyone gets their own tables in the
      shared database. "Lokale Docker-Umgebung" also reads the ports from `.env` (e.g. `DB_PORT=3307`).
+   - **"Tabellen"** (database card): create them automatically, **write them yourself** (an exercise: the wizard
+     shows which columns and keys are needed, runs your SQL and checks the result with suggested fixes,
+     [shared/schema-spec.js](shared/schema-spec.js)), or **copy and paste** the ready SQL.
+   - **"Wie?"** (Node-RED card): set up automatically, or **export the flow as JSON** (with your database address
+     and prefix, without passwords) and import it in the Node-RED editor yourself.
 
    Click **Verbindung testen** for each part, then **Alles einrichten**.
 3. The wizard then
