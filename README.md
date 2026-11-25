@@ -71,7 +71,10 @@ Requirements on the servers:
 - **Node-RED** needs internet access (USGS, GitHub for the plate boundaries, and npm for `astronomy-engine`/`node-red-node-mysql`), and
   `functionExternalModules: true` in `settings.js`, which is the default.
   Behind a proxy: see [LABOR-PROXY.md](LABOR-PROXY.md) (German).
-- **Grafana** needs an Admin login.
+- **Grafana** needs an Admin login. The solar system panel needs the plugin **Business Charts**
+  (`volkovlabs-echarts-panel`, Apache ECharts). The wizard installs it if the login is a Grafana *server* admin
+  and Grafana has internet; otherwise: `sudo grafana cli plugins install volkovlabs-echarts-panel` and restart
+  Grafana. Without it only that one panel stays empty. (The Docker environment preinstalls it.)
 
 Building the programs (needs Node.js 25.5+, downloads the official Node.js binaries once):
 ```

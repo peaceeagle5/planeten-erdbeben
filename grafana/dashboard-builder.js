@@ -31,6 +31,8 @@ function loadQueries() {
 }
 
 const DS = { type: 'mysql', uid: '${ds}' };
+/** Business Charts (Apache ECharts) panel plugin, for the solar system view. Must be installed in Grafana. */
+const ECHARTS_PLUGIN = 'volkovlabs-echarts-panel';
 const target = (sql) => ({ refId: 'A', datasource: DS, editorMode: 'code', rawQuery: true, format: 'table', rawSql: sql });
 
 const QUAKE_COLOR = 'red';
@@ -170,7 +172,7 @@ const dashboard = {
       } },
     },
     {
-      id: 3, type: 'geomap', title: 'Earthquakes (time range, M ≥ $minmag): click a quake to see its sky', gridPos: { x: 0, y: 14, w: 16, h: 13 }, datasource: DS,
+      id: 3, type: 'geomap', title: 'Earthquakes (time range, M ≥ $minmag): click a quake to see its sky', gridPos: { x: 0, y: 14, w: 14, h: 14 }, datasource: DS,
       targets: [target(Q[1]), { ...target(Q[8]), refId: 'B' }, { ...target(Q[10]), refId: 'C' }],
       description: 'Red dots: earthquakes. Blue lines: boundaries of the tectonic plates (PB2002, loaded by Node-RED). ' +
         'White ring: the quake shown in the sky panel above. Click a quake, then "Show the sky at this quake".',
@@ -213,7 +215,16 @@ const dashboard = {
       },
     },
     {
-      id: 8, type: 'barchart', title: 'Earthquakes per tectonic plate (M ≥ $minmag)', gridPos: { x: 16, y: 14, w: 8, h: 13 },
+      id: 9, type: ECHARTS_PLUGIN, title: 'Solar system at the selected earthquake (click a planet)', gridPos: { x: 14, y: 14, w: 10, h: 14 },
+      datasource: DS, targets: [target(Q[11]), { ...target(Q[12]), refId: 'B' }],
+      description: 'The planets around the Sun when the selected quake happened, seen from above (north up). ' +
+        'Angle = longitude seen from the Sun. Not to scale: every orbit has its own ring; real distances in the tooltip. ' +
+        'Dashed line: from the Earth to the selected body ($body), the direction we see it in. Click a planet to select it. ' +
+        'Needs the Business Charts plugin; code in grafana/solar-system.echarts.js.',
+      options: { editorMode: 'code', getOption: readAsset('grafana/solar-system.echarts.js'), renderer: 'canvas', map: 'none' },
+    },
+    {
+      id: 8, type: 'barchart', title: 'Earthquakes per tectonic plate (M ≥ $minmag)', gridPos: { x: 16, y: 28, w: 8, h: 10 },
       datasource: DS, targets: [target(Q[9])],
       description: 'Number of quakes in the time range on each plate (the 15 plates with the most). ' +
         'Most quakes happen where plates meet, so plates with long, active boundaries lead.',
@@ -225,11 +236,11 @@ const dashboard = {
         tooltip: { mode: 'single', sort: 'none' },
       },
     },
-    barChart(4, 'Moon phase: earthquakes vs. control', COMPARE_NOTE, Q[2], 'phase', { x: 0, y: 27, w: 12, h: 10 }),
-    barChart(5, 'Zodiac sign of $body: earthquakes vs. control', COMPARE_NOTE, Q[3], 'sign', { x: 12, y: 27, w: 12, h: 10 }),
-    barChart(6, 'Moon above / below the horizon at the quake location', COMPARE_NOTE, Q[5], 'moon', { x: 0, y: 37, w: 8, h: 10 }),
+    barChart(4, 'Moon phase: earthquakes vs. control', COMPARE_NOTE, Q[2], 'phase', { x: 0, y: 28, w: 8, h: 10 }),
+    barChart(5, 'Zodiac sign of $body: earthquakes vs. control', COMPARE_NOTE, Q[3], 'sign', { x: 8, y: 28, w: 8, h: 10 }),
+    barChart(6, 'Moon above / below the horizon at the quake location', COMPARE_NOTE, Q[5], 'moon', { x: 0, y: 38, w: 8, h: 10 }),
     {
-      id: 7, type: 'table', title: 'Aspects that differ most (orb ≤ $orb°)', gridPos: { x: 8, y: 37, w: 16, h: 10 }, datasource: DS, targets: [target(Q[4])],
+      id: 7, type: 'table', title: 'Aspects that differ most (orb ≤ $orb°)', gridPos: { x: 8, y: 38, w: 16, h: 10 }, datasource: DS, targets: [target(Q[4])],
       description: 'Share of events that had each aspect. Only aspects seen at least 30 times are listed. With many aspects, some differences are expected by chance.',
       fieldConfig: { defaults: { decimals: 1 }, overrides: [
         ...comparisonOverrides,
@@ -265,7 +276,7 @@ function grafanaAuthHeader({ token, user, password }) {
   return token ? `Bearer ${token}` : 'Basic ' + Buffer.from(`${user}:${password}`).toString('base64');
 }
 
-module.exports = { buildDashboard, uploadDashboard, grafanaAuthHeader, DASHBOARD_UID: 'planeten-erdbeben' };
+module.exports = { buildDashboard, uploadDashboard, grafanaAuthHeader, DASHBOARD_UID: 'planeten-erdbeben', ECHARTS_PLUGIN };
 
 if (require.main === module) {
   const fs = require('node:fs');

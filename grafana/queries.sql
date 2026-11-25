@@ -142,3 +142,35 @@ WHERE id = IF(${event:sqlstring} = '',
               (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1
                ORDER BY time_utc DESC LIMIT 1),
               CAST(${event:sqlstring} AS UNSIGNED));
+
+-- =====================================================================
+-- 11) Business Charts panel (refId A): the solar system at the selected quake, seen from above
+--     lon = heliocentric ecliptic longitude, dist = distance from the Sun (AU).
+--     The Earth has no row of its own: seen from the Sun it stands opposite the Sun
+--     (longitude + 180°, same distance). Drawn by grafana/solar-system.echarts.js.
+-- =====================================================================
+SELECT body, helio_lon_deg AS lon, helio_dist_au AS dist
+FROM body_positions
+WHERE event_id = IF(${event:sqlstring} = '',
+              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1
+               ORDER BY time_utc DESC LIMIT 1),
+              CAST(${event:sqlstring} AS UNSIGNED))
+  AND body NOT IN ('Sun', 'Moon') AND helio_dist_au IS NOT NULL
+UNION ALL
+SELECT 'Earth', MOD(ecl_lon_deg + 180, 360), distance_au
+FROM body_positions
+WHERE event_id = IF(${event:sqlstring} = '',
+              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1
+               ORDER BY time_utc DESC LIMIT 1),
+              CAST(${event:sqlstring} AS UNSIGNED))
+  AND body = 'Sun';
+
+-- =====================================================================
+-- 12) Business Charts panel, second query (refId B): title of the solar system chart
+-- =====================================================================
+SELECT time_utc AS time, place, magnitude
+FROM events
+WHERE id = IF(${event:sqlstring} = '',
+              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1
+               ORDER BY time_utc DESC LIMIT 1),
+              CAST(${event:sqlstring} AS UNSIGNED));
