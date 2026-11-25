@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS body_positions (
   vis_magnitude   DOUBLE       NULL,
   phase_fraction  DOUBLE       NULL,
   retrograde      TINYINT(1)   NOT NULL,
+  helio_lon_deg   DOUBLE       NULL,       -- heliocentric ecliptic longitude (seen from the Sun), NULL for the Sun
+  helio_dist_au   DOUBLE       NULL,       -- distance from the Sun. Earth = opposite the Sun: Sun's ecl_lon_deg + 180
   PRIMARY KEY (event_id, body),
   KEY idx_body_sign (body, zodiac_sign),
   CONSTRAINT fk_pos_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE

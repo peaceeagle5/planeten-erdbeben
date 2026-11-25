@@ -92,6 +92,15 @@ test('Node-RED functions write into the prefixed tables', () => {
   assert.ok(tables.has('anna_body_positions') && tables.has('anna_events'));
   for (const t of tables) assert.match(t, /^anna_/);
 
+  // heliocentric columns: filled for the planets, NULL for the Sun
+  const bp = writes.find((m) => m.topic.startsWith('REPLACE INTO anna_body_positions'));
+  const cols = bp.topic.match(/\(([^)]+)\)/)[1].split(',');
+  const rows = [];
+  for (let i = 0; i < bp.payload.length; i += cols.length) rows.push(Object.fromEntries(cols.map((c, k) => [c, bp.payload[i + k]])));
+  const row = (b) => rows.find((r) => r.body === b);
+  assert.equal(row('Sun').helio_dist_au, null);
+  assert.ok(row('Mars').helio_dist_au > 1.3 && row('Mars').helio_lon_deg >= 0);
+
   const [legacy] = runFunction(code('peb_split'), usgs, {});
   assert.match(legacy[0].topic, /^INSERT IGNORE INTO events /);
 });

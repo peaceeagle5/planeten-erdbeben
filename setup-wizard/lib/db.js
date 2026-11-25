@@ -82,6 +82,50 @@ function schemaStatements(prefix = '') {
     .map((s) => withPrefix(s, prefix));
 }
 
+/**
+ * Columns that came after the first version of db/schema.sql. CREATE TABLE IF NOT EXISTS does not
+ * change a table that already exists, so setupDb adds them with ALTER TABLE. [table, column, definition]
+ */
+const ADDED_COLUMNS = [
+  ['body_positions', 'helio_lon_deg', 'DOUBLE NULL AFTER retrograde'],
+  ['body_positions', 'helio_dist_au', 'DOUBLE NULL AFTER helio_lon_deg'],
+];
+
+async function addMissingColumns(conn, prefix, log) {
+  for (const [base, column, definition] of ADDED_COLUMNS) {
+    const table = tableNames(prefix)[base];
+    const [cols] = await conn.query(`SHOW COLUMNS FROM \`${table}\` LIKE ?`, [column]);
+    if (cols.length) continue;
+    await conn.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${definition}`);
+    log(`Spalte ${column} in ${table} ergänzt.`);
+  }
+}
+
+/**
+ * Events computed before the heliocentric columns existed have NULL there. Setting them back to
+ * "pending" lets Node-RED compute them again (REPLACE overwrites the old rows). Returns the count.
+ */
+async function requeueWithoutHelio(conn, prefix) {
+  const t = tableNames(prefix);
+  const [res] = await conn.query(
+    `UPDATE \`${t.events}\` SET sky_computed = 0 WHERE sky_computed = 1 AND id IN ` +
+    `(SELECT event_id FROM \`${t.body_positions}\` WHERE body <> 'Sun' AND helio_dist_au IS NULL)`);
+  return res.affectedRows;
+}
+
+/** Same as the last step of setupDb, on its own: used again after the new Node-RED flow is deployed. */
+async function requeueOldEvents(cfg, log) {
+  const prefix = normalizePrefix(cfg.tablePrefix);
+  const conn = await connect(cfg, true);
+  try {
+    const n = await requeueWithoutHelio(conn, prefix);
+    if (n) log(`${n} ältere Events werden neu berechnet (Positionen von der Sonne aus fehlten noch).`);
+    return n;
+  } finally {
+    await conn.end().catch(() => {});
+  }
+}
+
 async function setupDb(cfg, log) {
   checkName(cfg.database, cfg.user || "");
   const prefix = normalizePrefix(cfg.tablePrefix);
@@ -106,6 +150,9 @@ async function setupDb(cfg, log) {
       await conn.query(sql);
       if (table) log(`Tabelle ${table} angelegt.`);
     }
+    await addMissingColumns(conn, prefix, log);
+    const n = await requeueWithoutHelio(conn, prefix);
+    if (n) log(`${n} ältere Events werden neu berechnet (Positionen von der Sonne aus fehlten noch). Das dauert ein paar Minuten.`);
   } catch (err) {
     throw new Error(explain(err, cfg));
   } finally {
@@ -126,4 +173,4 @@ async function countEvents(cfg) {
   }
 }
 
-module.exports = { testDb, setupDb, countEvents, schemaStatements, explainDbError: explain };
+module.exports = { testDb, setupDb, countEvents, requeueOldEvents, schemaStatements, ADDED_COLUMNS, explainDbError: explain };

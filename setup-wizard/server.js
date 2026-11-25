@@ -8,7 +8,7 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const { execFile } = require('node:child_process');
 const { readAsset } = require('../shared/assets');
-const { testDb, setupDb, countEvents } = require('./lib/db');
+const { testDb, setupDb, countEvents, requeueOldEvents } = require('./lib/db');
 const { NodeRed, testNodeRed, scanNodeRed } = require('./lib/nodered');
 const { testGrafana, setupGrafana } = require('./lib/grafana');
 const { dockerPorts } = require('./lib/docker-env');
@@ -57,9 +57,12 @@ async function install(cfg, send) {
     if (!check.ok) throw new Error(check.message);
     if (!info.functionExternalModules) throw new Error('Node-RED erlaubt keine externen Module (functionExternalModules: false in settings.js).');
     if (!info.hasMysql) await nr.installMysqlNode(log);
-    try { before = await countEvents(cfg.db); } catch { /* tables may be missing if db step skipped */ }
     await nr.deployTab(dbForServers(cfg.db), info.tabId, owner);
     log(info.tabExists ? 'Tab "Planeten & Erdbeben" aktualisiert und deployt.' : 'Tab "Planeten & Erdbeben" angelegt und deployt.');
+    // The old flow may have recomputed a few events without the new columns in the meantime.
+    // Count afterwards, so the check below sees the new flow's work.
+    try { await requeueOldEvents(cfg.db, log); } catch { /* tables may be missing if db step skipped */ }
+    try { before = await countEvents(cfg.db); } catch { /* tables may be missing if db step skipped */ }
     step('nodered', 'ok', 'Node-RED-Flow ist deployt.');
   }
 

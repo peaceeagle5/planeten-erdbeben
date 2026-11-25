@@ -25,12 +25,13 @@ function bulk(table, cols, rows) {
 const msgs = [bulk(T + 'body_positions', [
   'event_id', 'body', 'ra_hours', 'dec_deg', 'distance_au', 'azimuth_deg', 'altitude_deg',
   'above_horizon', 'ecl_lon_deg', 'ecl_lat_deg', 'zodiac_sign', 'degree_in_sign',
-  'constellation', 'vis_magnitude', 'phase_fraction', 'retrograde',
+  'constellation', 'vis_magnitude', 'phase_fraction', 'retrograde', 'helio_lon_deg', 'helio_dist_au',
 ], sky.bodies.map((b) => [
   ev.id, b.body, b.equatorial.rightAscensionHours, b.equatorial.declinationDeg, b.equatorial.distanceAU,
   b.horizontal.azimuthDeg, b.horizontal.altitudeDeg, b.horizontal.aboveHorizon ? 1 : 0,
   b.ecliptic.longitudeDeg, b.ecliptic.latitudeDeg, b.ecliptic.sign, b.ecliptic.degreeInSign,
   b.constellation.name, b.magnitude, b.phaseFraction, b.retrograde ? 1 : 0,
+  b.heliocentric ? b.heliocentric.longitudeDeg : null, b.heliocentric ? b.heliocentric.distanceAU : null,
 ]))];
 if (sky.aspects.length) {
   msgs.push(bulk(T + 'aspects',
