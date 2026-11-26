@@ -27,10 +27,8 @@ function replaceOrFail(text, from, to, file) {
 /** Text edits both packages share: drop parts that only make sense in the author's own copy. */
 const COMMON_EDITS = {
   'README.md': [
-    // author's own machine, not useful for others
-    [/## Local development setup on this Mac\n[\s\S]*?(?=\n## )/, ''],
     // the packing tools are not part of the packages
-    [/ `node tools\/lernpaket\.js` packs project \+ learning units \+\nDocker environment into `dist\/PlanetenErdbeben-Lernpaket\.zip` \(no executables, no real passwords\)\./, ''],
+    [/ `node tools\/lernpaket\.js` packs project \+ learning units \+\nDocker environment into `dist\/PlanetenErdbeben-Lernpaket\.zip` \(no executables, no real passwords; needs the `zip`\ncommand, so run it on macOS or Linux\)\./, ''],
   ],
 };
 

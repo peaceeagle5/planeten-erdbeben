@@ -14,7 +14,8 @@ USGS earthquake feed ──> Node-RED ──> MySQL/MariaDB <── Grafana
 **Local environment without a Pi:** `docker compose up -d` starts MariaDB, Node-RED and Grafana on this PC
 ([compose.yaml](compose.yaml)); then `npm run setup` → "Lokale Docker-Umgebung". Step by step, in German:
 [ERSTE-SCHRITTE.md](ERSTE-SCHRITTE.md). `node tools/lernpaket.js` packs project + learning units +
-Docker environment into `dist/PlanetenErdbeben-Lernpaket.zip` (no executables, no real passwords).
+Docker environment into `dist/PlanetenErdbeben-Lernpaket.zip` (no executables, no real passwords; needs the `zip`
+command, so run it on macOS or Linux).
 
 ## Quick start: setup wizard (for classes)
 
@@ -25,7 +26,9 @@ for example on a Raspberry Pi at `192.168.100.133`. Nothing has to be installed 
 
 *The whole process on one page (in German). Vector version: [Setup-Ablauf.svg](praesentation/Setup-Ablauf.svg).*
 
-1. Start the program for your system from `dist/`:
+1. Download the program for your system from the
+   [latest release](https://github.com/peaceeagle5/planeten-erdbeben/releases/latest) and start it
+   (if you build the programs yourself, see below, they are in `dist/`):
    - Windows: `planeten-erdbeben-setup-windows-x64.exe` (double-click; on the first start
      Windows SmartScreen may warn about an unknown publisher: "More info" > "Run anyway")
    - Linux (PC): `planeten-erdbeben-setup-linux-x64`, Linux (Raspberry Pi 64-bit): `planeten-erdbeben-setup-linux-arm64`
@@ -96,7 +99,9 @@ Requirements on the servers:
   and Grafana has internet; otherwise: `sudo grafana cli plugins install volkovlabs-echarts-panel` and restart
   Grafana. Without it only that one panel stays empty. (The Docker environment preinstalls it.)
 
-Building the programs (needs Node.js 25.5+, downloads the official Node.js binaries once):
+Building the programs (needs Node.js 25.5+, downloads the official Node.js binaries once). The two `build` commands
+need macOS or Linux, because the build script calls `/usr/bin/unzip` and `/usr/bin/tar`; running from source does not
+use it:
 ```
 npm install
 npm run build-setup                       # dist/: Windows x64, Linux x64, Linux arm64
@@ -120,21 +125,24 @@ npm run lernen:ui                         # run the Lern-Cockpit from source ins
 | `grafana/dynamic-layout.js` | Rows with show/hide rules for the "View" switch (dashboard schema v2, Grafana 13) |
 | `setup-wizard/` | The wizard: `server.js` (local web server), `ui.html` (page), `lib/` (one module per server, `docker-env.js` for the Docker ports), `build.js` |
 | `proxy-windows/` | Windows scripts for the school proxy (npm, git, winget) |
+| `shared/` | Code used in several places: table names and prefix, schema check, embedded files and build of the single-file programs |
+| `lernen/` | Learning units (German) with exercises, tests and sample solutions |
+| `lern-cockpit/` | Browser page for the learning units, with editor, check button and terminal. `npm run lernen:ui` |
+| `tools/` | Command-line scripts: correlation finder, packaging, smoke tests of the built programs |
 | `praesentation/quellen/` | Python scripts (ReportLab) that generate the PDF handouts in `praesentation/` and `proxy-windows/`; how to run them: `stil.py` |
 
 After changing a function, a query or `src/planets.js`, run the wizard again (or rebuild the programs) to
 update Node-RED and Grafana.
 
-## Local development setup on this Mac
+## Local Docker environment
 
-Since 2026-11-19 this Mac uses the same Docker environment as the pupils ([compose.yaml](compose.yaml)):
-- `docker compose up -d` / `stop` / `start`. The containers restart on their own whenever Docker Desktop runs.
-- MariaDB on **127.0.0.1:3307** (3306 stays free for XAMPP and other projects), Node-RED on 1880, Grafana on 3000
-  (`admin` / `admin-lernen`). Logins in `.env`.
-- The old XAMPP setup: logins in `.env.xampp`, data backup in `backup/` (both ignored by Git and Docker).
-  No longer used by this project: XAMPP's `planeten_erdbeben` database, the global Node-RED with
-  `node-red/data` + `node-red/flow.json` (`npm run node-red`), the standalone Grafana install, and the
-  planet API on 3001 (`npm run api`, optional).
+The services from [compose.yaml](compose.yaml):
+- `docker compose up -d` / `stop` / `start`. The containers restart on their own whenever Docker runs, unless you
+  stopped them.
+- MariaDB on **127.0.0.1:3306**, Node-RED on 1880, Grafana on 3000 (`admin` / `admin-lernen`). The database logins
+  are in [compose.yaml](compose.yaml). They are for learning only.
+- If a port is taken (for example 3306 by XAMPP), set `DB_PORT`, `NODERED_PORT` or `GRAFANA_PORT` in a file `.env`
+  next to `compose.yaml`, e.g. `DB_PORT=3307`.
 
 ## How the data is collected
 
@@ -151,8 +159,8 @@ Since 2026-11-19 this Mac uses the same Docker environment as the pupils ([compo
 
 ## Reading the results
 
-- Compare earthquakes (red) with control events (grey). With 12 signs × 10 bodies × 45 body pairs × 5 aspects,
-  a few will differ by chance alone; treat a difference as real only if it holds up on a new time range.
+- Compare earthquakes (red) with control events (grey). With so many comparisons (12 signs × 10 bodies,
+  plus 45 body pairs × 5 aspects), a few will differ by chance alone; treat a difference as real only if it holds up on a new time range.
 - Aftershocks cluster in time, so one big quake can add hundreds of events with nearly the same sky.
   For statistics, decluster: "Aftershocks: Main shocks only" in the correlation finder, or `npm run korrelation`
   (default: a quake drops out if a stronger one was within 3 days and 300 km).

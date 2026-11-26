@@ -89,7 +89,8 @@ Zum Nachschlagen für den Unterricht: [Erklär-Spickzettel](spickzettel.md).
 |---|---|
 | `npm run lernen` | alle Übungen (FIAE) |
 | `npm run lernen:fisi` | nur die Praxis-Übungen (FISI) |
-| `LOESUNG=1 npm run lernen` | die Musterlösungen (zum Ausprobieren, ob alles funktioniert) |
+| `LOESUNG=1 npm run lernen` (macOS, Linux, Git Bash) | die Musterlösungen (zum Ausprobieren, ob alles funktioniert) |
+| `$env:LOESUNG='1'; npm run lernen` (Windows PowerShell) | ebenfalls die Musterlösungen. Danach `Remove-Item Env:LOESUNG`, sonst werden in diesem Terminal weiter die Musterlösungen geprüft |
 
 ## Zusammenhang
 
