@@ -2075,7 +2075,7 @@
           "mode": "details"
         },
         "basemap": {
-          "type": "default",
+          "type": "osm-standard",
           "name": "Basemap",
           "config": {}
         },

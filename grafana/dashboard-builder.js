@@ -214,7 +214,8 @@ const dashboard = {
         view: { id: 'zero', lat: 0, lon: 0, zoom: 1, allLayers: true },
         controls: { showZoom: true, mouseWheelZoom: true, showAttribution: true },
         tooltip: { mode: 'details' },
-        basemap: { type: 'default', name: 'Basemap', config: {} },
+        // not 'default': that loads CARTO tiles, which show "API key required" without a key
+        basemap: { type: 'osm-standard', name: 'Basemap', config: {} },
         layers: [{
           type: 'markers', name: 'Plate boundaries', tooltip: false,
           filterData: { id: 'byRefId', options: 'B' },
