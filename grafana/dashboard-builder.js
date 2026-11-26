@@ -5,7 +5,9 @@
 //   GRAFANA_URL=http://127.0.0.1:3000 GRAFANA_USER=admin GRAFANA_PASSWORD=... \
 //     node grafana/dashboard-builder.js                   # write + upload
 //   (or GRAFANA_TOKEN=<service account token> instead of user/password)
+//   TABLE_PREFIX=anna_ node grafana/dashboard-builder.js  # queries read anna_events, ...
 const { readAsset } = require('../shared/assets');
+const { normalizePrefix, withPrefix } = require('../shared/tables');
 
 // ---------------------------------------------------------------------------
 // Parse queries.sql: blocks start with "-- ====", "-- N) Title", "-- ===="
@@ -29,6 +31,8 @@ function loadQueries() {
 }
 
 const DS = { type: 'mysql', uid: '${ds}' };
+/** Business Charts (Apache ECharts) panel plugin, for the solar system view. Must be installed in Grafana. */
+const ECHARTS_PLUGIN = 'volkovlabs-echarts-panel';
 const target = (sql) => ({ refId: 'A', datasource: DS, editorMode: 'code', rawQuery: true, format: 'table', rawSql: sql });
 
 const QUAKE_COLOR = 'red';
@@ -75,7 +79,7 @@ function canvasElements() {
   const fixed = (t) => ({ mode: 'fixed', fixed: t });
 
   // header row
-  rect('Title', fixed('Latest earthquake'), box(1, 2, 20, 20), { size: 14, color: '#9fa7b3' });
+  rect('Title', field('selection'), box(1, 2, 20, 20), { size: 14, color: '#9fa7b3' });
   rect('Place', field('place'), box(1, 14, 40, 18), { size: 20 });
   rect('Magnitude label', fixed('Magnitude'), box(43, 2, 12, 12), { size: 12, color: '#9fa7b3' });
   rect('Magnitude', field('magnitude'), box(43, 12, 12, 20), { size: 26, color: '#ff7383' });
@@ -110,15 +114,37 @@ const custom = (name, label, values, current, description) => ({
   options: values.map((v) => ({ text: v, value: v, selected: v === current })),
 });
 
+// Clicking a quake on the map reopens this dashboard with var-event=<id>, switches $view to the solar
+// system (only has an effect in the v2 layout, see dynamic-layout.js) and keeps the other choices.
+const QUAKE_LINK = '/d/${__dashboard.uid}?var-event=${__data.fields.event_id}&var-view=solar' +
+  '&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}&${__url_time_range}';
+
+// Correlation finder (query 13): Moon only, see the query's comment and tools/korrelation.js
+const CORRELATION_NOTE = 'Is a Moon position more common at earthquakes than at control events (same place, random time)? ' +
+  '"Difference" = how many % more or fewer quakes than chance. z = distance from chance: |z| ≥ 2 happens by chance in 1 of 20 bins, ' +
+  '|z| ≥ 3 in 1 of 370, so with many bins a single |z| of 2 means little. Choose a time range to find an effect, then check it in another. ' +
+  'Aftershocks: "Main shocks only" drops a quake if a stronger one was within 3 days and 300 km. ' +
+  'Only the Moon: the controls lie in the 2 years before each quake, a fair baseline only for things that repeat often in that time. ' +
+  'Full analysis with p-values and a search over everything: npm run korrelation.';
+const Z_COLORS = [
+  { type: 'range', options: { from: 3, to: null, result: { color: 'red', index: 0 } } },
+  { type: 'range', options: { from: null, to: -3, result: { color: 'red', index: 1 } } },
+  { type: 'range', options: { from: 2, to: 3, result: { color: 'orange', index: 2 } } },
+  { type: 'range', options: { from: -3, to: -2, result: { color: 'orange', index: 3 } } },
+];
+const hidden = (name) => ({ matcher: { id: 'byName', options: name }, properties: [{ id: 'custom.hideFrom', value: { viz: true, legend: true, tooltip: false } }] });
+
 const COMPARE_NOTE = 'Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.';
 
 /**
- * @param {{dsUid?:string, dsName?:string, uid?:string, title?:string}} [opts]
+ * @param {{dsUid?:string, dsName?:string, uid?:string, title?:string, tablePrefix?:string}} [opts]
  *   dsUid/dsName: data source preselected in the $ds variable;
- *   uid/title: one dashboard per person when several people share a Grafana.
+ *   uid/title: one dashboard per person when several people share a Grafana;
+ *   tablePrefix: this person's tables, e.g. "anna_" -> anna_events (see shared/tables.js).
  */
-function buildDashboard({ dsUid, dsName, uid = 'planeten-erdbeben', title = 'Planeten & Erdbeben' } = {}) {
-const Q = loadQueries();
+function buildDashboard({ dsUid, dsName, uid = 'planeten-erdbeben', title = 'Planeten & Erdbeben', tablePrefix } = {}) {
+const prefix = normalizePrefix(tablePrefix);
+const Q = Object.fromEntries(Object.entries(loadQueries()).map(([k, sql]) => [k, withPrefix(sql, prefix)]));
 const dashboard = {
   uid,
   title,
@@ -134,7 +160,28 @@ const dashboard = {
     custom('minmag', 'Min. magnitude', ['4.5', '5', '6', '7'], '4.5'),
     custom('body', 'Body', ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'], 'Moon'),
     custom('orb', 'Aspect orb °', ['1', '2', '4', '8'], '8'),
+    { type: 'custom', name: 'metric', label: 'Correlation', multi: false, includeAll: false, hide: 0,
+      query: 'Moon phase : moon-phase,Moon height above the quake region : moon-altitude,Moon distance : moon-distance',
+      current: { text: 'Moon phase', value: 'moon-phase' },
+      options: [['Moon phase', 'moon-phase'], ['Moon height above the quake region', 'moon-altitude'], ['Moon distance', 'moon-distance']]
+        .map(([text, value]) => ({ text, value, selected: value === 'moon-phase' })) },
+    custom('step', 'Step °', ['15', '30', '45', '60'], '30'),
+    { type: 'custom', name: 'aftershocks', label: 'Aftershocks', multi: false, includeAll: false, hide: 0,
+      query: 'Main shocks only : main,All quakes : keep', current: { text: 'Main shocks only', value: 'main' },
+      options: [{ text: 'Main shocks only', value: 'main', selected: true }, { text: 'All quakes', value: 'keep', selected: false }] },
+    // hidden; set by the map's data link. Empty = latest quake (queries 6 and 10)
+    { type: 'textbox', name: 'event', label: 'Selected quake', query: '', current: { text: '', value: '' }, hide: 2 },
+    // Earth map or solar system. Hidden here (side by side); grafana/dynamic-layout.js shows it and
+    // hides one of the two rows, where Grafana supports dynamic dashboards.
+    { type: 'custom', name: 'view', label: 'View', query: 'Earth map : earth,Solar system : solar', multi: false, includeAll: false, hide: 2,
+      current: { text: 'Earth map', value: 'earth' },
+      options: [{ text: 'Earth map', value: 'earth', selected: true }, { text: 'Solar system', value: 'solar', selected: false }] },
   ] },
+  links: [{
+    type: 'link', title: 'Latest quake', icon: 'sync', tooltip: 'Show the sky at the latest earthquake again',
+    url: `/d/${uid}?var-event=&\${ds:queryparam}&\${minmag:queryparam}&\${body:queryparam}&\${orb:queryparam}&\${view:queryparam}`,
+    keepTime: true, includeVars: false, targetBlank: false, asDropdown: false, tags: [],
+  }],
   panels: [
     {
       id: 1, type: 'stat', title: 'Pipeline', gridPos: { x: 0, y: 0, w: 24, h: 4 }, datasource: DS, targets: [target(Q[7])],
@@ -144,8 +191,9 @@ const dashboard = {
       options: { reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false }, colorMode: 'value', graphMode: 'none', textMode: 'value_and_name', justifyMode: 'center', orientation: 'vertical' },
     },
     {
-      id: 2, type: 'canvas', title: 'Sky at the latest earthquake', gridPos: { x: 0, y: 4, w: 24, h: 10 }, datasource: DS, targets: [target(Q[6])],
-      description: 'Zodiac position of every body when the most recent quake happened. R = retrograde.',
+      id: 2, type: 'canvas', title: 'Sky at the selected earthquake (latest if none)', gridPos: { x: 0, y: 4, w: 24, h: 10 }, datasource: DS, targets: [target(Q[6])],
+      description: 'Zodiac position of every body when the selected quake happened. Click a quake on the map to select it; ' +
+        '"Latest quake" (top right) goes back to the most recent one. R = retrograde.',
       fieldConfig: { defaults: {}, overrides: [] },
       options: { inlineEditing: true, showAdvancedTypes: true, panZoom: false, infinitePan: false, root: {
         type: 'frame', name: 'Element root', elements: canvasElements(),
@@ -154,10 +202,14 @@ const dashboard = {
       } },
     },
     {
-      id: 3, type: 'geomap', title: 'Earthquakes (time range, M ≥ $minmag)', gridPos: { x: 0, y: 14, w: 16, h: 13 }, datasource: DS,
-      targets: [target(Q[1]), { ...target(Q[8]), refId: 'B' }],
-      description: 'Red dots: earthquakes. Blue lines: boundaries of the tectonic plates (PB2002, loaded by Node-RED).',
-      fieldConfig: { defaults: { color: { mode: 'continuous-YlRd' }, decimals: 1 }, overrides: [] },
+      id: 3, type: 'geomap', title: 'Earthquakes (time range, M ≥ $minmag): click a quake to see its sky', gridPos: { x: 0, y: 14, w: 14, h: 14 }, datasource: DS,
+      targets: [target(Q[1]), { ...target(Q[8]), refId: 'B' }, { ...target(Q[10]), refId: 'C' }],
+      description: 'Red dots: earthquakes. Blue lines: boundaries of the tectonic plates (PB2002, loaded by Node-RED). ' +
+        'White ring: the quake shown in the sky panel above. Click a quake, then "Show the sky at this quake".',
+      fieldConfig: { defaults: { color: { mode: 'continuous-YlRd' }, decimals: 1,
+        links: [{ title: 'Show the sky at this quake', url: QUAKE_LINK, oneClick: true }] }, overrides: [
+        { matcher: { id: 'byName', options: 'event_id' }, properties: [{ id: 'displayName', value: 'Event ID' }, { id: 'decimals', value: 0 }] },
+      ] },
       options: {
         view: { id: 'zero', lat: 0, lon: 0, zoom: 1, allLayers: true },
         controls: { showZoom: true, mouseWheelZoom: true, showAttribution: true },
@@ -181,11 +233,28 @@ const dashboard = {
             color: { field: 'magnitude', fixed: 'dark-red' },
             opacity: 0.6, symbol: { mode: 'fixed', fixed: 'img/icons/marker/circle.svg' },
           } },
+        }, {
+          type: 'markers', name: 'Selected quake', tooltip: false,
+          filterData: { id: 'byRefId', options: 'C' },
+          location: { mode: 'coords', latitude: 'latitude', longitude: 'longitude' },
+          config: { showLegend: false, style: {
+            size: { fixed: 24 }, color: { fixed: 'white' }, opacity: 0.45, lineWidth: 3,
+            symbol: { mode: 'fixed', fixed: 'img/icons/marker/circle.svg' },
+          } },
         }],
       },
     },
     {
-      id: 8, type: 'barchart', title: 'Earthquakes per tectonic plate (M ≥ $minmag)', gridPos: { x: 16, y: 14, w: 8, h: 13 },
+      id: 9, type: ECHARTS_PLUGIN, title: 'Solar system at the selected earthquake (click a planet)', gridPos: { x: 14, y: 14, w: 10, h: 14 },
+      datasource: DS, targets: [target(Q[11]), { ...target(Q[12]), refId: 'B' }],
+      description: 'The planets around the Sun when the selected quake happened, seen from above (north up). ' +
+        'Angle = longitude seen from the Sun. Not to scale: every orbit has its own ring; real distances in the tooltip. ' +
+        'Dashed line: from the Earth to the selected body ($body), the direction we see it in. Click a planet to select it. ' +
+        'Needs the Business Charts plugin; code in grafana/solar-system.echarts.js.',
+      options: { editorMode: 'code', getOption: readAsset('grafana/solar-system.echarts.js'), renderer: 'canvas', map: 'none' },
+    },
+    {
+      id: 8, type: 'barchart', title: 'Earthquakes per tectonic plate (M ≥ $minmag)', gridPos: { x: 16, y: 28, w: 8, h: 10 },
       datasource: DS, targets: [target(Q[9])],
       description: 'Number of quakes in the time range on each plate (the 15 plates with the most). ' +
         'Most quakes happen where plates meet, so plates with long, active boundaries lead.',
@@ -197,11 +266,11 @@ const dashboard = {
         tooltip: { mode: 'single', sort: 'none' },
       },
     },
-    barChart(4, 'Moon phase: earthquakes vs. control', COMPARE_NOTE, Q[2], 'phase', { x: 0, y: 27, w: 12, h: 10 }),
-    barChart(5, 'Zodiac sign of $body: earthquakes vs. control', COMPARE_NOTE, Q[3], 'sign', { x: 12, y: 27, w: 12, h: 10 }),
-    barChart(6, 'Moon above / below the horizon at the quake location', COMPARE_NOTE, Q[5], 'moon', { x: 0, y: 37, w: 8, h: 10 }),
+    barChart(4, 'Moon phase: earthquakes vs. control', COMPARE_NOTE, Q[2], 'phase', { x: 0, y: 28, w: 8, h: 10 }),
+    barChart(5, 'Zodiac sign of $body: earthquakes vs. control', COMPARE_NOTE, Q[3], 'sign', { x: 8, y: 28, w: 8, h: 10 }),
+    barChart(6, 'Moon above / below the horizon at the quake location', COMPARE_NOTE, Q[5], 'moon', { x: 0, y: 38, w: 8, h: 10 }),
     {
-      id: 7, type: 'table', title: 'Aspects that differ most (orb ≤ $orb°)', gridPos: { x: 8, y: 37, w: 16, h: 10 }, datasource: DS, targets: [target(Q[4])],
+      id: 7, type: 'table', title: 'Aspects that differ most (orb ≤ $orb°)', gridPos: { x: 8, y: 38, w: 16, h: 10 }, datasource: DS, targets: [target(Q[4])],
       description: 'Share of events that had each aspect. Only aspects seen at least 30 times are listed. With many aspects, some differences are expected by chance.',
       fieldConfig: { defaults: { decimals: 1 }, overrides: [
         ...comparisonOverrides,
@@ -211,6 +280,29 @@ const dashboard = {
           { id: 'custom.cellOptions', value: { type: 'color-text' } },
           { id: 'color', value: { mode: 'continuous-RdYlGr' } }] },
         { matcher: { id: 'byName', options: 'n' }, properties: [{ id: 'displayName', value: 'Count' }, { id: 'decimals', value: 0 }] },
+      ] },
+      options: { showHeader: true, cellHeight: 'sm' },
+    },
+    {
+      ...barChart(10, 'Correlation finder: ${metric:text} (M ≥ $minmag, ${aftershocks:text})', CORRELATION_NOTE, Q[13], 'bin', { x: 0, y: 48, w: 12, h: 11 }),
+      fieldConfig: { defaults: { unit: 'percent', decimals: 1, min: 0, custom: { fillOpacity: 80, lineWidth: 0 } },
+        overrides: [...comparisonOverrides, hidden('diff_pct'), hidden('quakes'), hidden('z')] },
+    },
+    {
+      id: 11, type: 'table', title: 'Correlation finder: numbers (${metric:text}, ${step}° steps)', gridPos: { x: 12, y: 48, w: 12, h: 11 },
+      datasource: DS, targets: [target(Q[13])], description: CORRELATION_NOTE,
+      fieldConfig: { defaults: { decimals: 1 }, overrides: [
+        ...comparisonOverrides,
+        { matcher: { id: 'byName', options: 'bin' }, properties: [{ id: 'displayName', value: 'Range' }] },
+        { matcher: { id: 'byName', options: 'quakes_pct' }, properties: [{ id: 'unit', value: 'percent' }] },
+        { matcher: { id: 'byName', options: 'control_pct' }, properties: [{ id: 'unit', value: 'percent' }, { id: 'displayName', value: 'Control' }] },
+        { matcher: { id: 'byName', options: 'diff_pct' }, properties: [{ id: 'displayName', value: 'Difference' }, { id: 'unit', value: 'percent' }, { id: 'decimals', value: 0 }] },
+        { matcher: { id: 'byName', options: 'quakes' }, properties: [{ id: 'displayName', value: 'Quakes' }, { id: 'decimals', value: 0 }] },
+        // |z| < 2 stays neutral (no colour), 2..3 orange, >= 3 red
+        { matcher: { id: 'byName', options: 'z' }, properties: [
+          { id: 'mappings', value: Z_COLORS },
+          { id: 'thresholds', value: { mode: 'absolute', steps: [{ color: 'transparent', value: null }] } },
+          { id: 'custom.cellOptions', value: { type: 'color-background' } }] },
       ] },
       options: { showHeader: true, cellHeight: 'sm' },
     },
@@ -237,12 +329,12 @@ function grafanaAuthHeader({ token, user, password }) {
   return token ? `Bearer ${token}` : 'Basic ' + Buffer.from(`${user}:${password}`).toString('base64');
 }
 
-module.exports = { buildDashboard, uploadDashboard, grafanaAuthHeader, DASHBOARD_UID: 'planeten-erdbeben' };
+module.exports = { buildDashboard, uploadDashboard, grafanaAuthHeader, DASHBOARD_UID: 'planeten-erdbeben', ECHARTS_PLUGIN };
 
 if (require.main === module) {
   const fs = require('node:fs');
   const path = require('node:path');
-  const dashboard = buildDashboard({ dsUid: process.env.GRAFANA_DS_UID });
+  const dashboard = buildDashboard({ dsUid: process.env.GRAFANA_DS_UID, tablePrefix: process.env.TABLE_PREFIX });
   const outFile = path.join(__dirname, 'dashboard.json');
   fs.writeFileSync(outFile, JSON.stringify(dashboard, null, 2) + '\n');
   console.log(`Wrote ${outFile} (${dashboard.panels.length} panels)`);

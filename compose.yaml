@@ -53,6 +53,7 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin-lernen
+      GF_PLUGINS_PREINSTALL: volkovlabs-echarts-panel
       TZ: UTC
     ports:
       - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"

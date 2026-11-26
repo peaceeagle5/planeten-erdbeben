@@ -27,6 +27,18 @@ function eclipticOf(body, time) {
   return Astronomy.Ecliptic(vec);
 }
 
+/**
+ * Heliocentric position (seen from the Sun, true ecliptic of date like eclipticOf), for drawing the
+ * solar system from above. null for the Sun itself. The Earth is not in BODIES: seen from the Sun it
+ * stands exactly opposite to where we see the Sun (longitude + 180°, same distance).
+ */
+function heliocentricOf(body, time) {
+  if (body === 'Sun') return null;
+  const vec = Astronomy.HelioVector(body, time);
+  const ecl = Astronomy.Ecliptic(vec);
+  return { longitudeDeg: round(ecl.elon, 5), latitudeDeg: round(ecl.elat, 5), distanceAU: round(vec.Length(), 8) };
+}
+
 function zodiacOf(elon) {
   const idx = Math.floor(elon / 30);
   return { sign: ZODIAC[idx], degreeInSign: round(elon - idx * 30, 4) };
@@ -87,6 +99,7 @@ function computeSky(date, place, options = {}) {
         latitudeDeg: round(ecl.elat, 5),
         ...zodiacOf(ecl.elon),
       },
+      heliocentric: heliocentricOf(body, time),
       constellation: { symbol: constellation.symbol, name: constellation.name },
       magnitude: round(illum.mag, 2),
       phaseFraction: body === 'Sun' ? null : round(illum.phase_fraction, 4),

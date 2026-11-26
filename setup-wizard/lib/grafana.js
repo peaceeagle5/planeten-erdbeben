@@ -1,8 +1,9 @@
 // Grafana step: data source + dashboard, via the Grafana HTTP API.
 // Works with personal accounts: every person gets their own dashboard. Admins can create a
 // data source; Editors pick an existing one (e.g. created once by the teacher).
-const { buildDashboard, uploadDashboard, grafanaAuthHeader } = require('../../grafana/dashboard-builder');
+const { buildDashboard, uploadDashboard, grafanaAuthHeader, ECHARTS_PLUGIN } = require('../../grafana/dashboard-builder');
 const { baseUrl } = require('./nodered');
+const { toSwitchingLayout } = require('../../grafana/dynamic-layout');
 
 // NFKD splits 'ü' into 'u' + combining diaeresis; the second replace drops the diaeresis
 const slug = (s) => String(s || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').slice(0, 28).replace(/^-|-$/g, '') || 'user';
@@ -45,7 +46,42 @@ async function whoAmI(cfg) {
   if (user.status !== 200) throw new Error(`Grafana-Anmeldung fehlgeschlagen (HTTP ${user.status}).`);
   const orgs = await call(cfg, 'GET', '/api/user/orgs');
   const role = ((orgs.data || []).find((o) => o.orgId === user.data.orgId) || {}).role || 'Viewer';
-  return { version: health.data.version, login: user.data.login, role };
+  return { version: health.data.version, login: user.data.login, role, isServerAdmin: Boolean(user.data.isGrafanaAdmin) };
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const PLUGIN_HELP = `Auf dem Grafana-Server: "sudo grafana cli plugins install ${ECHARTS_PLUGIN}" und Grafana neu starten ` +
+  '(oder in Grafana: Administration > Plugins > „Business Charts“ > Install).';
+
+/** Panel plugins are listed in the frontend settings, which every user may read (also Editors). */
+async function hasEchartsPlugin(cfg, pluginId = ECHARTS_PLUGIN) {
+  const fe = await call(cfg, 'GET', '/api/frontend/settings');
+  return Boolean(fe.data.panels && fe.data.panels[pluginId]);
+}
+
+/**
+ * The solar system panel needs the Business Charts plugin. Installing plugins is only allowed for
+ * Grafana server admins (not for organisation admins) and needs internet on the Grafana server.
+ * Never fatal: without the plugin only that one panel stays empty.
+ */
+async function ensureEchartsPlugin(cfg, me, log, pluginId = ECHARTS_PLUGIN) {
+  if (await hasEchartsPlugin(cfg, pluginId)) { log('Plugin „Business Charts“ (Sonnensystem-Panel) ist installiert.'); return true; }
+  if (!me.isServerAdmin) {
+    log(`Plugin „Business Charts“ fehlt in Grafana, das Sonnensystem-Panel bleibt leer. Installieren darf es nur ein Grafana-Server-Admin. ${PLUGIN_HELP}`);
+    return false;
+  }
+  log('Installiere das Plugin „Business Charts“ (Sonnensystem-Panel) ...');
+  const res = await call(cfg, 'POST', `/api/plugins/${pluginId}/install`, {});
+  if (res.status !== 200) {
+    log(`Plugin „Business Charts“ konnte nicht installiert werden (${res.data.message || `HTTP ${res.status}`}). Hat der Grafana-Server Internet? ${PLUGIN_HELP}`);
+    return false;
+  }
+  for (let i = 0; i < 15; i++) {
+    if (await hasEchartsPlugin(cfg, pluginId)) { log('Plugin „Business Charts“ ist installiert.'); return true; }
+    await sleep(1000);
+  }
+  log('Plugin „Business Charts“ ist installiert. Falls das Sonnensystem-Panel noch fehlt: Grafana-Seite neu laden.');
+  return true;
 }
 
 async function testGrafana(cfg) {
@@ -56,6 +92,9 @@ async function testGrafana(cfg) {
     }
     const datasources = await mysqlDatasources(cfg);
     const isAdmin = me.role === 'Admin';
+    const plugin = (await hasEchartsPlugin(cfg)) ? ' Plugin „Business Charts“ ist da.'
+      : me.isServerAdmin ? ' Plugin „Business Charts“ fehlt noch und wird installiert.'
+        : ' Plugin „Business Charts“ fehlt (das Sonnensystem-Panel bleibt leer, bis ein Grafana-Server-Admin es installiert).';
     if (!isAdmin && !datasources.length) {
       return { ok: false, message: `Angemeldet als „${me.login}“ (Rolle ${me.role}). Es gibt noch keine MySQL-Datenquelle, und nur ein Admin darf eine anlegen. ` +
         'Die Lehrkraft kann das Setup einmal mit einem Admin-Konto ausführen; danach hier die Datenquelle auswählen.' };
@@ -63,7 +102,7 @@ async function testGrafana(cfg) {
     return {
       ok: true, login: me.login, role: me.role, canCreate: isAdmin, datasources,
       message: `Angemeldet bei Grafana ${me.version} als „${me.login}“ (Rolle ${me.role}). ` +
-        (isAdmin ? 'Eine eigene Datenquelle wird angelegt.' : 'Bitte unten die Datenquelle auswählen.'),
+        (isAdmin ? 'Eine eigene Datenquelle wird angelegt.' : 'Bitte unten die Datenquelle auswählen.') + plugin,
     };
   } catch (err) {
     return { ok: false, message: err.message };
@@ -110,12 +149,57 @@ async function setupGrafana(cfg, dbForGrafana, owner, log) {
     log(`Verwende die Datenquelle „${dsName}“.`);
   }
 
+  await ensureEchartsPlugin(cfg, me, log);
   const dashboard = buildDashboard({
     dsUid, dsName, uid: `pe-${slug(who)}`, title: `Planeten & Erdbeben (${who})`,
+    tablePrefix: dbForGrafana.tablePrefix,
   });
   const url = await uploadDashboard(baseUrl(cfg.url), cfg, dashboard);
   log(`Dashboard „${dashboard.title}“ ist angelegt: ${url}`);
+  await enableViewSwitch(cfg, dashboard.uid, log);
   return url;
 }
 
-module.exports = { testGrafana, setupGrafana };
+/**
+ * Namespace for the dashboard v2 API if this Grafana supports dynamic dashboards (show/hide rules),
+ * otherwise null. Needs the feature dashboardNewLayouts (on by default in Grafana 13) and the v2 API.
+ */
+async function dynamicDashboardsNamespace(cfg) {
+  const fe = await call(cfg, 'GET', '/api/frontend/settings');
+  if (!(fe.data.featureToggles && fe.data.featureToggles.dashboardNewLayouts)) return null;
+  const group = await call(cfg, 'GET', '/apis/dashboard.grafana.app');
+  if (group.status !== 200 || !(group.data.versions || []).some((v) => v.version === 'v2')) return null;
+  return fe.data.namespace || 'default';
+}
+
+/**
+ * Turns the uploaded (classic) dashboard into the version with the "View" switch: Grafana translates it
+ * to schema v2, grafana/dynamic-layout.js puts the panels into rows with show/hide rules, and it is
+ * saved back. Never fatal: if anything fails, map and solar system simply stay side by side.
+ */
+async function enableViewSwitch(cfg, uid, log) {
+  try {
+    const ns = await dynamicDashboardsNamespace(cfg);
+    if (!ns) {
+      log('Diese Grafana-Version kann keine Ein-/Ausblende-Regeln (dynamische Dashboards): Karte und Sonnensystem stehen nebeneinander.');
+      return false;
+    }
+    const path = `/apis/dashboard.grafana.app/v2/namespaces/${ns}/dashboards/${encodeURIComponent(uid)}`;
+    const got = await call(cfg, 'GET', path);
+    if (got.status !== 200) throw new Error(got.data.message || `HTTP ${got.status}`);
+    const { name, resourceVersion, labels, annotations } = got.data.metadata;
+    const put = await call(cfg, 'PUT', path, {
+      apiVersion: 'dashboard.grafana.app/v2', kind: 'Dashboard',
+      metadata: { name, resourceVersion, labels, annotations: { ...annotations, 'grafana.app/message': 'Planeten-Erdbeben setup: View switch' } },
+      spec: toSwitchingLayout(got.data.spec),
+    });
+    if (put.status !== 200) throw new Error(put.data.message || `HTTP ${put.status}`);
+    log('Karte und Sonnensystem: oben über „View“ umschalten (ein Klick auf ein Erdbeben zeigt das Sonnensystem).');
+    return true;
+  } catch (err) {
+    log(`Umschalten Karte/Sonnensystem ging nicht (${err.message}): beide stehen nebeneinander.`);
+    return false;
+  }
+}
+
+module.exports = { testGrafana, setupGrafana, ensureEchartsPlugin, whoAmI, enableViewSwitch };

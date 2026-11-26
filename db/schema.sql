@@ -1,4 +1,6 @@
 -- Planets & earthquakes schema (MySQL 8+). All times are stored in UTC.
+-- The setup wizard gives every person their own copy of events, body_positions and aspects, with a
+-- name prefix (anna_events, ...; see shared/tables.js). plates and plate_points are shared.
 CREATE DATABASE IF NOT EXISTS planeten_erdbeben CHARACTER SET utf8mb4;
 USE planeten_erdbeben;
 
@@ -22,7 +24,7 @@ CREATE TABLE IF NOT EXISTS events (
   UNIQUE KEY uq_source (source_id),
   KEY idx_kind_time (kind, time_utc),
   KEY idx_magnitude (magnitude)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Position of every body (Sun, Moon, Mercury..Pluto) at each event.
 CREATE TABLE IF NOT EXISTS body_positions (
@@ -42,10 +44,12 @@ CREATE TABLE IF NOT EXISTS body_positions (
   vis_magnitude   DOUBLE       NULL,
   phase_fraction  DOUBLE       NULL,
   retrograde      TINYINT(1)   NOT NULL,
+  helio_lon_deg   DOUBLE       NULL,       -- heliocentric ecliptic longitude (seen from the Sun), NULL for the Sun
+  helio_dist_au   DOUBLE       NULL,       -- distance from the Sun. Earth = opposite the Sun: Sun's ecl_lon_deg + 180
   PRIMARY KEY (event_id, body),
   KEY idx_body_sign (body, zodiac_sign),
   CONSTRAINT fk_pos_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Aspects between pairs of bodies at each event (orb up to 8 deg).
 CREATE TABLE IF NOT EXISTS aspects (
@@ -58,7 +62,7 @@ CREATE TABLE IF NOT EXISTS aspects (
   PRIMARY KEY (event_id, body_a, body_b, aspect),
   KEY idx_aspect (body_a, body_b, aspect),
   CONSTRAINT fk_asp_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Tectonic plates (Bird 2002, "PB2002"), loaded by Node-RED from GitHub.
 -- geom: outline as MULTIPOLYGON with X = longitude, Y = latitude (SRID 0, plain lon/lat plane),
@@ -69,7 +73,7 @@ CREATE TABLE IF NOT EXISTS plates (
   geom        GEOMETRY     NOT NULL,
   updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   SPATIAL KEY sp_geom (geom)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- The same outlines as single points, for drawing the plate boundaries on the Grafana map.
 --   part = number of the ring (a plate can consist of several pieces), seq = position in the ring
@@ -80,7 +84,7 @@ CREATE TABLE IF NOT EXISTS plate_points (
   latitude   DOUBLE            NOT NULL,
   longitude  DOUBLE            NOT NULL,
   PRIMARY KEY (code, part, seq)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Optional: a read-only user for Grafana
 -- CREATE USER 'grafana'@'%' IDENTIFIED BY 'change-me';

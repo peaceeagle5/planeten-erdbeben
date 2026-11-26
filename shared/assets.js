@@ -29,6 +29,7 @@ const ASSET_FILES = [
   'src/planets.js',
   'db/schema.sql',
   'grafana/queries.sql',
+  'grafana/solar-system.echarts.js',
   'node-red/functions/split-usgs.js',
   'node-red/functions/backfill-url.js',
   'node-red/functions/split-pending.js',

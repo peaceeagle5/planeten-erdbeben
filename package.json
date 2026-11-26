@@ -10,7 +10,8 @@
     "dashboard": "node grafana/dashboard-builder.js",
     "lernen": "node --test \"lernen/**/*.test.js\"",
     "lernen:fisi": "node --test \"lernen/**/*-praxis.test.js\"",
-    "lernen:ui": "node lern-cockpit/server.js"
+    "lernen:ui": "node lern-cockpit/server.js",
+    "korrelation": "node tools/korrelation.js"
   },
   "dependencies": {
     "astronomy-engine": "^2.1.19"

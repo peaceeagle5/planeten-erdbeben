@@ -66,7 +66,7 @@ Den Code baut [flow-builder.js](../../node-red/flow-builder.js) zusammen.
 | USGS-Abfrage bauen | function | baut aus dem payload die Katalog-URL in `msg.url` ([backfill-url.js](../../node-red/functions/backfill-url.js)) |
 | USGS Katalog | http request | URL leer → nimmt `msg.url` |
 | Beben + Kontrollen → SQL | function | pro Beben 2 Nachrichten mit `INSERT IGNORE` ([split-usgs.js](../../node-red/functions/split-usgs.js)) |
-| INSERT events | mysql | führt `msg.topic` mit den Werten aus `msg.payload` aus |
+| INSERT anna_events | mysql | führt `msg.topic` mit den Werten aus `msg.payload` aus |
 
 **Teil 2: Planeten berechnen**
 | Node | Typ | Was er macht |
@@ -76,9 +76,16 @@ Den Code baut [flow-builder.js](../../node-red/flow-builder.js) zusammen.
 | eine Nachricht pro Event | function | Array → einzelne Nachrichten mit `msg.event` ([split-pending.js](../../node-red/functions/split-pending.js)) |
 | 20 / s | delay | höchstens 20 Nachrichten pro Sekunde, damit der Pi nicht überlastet |
 | Himmel berechnen → SQL | function | `computeSky()` + 3 SQL-Nachrichten ([compute-sky.js](../../node-red/functions/compute-sky.js)) |
-| WRITE Positionen | mysql | schreibt `body_positions`, `aspects`, setzt `sky_computed = 1` |
+| WRITE Positionen | mysql | schreibt `body_positions` (auch die Positionen von der Sonne aus), `aspects`, setzt `sky_computed = 1` |
+
+**Teil 3: Plattengrenzen** holt beim Start und dann jede Woche die tektonischen Platten (PB2002) von GitHub und
+schreibt sie in `plates` und `plate_points` ([plates-sql.js](../../node-red/functions/plates-sql.js)).
 
 **Fehler:** Der **catch**-Node fängt Fehler aller Nodes im Tab und schickt sie an den **debug**-Node.
+
+**Eigene Tabellen:** Welche Tabellen der Flow benutzt, steht in der **Umgebungsvariable des Tabs** `TABLE_PREFIX`
+(Doppelklick auf den Tab → „Umgebungsvariablen“), z. B. `anna_`. Die Function-Nodes lesen sie mit
+`env.get('TABLE_PREFIX')` und schreiben dann in `anna_events` usw. Leer = die Tabellen ohne Präfix.
 
 **Warum zwei getrennte Teile?** Wenn die Berechnung ausfällt, gehen keine Beben verloren: sie warten mit
 `sky_computed = 0` und werden beim nächsten Durchlauf berechnet. Die Datenbank ist die **Warteschlange**.
@@ -96,6 +103,10 @@ Deshalb kann man `flows.json` weitergeben, ohne Passwörter zu verraten. Der Sch
 2. **Im Editor** (http://127.0.0.1:1880 oder dein eigener Port): Baue den Flow
    `inject → http request (USGS-Feed) → function → debug`, der im Debug-Fenster ausgibt:
    „12 Beben, stärkstes: M6.1 bei …“. Musterlösung zum Importieren (Menü → Import): [loesung-flow.json](loesung-flow.json).
+3. **Den Projekt-Flow selbst importieren:** Im Setup-Assistenten bei Node-RED „Wie? **Flow als JSON exportieren**“ wählen,
+   „Flow erzeugen“, kopieren oder herunterladen. Dann im Editor: MySQL-Knoten über „Palette verwalten“ installieren,
+   Menü → Import, im MySQL-Konfigurations-Node Benutzer und Passwort eintragen, Deploy. Schau dir dabei an, wie
+   die Tab-Umgebungsvariable `TABLE_PREFIX` aussieht. (Ohne eigene Werte: [flow-import.json](../../node-red/flow-import.json).)
 
 ## So erklärst du es
 > „Node-RED ist wie eine Fließband-Fabrik. Jedes Kästchen ist eine Station, die Drähte sind das Band,

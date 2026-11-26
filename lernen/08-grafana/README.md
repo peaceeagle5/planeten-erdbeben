@@ -14,10 +14,12 @@
 Grafana
  ├─ Datenquelle "Planeten-Erdbeben (planeten_erdbeben)"   ← WIE kommt Grafana an die Daten? (Host, Port, Login)
  └─ Dashboard "Planeten & Erdbeben (Pascal)"               ← eine Seite
-     ├─ Panel "Pipeline"            (Stat)       ┐
-     ├─ Panel "Sky at the latest…"  (Canvas)     │  jedes Panel = eine SQL-Abfrage + eine Darstellung
-     ├─ Panel "Earthquakes"         (Geomap)     │
-     └─ Panel "Moon phase …"        (Bar chart)  ┘
+     ├─ Panel "Pipeline"              (Stat)               ┐
+     ├─ Panel "Sky at the selected…"  (Canvas)             │  jedes Panel = eine SQL-Abfrage + eine Darstellung
+     ├─ Panel "Earthquakes"           (Geomap)             │
+     ├─ Panel "Solar system …"        (Business Charts)    │  (Plugin)
+     ├─ Panel "Moon phase …"          (Bar chart)          │
+     └─ Panel "Correlation finder"    (Bar chart, Tabelle) ┘
 ```
 | Begriff | Was |
 |---|---|
@@ -30,7 +32,8 @@ Grafana speichert **keine** Erdbeben-Daten. Es fragt jedes Mal neu bei der Daten
 
 ## 2. Variablen
 
-Oben im Dashboard sind Auswahlfelder (Min. magnitude, Body, Aspect orb). In den Abfragen stehen dafür Platzhalter:
+Oben im Dashboard sind Auswahlfelder (Min. magnitude, Body, Aspect orb, View, Correlation, Step, Aftershocks).
+In den Abfragen stehen dafür Platzhalter:
 ```sql
 WHERE bp.body = '$body' AND e.magnitude >= $minmag
 ```
@@ -39,6 +42,19 @@ Das ist einfaches **Text-Ersetzen**. Darum stehen um `'$body'` Anführungszeiche
 
 `$ds` ist eine besondere Variable vom Typ „Datenquelle“: Damit kann man dasselbe Dashboard mit einer anderen
 Datenbank benutzen.
+
+`$event` ist eine **versteckte** Variable (Typ „Text box“). Man setzt sie nicht oben, sondern durch einen
+Klick auf ein Erdbeben in der Karte: Der **Daten-Link** des Karten-Panels öffnet dasselbe Dashboard noch einmal,
+mit `var-event=<id>` in der Adresse. Das Panel „Sky at the selected earthquake“ zeigt dann dieses Beben, ohne
+Auswahl das neueste. Weil jeder `var-event=...` in die Adresse tippen kann, steht in der Abfrage
+`${event:sqlstring}` (Grafana setzt den Wert in Anführungszeichen und entschärft `'`) und
+`CAST(... AS UNSIGNED)` (macht eine Zahl daraus). So kann niemand über die Adresse eigenes SQL einschleusen.
+
+`$view` (Earth map / Solar system) schaltet zwischen Karte und Sonnensystem um. Dafür hat Grafana 13
+**Ein-/Ausblende-Regeln** („show/hide rules“): Eine Zeile des Dashboards ist nur sichtbar, wenn eine Variable
+einen bestimmten Wert hat. Das gibt es nur im neuen Dashboard-Format (Schema v2). Der Setup-Assistent lädt
+deshalb erst das klassische Dashboard hoch, lässt Grafana es in v2 übersetzen und ordnet die Panels in
+Zeilen mit Regeln an (`grafana/dynamic-layout.js`). Ältere Grafana-Versionen zeigen beides nebeneinander.
 
 ## 3. Makros und Zeit
 
@@ -51,11 +67,13 @@ und im Dashboard (`timezone: 'utc'`). Wenn ein Teil davon lokale Zeit benutzt, v
 1–2 Stunden.
 
 Die Vergleichsdiagramme benutzen den Zeitbereich absichtlich **nicht**: Kontroll-Events haben zufällige Zeiten
-und würden sonst teilweise herausgefiltert.
+und würden sonst teilweise herausgefiltert. Ausnahme: Der „Correlation finder“ wählt die **Beben** nach dem
+Zeitbereich aus und nimmt deren Kontroll-Events dazu, egal wann sie liegen. So kann man ein Ergebnis aus einem
+Jahr in einem anderen Jahr prüfen.
 
 ## 4. Wie das Dashboard entsteht
 
-Niemand klickt die 8 Panels von Hand zusammen. [dashboard-builder.js](../../grafana/dashboard-builder.js):
+Niemand klickt die 11 Panels von Hand zusammen. [dashboard-builder.js](../../grafana/dashboard-builder.js):
 1. liest [queries.sql](../../grafana/queries.sql) und zerlegt sie an den Überschriften `-- 1) …`, `-- 2) …`,
 2. baut daraus das Dashboard-JSON (Panels, Farben, Variablen),
 3. schickt es per `POST /api/dashboards/db` an Grafana (mit `overwrite: true`).
@@ -70,6 +88,7 @@ Nachteil: Änderungen, die du **in Grafana** von Hand machst, werden beim nächs
 | **Viewer** | Dashboards ansehen |
 | **Editor** | zusätzlich Dashboards anlegen und ändern |
 | **Admin** | zusätzlich Datenquellen und Benutzer verwalten |
+| **Server-Admin** | zusätzlich Plugins installieren (z. B. Business Charts für das Sonnensystem) |
 
 Deshalb legt im Unterricht die Lehrkraft (Admin) einmal die Datenquelle an, und Schüler:innen (Editor) wählen sie
 im Setup-Assistenten aus. Sie brauchen dann **nicht** das Datenbank-Passwort für Grafana.

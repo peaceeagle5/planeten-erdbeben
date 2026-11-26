@@ -4,7 +4,9 @@
 // This is the baseline: "what does the sky look like here when there is NO quake?"
 const CONTROL_WINDOW_MS = 2 * 365.25 * 24 * 3600 * 1000;
 const toSql = (ms) => new Date(ms).toISOString().replace('T', ' ').replace('Z', '');
-const SQL = 'INSERT IGNORE INTO events ' +
+// TABLE_PREFIX: set on the tab (double-click the tab), e.g. "anna_" -> table anna_events.
+const T = env.get('TABLE_PREFIX') || '';
+const SQL = `INSERT IGNORE INTO ${T}events ` +
   '(kind, source_id, paired_with, time_utc, latitude, longitude, depth_km, magnitude, place) ' +
   'VALUES (?,?,?,?,?,?,?,?,?)';
 

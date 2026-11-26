@@ -64,6 +64,14 @@ und nicht als -359,8°.
 **Mondphase:** Abstand des Mondes von der Sonne auf der Ekliptik. 0° = Neumond (Mond steht bei der Sonne),
 180° = Vollmond (gegenüber).
 
+**Von der Sonne aus (heliozentrisch):** Alles bisher ist **geozentrisch**, von der Erde aus gesehen. Für das
+Bild „Sonnensystem von oben“ braucht man die Planeten **von der Sonne aus**: `HelioVector(body, time)` liefert
+den Pfeil von der Sonne zum Planeten, `Ecliptic(...)` macht daraus Länge und Breite. Das steht in
+`heliocentric: {longitudeDeg, latitudeDeg, distanceAU}` (bei der Sonne `null`) und in der Datenbank in
+`helio_lon_deg` und `helio_dist_au`. Die **Erde** braucht keine eigene Zeile: Von der Sonne aus steht sie genau
+gegenüber der Stelle, an der wir die Sonne sehen, also bei Sonnen-Länge + 180°, im selben Abstand.
+Für ferne Planeten (Neptun, Pluto) sind beide Längen fast gleich, für nahe (Merkur, Venus) ganz verschieden.
+
 **Parallaxe:** Der Mond ist so nah, dass er von verschiedenen Orten der Erde aus an leicht verschiedenen Stellen
 steht (bis zu 1°). Deshalb rechnet `Equator(body, time, observer, ...)` mit dem **Beobachtungsort**.
 

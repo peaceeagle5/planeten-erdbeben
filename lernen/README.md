@@ -53,13 +53,13 @@ automatische Prüfung.
 | 02 | [Module und npm](02-module-npm/README.md) | `require`, `package.json`, `node_modules` | JS | ● | | 1 h |
 | 03 | [HTTP und APIs](03-http-api/README.md) | Client/Server, URL, Statuscodes, JSON | JS | ● | ○ | 2 h |
 | 04 | [Asynchrones JavaScript](04-async/README.md) | Promise, `async`/`await`, `fetch` | JS | ● | | 2 h |
-| 05 | [Die Planeten-Berechnung](05-planeten/README.md) | Koordinaten, Tierkreis, Aspekte | JS | ● | | 2 h |
+| 05 | [Die Planeten-Berechnung](05-planeten/README.md) | Koordinaten, Tierkreis, Aspekte, Blick von der Sonne | JS | ● | | 2 h |
 | 06 | [Datenbank und SQL](06-datenbank-sql/README.md) | Tabellen, Schlüssel, JOIN, SQL-Injection | JS + **Praxis (7 SQL-Aufgaben)** | ● | ● | 3 h |
 | 07 | [Node-RED](07-node-red/README.md) | Flows, `msg`, Function-Nodes, unser Flow | JS + Hand (Editor) | ● | ○ | 2 h |
-| 08 | [Grafana](08-grafana/README.md) | Datenquelle, Panels, Variablen, Rollen | JS + Hand (eigenes Panel) | ● | ● | 1,5 h |
+| 08 | [Grafana](08-grafana/README.md) | Datenquelle, Panels, Variablen, Klick-Links, Ein-/Ausblende-Regeln, Rollen | JS + Hand (eigenes Panel) | ● | ● | 1,5 h |
 | 09 | [Der Setup-Assistent](09-setup-assistent/README.md) | Admin-APIs, Auth, Sicherheit, `.exe` bauen | JS | ● | | 2 h |
 | 10 | [Netzwerk und Fehlersuche](10-netzwerk-fehlersuche/README.md) | IP, Ports, Schichtenmodell, echte Fälle | JS + **Praxis (Fall-Quiz)** | ● | ● | 2 h |
-| 11 | [Statistik](11-statistik/README.md) | Kontrollgruppe, χ², Nachbeben | JS | ● | ○ | 1 h |
+| 11 | [Statistik](11-statistik/README.md) | Kontrollgruppe, χ², Nachbeben, faire Vergleiche, Korrelations-Finder | JS | ● | ○ | 1 h |
 | 12 | [Docker](12-docker/README.md) | Image, Container, Volume, compose.yaml | JS + **Praxis (Dockerfile)** | ● | ● | 2 h |
 | 13 | [Git und GitHub](13-git-github/README.md) | Commits, Branches, `.gitignore`, Pull Requests | JS + **Praxis (eigenes Repository)** | ● | ● | 2 h |
 | 14 | [Linux-Server betreiben](14-linux-server/README.md) | SSH, apt, systemctl, Logs, Rechte, Backup, cron | **Praxis (Quiz + Befehle)** + Hand | ○ | ● | 3 h |

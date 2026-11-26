@@ -45,6 +45,9 @@ Der Assistent schickt **dieselben** Anfragen.
 | Grafana: wer bin ich, welche Rolle? | `GET /api/user`, `GET /api/user/orgs` |
 | Grafana: Datenquelle anlegen | `POST /api/datasources` |
 | Grafana: Dashboard hochladen | `POST /api/dashboards/db` |
+| Grafana: Plugin da? (geht auch für Editor) | `GET /api/frontend/settings` → `panels` |
+| Grafana: Plugin installieren (nur Server-Admin) | `POST /api/plugins/volkovlabs-echarts-panel/install` |
+| Grafana: Dashboard im neuen Format lesen / speichern | `GET` / `PUT /apis/dashboard.grafana.app/v2/namespaces/default/dashboards/<uid>` |
 
 Tipp: Öffne den Node-RED-Editor mit **F12 → Netzwerk** und klicke auf „Deploy“. Du siehst die Anfrage, die der
 Assistent nachbaut.
@@ -63,7 +66,11 @@ vertrauenswürdige Netze oder HTTPS. Im Schulnetz mit HTTP ist das ein bekanntes
 
 ## 4. Mehrfach ausführbar (idempotent) und fremde Tabs schützen
 
-- Datenbank: nur **fehlende** Tabellen anlegen.
+- Datenbank: nur **fehlende** Tabellen anlegen, mit dem Präfix der Person (`anna_events` …). Fehlen in alten
+  Tabellen neue Spalten, kommen sie per `ALTER TABLE` dazu, und die betroffenen Events werden zum Neuberechnen
+  auf `sky_computed = 0` gesetzt.
+- Plugin und „View“-Umschalter: nie fatal. Fehlen die Rechte oder ist Grafana zu alt, bleibt das Sonnensystem
+  leer bzw. stehen Karte und Sonnensystem nebeneinander, der Rest wird trotzdem eingerichtet.
 - Node-RED: den eigenen Tab am Backfill-Node erkennen (Node-RED vergibt neuen Tabs eine eigene ID, behält aber
   die Node-IDs) und ihn **ersetzen** statt einen zweiten anzulegen.
 - Grafana: Datenquelle und Dashboard mit fester `uid` → `PUT`/`overwrite` statt Duplikat.

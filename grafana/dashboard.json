@@ -153,9 +153,148 @@
             "selected": true
           }
         ]
+      },
+      {
+        "type": "custom",
+        "name": "metric",
+        "label": "Correlation",
+        "multi": false,
+        "includeAll": false,
+        "hide": 0,
+        "query": "Moon phase : moon-phase,Moon height above the quake region : moon-altitude,Moon distance : moon-distance",
+        "current": {
+          "text": "Moon phase",
+          "value": "moon-phase"
+        },
+        "options": [
+          {
+            "text": "Moon phase",
+            "value": "moon-phase",
+            "selected": true
+          },
+          {
+            "text": "Moon height above the quake region",
+            "value": "moon-altitude",
+            "selected": false
+          },
+          {
+            "text": "Moon distance",
+            "value": "moon-distance",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "type": "custom",
+        "name": "step",
+        "label": "Step °",
+        "query": "15,30,45,60",
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "text": "30",
+          "value": "30"
+        },
+        "options": [
+          {
+            "text": "15",
+            "value": "15",
+            "selected": false
+          },
+          {
+            "text": "30",
+            "value": "30",
+            "selected": true
+          },
+          {
+            "text": "45",
+            "value": "45",
+            "selected": false
+          },
+          {
+            "text": "60",
+            "value": "60",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "type": "custom",
+        "name": "aftershocks",
+        "label": "Aftershocks",
+        "multi": false,
+        "includeAll": false,
+        "hide": 0,
+        "query": "Main shocks only : main,All quakes : keep",
+        "current": {
+          "text": "Main shocks only",
+          "value": "main"
+        },
+        "options": [
+          {
+            "text": "Main shocks only",
+            "value": "main",
+            "selected": true
+          },
+          {
+            "text": "All quakes",
+            "value": "keep",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "type": "textbox",
+        "name": "event",
+        "label": "Selected quake",
+        "query": "",
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "hide": 2
+      },
+      {
+        "type": "custom",
+        "name": "view",
+        "label": "View",
+        "query": "Earth map : earth,Solar system : solar",
+        "multi": false,
+        "includeAll": false,
+        "hide": 2,
+        "current": {
+          "text": "Earth map",
+          "value": "earth"
+        },
+        "options": [
+          {
+            "text": "Earth map",
+            "value": "earth",
+            "selected": true
+          },
+          {
+            "text": "Solar system",
+            "value": "solar",
+            "selected": false
+          }
+        ]
       }
     ]
   },
+  "links": [
+    {
+      "type": "link",
+      "title": "Latest quake",
+      "icon": "sync",
+      "tooltip": "Show the sky at the latest earthquake again",
+      "url": "/d/planeten-erdbeben?var-event=&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}&${view:queryparam}",
+      "keepTime": true,
+      "includeVars": false,
+      "targetBlank": false,
+      "asDropdown": false,
+      "tags": []
+    }
+  ],
   "panels": [
     {
       "id": 1,
@@ -243,7 +382,7 @@
     {
       "id": 2,
       "type": "canvas",
-      "title": "Sky at the latest earthquake",
+      "title": "Sky at the selected earthquake (latest if none)",
       "gridPos": {
         "x": 0,
         "y": 4,
@@ -264,10 +403,10 @@
           "editorMode": "code",
           "rawQuery": true,
           "format": "table",
-          "rawSql": "SELECT e.time_utc, e.place, e.magnitude, e.depth_km, ROUND(e.moon_phase_deg, 1) AS moon_phase_deg,\n  MAX(CASE WHEN bp.body = 'Sun'     THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Sun,\n  MAX(CASE WHEN bp.body = 'Moon'    THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Moon,\n  MAX(CASE WHEN bp.body = 'Mercury' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Mercury,\n  MAX(CASE WHEN bp.body = 'Venus'   THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Venus,\n  MAX(CASE WHEN bp.body = 'Mars'    THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Mars,\n  MAX(CASE WHEN bp.body = 'Jupiter' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Jupiter,\n  MAX(CASE WHEN bp.body = 'Saturn'  THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Saturn,\n  MAX(CASE WHEN bp.body = 'Uranus'  THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Uranus,\n  MAX(CASE WHEN bp.body = 'Neptune' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Neptune,\n  MAX(CASE WHEN bp.body = 'Pluto'   THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Pluto\nFROM events e\nJOIN body_positions bp ON bp.event_id = e.id\nWHERE e.id = (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1\n              ORDER BY time_utc DESC LIMIT 1)\nGROUP BY e.id"
+          "rawSql": "SELECT IF(${event:sqlstring} = '', 'Latest earthquake', 'Selected earthquake') AS selection,\n  e.time_utc, e.place, e.magnitude, e.depth_km, ROUND(e.moon_phase_deg, 1) AS moon_phase_deg,\n  MAX(CASE WHEN bp.body = 'Sun'     THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Sun,\n  MAX(CASE WHEN bp.body = 'Moon'    THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°') END) AS Moon,\n  MAX(CASE WHEN bp.body = 'Mercury' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Mercury,\n  MAX(CASE WHEN bp.body = 'Venus'   THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Venus,\n  MAX(CASE WHEN bp.body = 'Mars'    THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Mars,\n  MAX(CASE WHEN bp.body = 'Jupiter' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Jupiter,\n  MAX(CASE WHEN bp.body = 'Saturn'  THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Saturn,\n  MAX(CASE WHEN bp.body = 'Uranus'  THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Uranus,\n  MAX(CASE WHEN bp.body = 'Neptune' THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Neptune,\n  MAX(CASE WHEN bp.body = 'Pluto'   THEN CONCAT(bp.zodiac_sign, ' ', ROUND(bp.degree_in_sign, 1), '°', IF(bp.retrograde, ' R', '')) END) AS Pluto\nFROM events e\nJOIN body_positions bp ON bp.event_id = e.id\nWHERE e.id = IF(${event:sqlstring} = '',\n              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1\n               ORDER BY time_utc DESC LIMIT 1),\n              CAST(${event:sqlstring} AS UNSIGNED))\nGROUP BY e.id"
         }
       ],
-      "description": "Zodiac position of every body when the most recent quake happened. R = retrograde.",
+      "description": "Zodiac position of every body when the selected quake happened. Click a quake on the map to select it; \"Latest quake\" (top right) goes back to the most recent one. R = retrograde.",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -286,8 +425,9 @@
               "name": "Title",
               "config": {
                 "text": {
-                  "mode": "fixed",
-                  "fixed": "Latest earthquake"
+                  "mode": "field",
+                  "field": "selection",
+                  "fixed": ""
                 },
                 "color": {
                   "fixed": "#9fa7b3"
@@ -1838,12 +1978,12 @@
     {
       "id": 3,
       "type": "geomap",
-      "title": "Earthquakes (time range, M ≥ $minmag)",
+      "title": "Earthquakes (time range, M ≥ $minmag): click a quake to see its sky",
       "gridPos": {
         "x": 0,
         "y": 14,
-        "w": 16,
-        "h": 13
+        "w": 14,
+        "h": 14
       },
       "datasource": {
         "type": "mysql",
@@ -1859,7 +1999,7 @@
           "editorMode": "code",
           "rawQuery": true,
           "format": "table",
-          "rawSql": "SELECT time_utc AS time, latitude, longitude, magnitude, depth_km, place, moon_phase_deg\nFROM events\nWHERE kind = 'earthquake' AND $__timeFilter(time_utc) AND magnitude >= $minmag"
+          "rawSql": "SELECT id AS event_id, time_utc AS time, latitude, longitude, magnitude, depth_km, place, moon_phase_deg\nFROM events\nWHERE kind = 'earthquake' AND $__timeFilter(time_utc) AND magnitude >= $minmag"
         },
         {
           "refId": "B",
@@ -1871,17 +2011,52 @@
           "rawQuery": true,
           "format": "table",
           "rawSql": "SELECT latitude, longitude, code AS plate\nFROM plate_points"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT latitude, longitude, place\nFROM events\nWHERE id = IF(${event:sqlstring} = '',\n              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1\n               ORDER BY time_utc DESC LIMIT 1),\n              CAST(${event:sqlstring} AS UNSIGNED))"
         }
       ],
-      "description": "Red dots: earthquakes. Blue lines: boundaries of the tectonic plates (PB2002, loaded by Node-RED).",
+      "description": "Red dots: earthquakes. Blue lines: boundaries of the tectonic plates (PB2002, loaded by Node-RED). White ring: the quake shown in the sky panel above. Click a quake, then \"Show the sky at this quake\".",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "continuous-YlRd"
           },
-          "decimals": 1
+          "decimals": 1,
+          "links": [
+            {
+              "title": "Show the sky at this quake",
+              "url": "/d/${__dashboard.uid}?var-event=${__data.fields.event_id}&var-view=solar&${ds:queryparam}&${minmag:queryparam}&${body:queryparam}&${orb:queryparam}&${__url_time_range}",
+              "oneClick": true
+            }
+          ]
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Event ID"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "view": {
@@ -1970,19 +2145,50 @@
                 }
               }
             }
+          },
+          {
+            "type": "markers",
+            "name": "Selected quake",
+            "tooltip": false,
+            "filterData": {
+              "id": "byRefId",
+              "options": "C"
+            },
+            "location": {
+              "mode": "coords",
+              "latitude": "latitude",
+              "longitude": "longitude"
+            },
+            "config": {
+              "showLegend": false,
+              "style": {
+                "size": {
+                  "fixed": 24
+                },
+                "color": {
+                  "fixed": "white"
+                },
+                "opacity": 0.45,
+                "lineWidth": 3,
+                "symbol": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/marker/circle.svg"
+                }
+              }
+            }
           }
         ]
       }
     },
     {
-      "id": 8,
-      "type": "barchart",
-      "title": "Earthquakes per tectonic plate (M ≥ $minmag)",
+      "id": 9,
+      "type": "volkovlabs-echarts-panel",
+      "title": "Solar system at the selected earthquake (click a planet)",
       "gridPos": {
-        "x": 16,
+        "x": 14,
         "y": 14,
-        "w": 8,
-        "h": 13
+        "w": 10,
+        "h": 14
       },
       "datasource": {
         "type": "mysql",
@@ -1998,7 +2204,53 @@
           "editorMode": "code",
           "rawQuery": true,
           "format": "table",
-          "rawSql": "SELECT p.name AS plate, COUNT(*) AS quakes\nFROM events e\nJOIN plates p ON ST_Contains(p.geom, POINT(e.longitude, e.latitude))\nWHERE e.kind = 'earthquake' AND $__timeFilter(e.time_utc) AND e.magnitude >= $minmag\nGROUP BY p.code, p.name\nORDER BY quakes DESC\nLIMIT 15"
+          "rawSql": "SELECT body, helio_lon_deg AS lon, helio_dist_au AS dist\nFROM body_positions\nWHERE event_id = IF(${event:sqlstring} = '',\n              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1\n               ORDER BY time_utc DESC LIMIT 1),\n              CAST(${event:sqlstring} AS UNSIGNED))\n  AND body NOT IN ('Sun', 'Moon') AND helio_dist_au IS NOT NULL\nUNION ALL\nSELECT 'Earth', MOD(ecl_lon_deg + 180, 360), distance_au\nFROM body_positions\nWHERE event_id = IF(${event:sqlstring} = '',\n              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1\n               ORDER BY time_utc DESC LIMIT 1),\n              CAST(${event:sqlstring} AS UNSIGNED))\n  AND body = 'Sun'"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT time_utc AS time, place, magnitude\nFROM events\nWHERE id = IF(${event:sqlstring} = '',\n              (SELECT id FROM events WHERE kind = 'earthquake' AND sky_computed = 1\n               ORDER BY time_utc DESC LIMIT 1),\n              CAST(${event:sqlstring} AS UNSIGNED))"
+        }
+      ],
+      "description": "The planets around the Sun when the selected quake happened, seen from above (north up). Angle = longitude seen from the Sun. Not to scale: every orbit has its own ring; real distances in the tooltip. Dashed line: from the Earth to the selected body ($body), the direction we see it in. Click a planet to select it. Needs the Business Charts plugin; code in grafana/solar-system.echarts.js.",
+      "options": {
+        "editorMode": "code",
+        "getOption": "// Business Charts panel (Apache ECharts): the solar system at the selected earthquake, seen from above.\n// This is the BODY of a function: Business Charts runs it as new Function('context', <this code>)\n// and draws the object it returns (an ECharts \"option\"). dashboard-builder.js puts it into the panel.\n//\n// context.panel.data.series = the query results (refId A = planets, B = the quake for the title)\n// context.grafana           = theme, replaceVariables('$body'), locationService (change variables)\n// context.panel.chart       = the ECharts instance (for click events)\n//\n// Angle  = heliocentric ecliptic longitude (0° = direction of the vernal equinox, counterclockwise).\n// Radius = NOT to scale: every orbit gets its own evenly spaced ring (Mercury = 1 ... Pluto = 9),\n//          otherwise Mercury to Mars would vanish in the middle next to Neptune. A planet between two\n//          mean orbits (e.g. Pluto on its oval orbit) is placed between the rings. Real distances: tooltip.\n\nconst byRef = (id) => context.panel.data.series.find((s) => s.refId === id);\nconst col = (s, name) => {\n  const f = s && s.fields.find((x) => x.name === name);\n  return f ? Array.from(f.values) : [];\n};\nconst A = byRef('A');\nconst B = byRef('B');\nconst bodies = col(A, 'body');\nconst lon = col(A, 'lon');\nconst dist = col(A, 'dist');\nconst selected = context.grafana.replaceVariables('$body');\nconst theme = context.grafana.theme;\nconst text = theme.colors.text.primary;\nconst muted = theme.colors.text.secondary;\nconst faint = theme.isDark ? 'rgba(204,204,220,0.15)' : 'rgba(36,41,46,0.15)';\n\nconst ORBIT = { Mercury: 0.387, Venus: 0.723, Earth: 1, Mars: 1.524, Jupiter: 5.203, Saturn: 9.537, Uranus: 19.19, Neptune: 30.07, Pluto: 39.48 };\nconst STEPS = [0, ...Object.values(ORBIT)];\nconst r = (au) => {\n  for (let k = 1; k < STEPS.length; k++) if (au <= STEPS[k]) return k - 1 + (au - STEPS[k - 1]) / (STEPS[k] - STEPS[k - 1]);\n  return 9 + (au - STEPS[9]) / 9.41;\n};\nconst COLOR = { Earth: '#5794f2', Mars: '#ff7383', Jupiter: '#e0b27a', Saturn: '#e8d18b' };\nconst SIZE = { Earth: 13, Jupiter: 16, Saturn: 14 };\n\nconst orbits = Object.values(ORBIT).map((a) => ({\n  type: 'line', coordinateSystem: 'polar', silent: true, showSymbol: false, z: 1,\n  data: Array.from({ length: 121 }, (_, i) => [r(a), i * 3]),\n  lineStyle: { color: faint, width: 1 },\n}));\n\nconst planets = bodies.map((b, i) => ({\n  name: b, value: [r(dist[i]), lon[i]], dist: dist[i], lon: lon[i],\n  symbolSize: SIZE[b] || 9,\n  itemStyle: { color: COLOR[b] || '#c7d0d9', borderColor: b === selected ? '#fade2a' : 'transparent', borderWidth: 3 },\n  label: { show: true, position: 'right', formatter: b, color: b === 'Earth' || b === selected ? text : muted, fontSize: 11 },\n}));\n\n// Line of sight: from the Earth to the selected body = the direction in which we see it.\n// The Moon is right next to the Earth, so it gets no line.\nconst ei = bodies.indexOf('Earth');\nconst si = bodies.indexOf(selected);\nconst sight = [];\nif (ei >= 0 && selected === 'Sun') sight.push([r(dist[ei]), lon[ei]], [0, 0]);\nelse if (ei >= 0 && si >= 0 && si !== ei) sight.push([r(dist[ei]), lon[ei]], [r(dist[si]), lon[si]]);\n\nconst t = col(B, 'time')[0];\nconst place = col(B, 'place')[0];\nconst mag = col(B, 'magnitude')[0];\nconst when = t ? new Date(t).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '';\nconst stillComputing = bodies.length > 0 && bodies.length < 9; // only the Earth: Node-RED has not reached this quake yet\n\n// Click a planet: it becomes $body for the whole dashboard (no page reload).\nconst chart = context.panel.chart;\nchart.off('click');\nchart.on('click', (p) => {\n  if (p.data && p.data.name && p.data.name !== 'Earth') context.grafana.locationService.partial({ 'var-body': p.data.name }, true);\n});\n\nreturn {\n  backgroundColor: 'transparent',\n  title: {\n    text: place || 'No earthquake',\n    subtext: stillComputing ? 'Positions seen from the Sun are still being computed (Node-RED) ...' : when + (mag ? '   ·   M ' + mag : ''),\n    left: 'center', top: 4,\n    textStyle: { color: text, fontSize: 14, fontWeight: 500 }, subtextStyle: { color: muted },\n  },\n  tooltip: {\n    trigger: 'item',\n    formatter: (p) => (p.data && p.data.dist !== undefined\n      ? '<b>' + p.data.name + '</b><br>' + p.data.dist.toFixed(3) + ' AU from the Sun<br>longitude ' + p.data.lon.toFixed(1) + '°'\n      : p.seriesName === 'Sun' ? '<b>Sun</b>' : ''),\n  },\n  polar: { radius: '78%', center: ['50%', '56%'] },\n  angleAxis: {\n    type: 'value', min: 0, max: 360, interval: 30, startAngle: 0, clockwise: false,\n    axisLabel: { formatter: '{value}°', color: muted, fontSize: 10 }, splitLine: { show: false },\n    axisLine: { lineStyle: { color: faint } },\n  },\n  radiusAxis: { type: 'value', min: 0, max: 9.6, axisLabel: { show: false }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { show: false } },\n  series: [\n    ...orbits,\n    { name: 'Sun', type: 'scatter', coordinateSystem: 'polar', z: 3, data: [[0, 0]], symbolSize: 16,\n      itemStyle: { color: '#fade2a', shadowBlur: 20, shadowColor: '#fade2a' } },\n    { name: 'Line of sight', type: 'line', coordinateSystem: 'polar', silent: true, showSymbol: false, z: 2,\n      data: sight, lineStyle: { color: '#fade2a', width: 1.5, type: 'dashed' } },\n    { name: 'Planets', type: 'scatter', coordinateSystem: 'polar', z: 4, data: planets, cursor: 'pointer' },\n  ],\n};\n",
+        "renderer": "canvas",
+        "map": "none"
+      }
+    },
+    {
+      "id": 8,
+      "type": "barchart",
+      "title": "Earthquakes per tectonic plate (M ≥ $minmag)",
+      "gridPos": {
+        "x": 16,
+        "y": 28,
+        "w": 8,
+        "h": 10
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${ds}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT p.name AS plate, COUNT(*) AS quakes\nFROM events e\nJOIN plates p IGNORE INDEX (sp_geom) ON ST_Contains(p.geom, POINT(e.longitude, e.latitude))\nWHERE e.kind = 'earthquake' AND $__timeFilter(e.time_utc) AND e.magnitude >= $minmag\nGROUP BY p.code, p.name\nORDER BY quakes DESC\nLIMIT 15"
         }
       ],
       "description": "Number of quakes in the time range on each plate (the 15 plates with the most). Most quakes happen where plates meet, so plates with long, active boundaries lead.",
@@ -2056,8 +2308,8 @@
       "description": "Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.",
       "gridPos": {
         "x": 0,
-        "y": 27,
-        "w": 12,
+        "y": 28,
+        "w": 8,
         "h": 10
       },
       "datasource": {
@@ -2153,9 +2405,9 @@
       "title": "Zodiac sign of $body: earthquakes vs. control",
       "description": "Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.",
       "gridPos": {
-        "x": 12,
-        "y": 27,
-        "w": 12,
+        "x": 8,
+        "y": 28,
+        "w": 8,
         "h": 10
       },
       "datasource": {
@@ -2252,7 +2504,7 @@
       "description": "Red = earthquakes, grey = control events (same places, random times). Only the difference between them matters.",
       "gridPos": {
         "x": 0,
-        "y": 37,
+        "y": 38,
         "w": 8,
         "h": 10
       },
@@ -2349,7 +2601,7 @@
       "title": "Aspects that differ most (orb ≤ $orb°)",
       "gridPos": {
         "x": 8,
-        "y": 37,
+        "y": 38,
         "w": 16,
         "h": 10
       },
@@ -2463,6 +2715,381 @@
               {
                 "id": "decimals",
                 "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 10,
+      "type": "barchart",
+      "title": "Correlation finder: ${metric:text} (M ≥ $minmag, ${aftershocks:text})",
+      "description": "Is a Moon position more common at earthquakes than at control events (same place, random time)? \"Difference\" = how many % more or fewer quakes than chance. z = distance from chance: |z| ≥ 2 happens by chance in 1 of 20 bins, |z| ≥ 3 in 1 of 370, so with many bins a single |z| of 2 means little. Choose a time range to find an effect, then check it in another. Aftershocks: \"Main shocks only\" drops a quake if a stronger one was within 3 days and 300 km. Only the Moon: the controls lie in the 2 years before each quake, a fair baseline only for things that repeat often in that time. Full analysis with p-values and a search over everything: npm run korrelation.",
+      "gridPos": {
+        "x": 0,
+        "y": 48,
+        "w": 12,
+        "h": 11
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${ds}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH quakes AS (\n  SELECT e.source_id\n  FROM events e\n  WHERE e.kind = 'earthquake' AND e.sky_computed = 1 AND e.magnitude >= $minmag AND $__timeFilter(e.time_utc)\n    AND (${aftershocks:sqlstring} = 'keep' OR NOT EXISTS (\n      SELECT 1 FROM events s\n      WHERE s.kind = 'earthquake' AND s.id <> e.id\n        AND (s.magnitude > e.magnitude OR (s.magnitude = e.magnitude AND s.time_utc < e.time_utc))\n        AND s.time_utc BETWEEN e.time_utc - INTERVAL 3 DAY AND e.time_utc + INTERVAL 3 DAY\n        AND ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(e.longitude, e.latitude)) <= 300000))\n),\nvals AS (\n  SELECT e.kind,\n         CASE ${metric:sqlstring}\n           WHEN 'moon-phase' THEN e.moon_phase_deg\n           WHEN 'moon-altitude' THEN m.altitude_deg\n           ELSE m.distance_au\n         END AS v\n  FROM events e\n  JOIN quakes q ON q.source_id = IF(e.kind = 'earthquake', e.source_id, e.paired_with)\n  JOIN body_positions m ON m.event_id = e.id AND m.body = 'Moon'\n  WHERE e.sky_computed = 1\n),\nedges AS (\n  -- distance groups: the 5 fifths of the CONTROL events (how close the Moon is by chance)\n  SELECT MAX(CASE WHEN t = 1 THEN v END) AS e1, MAX(CASE WHEN t = 2 THEN v END) AS e2,\n         MAX(CASE WHEN t = 3 THEN v END) AS e3, MAX(CASE WHEN t = 4 THEN v END) AS e4\n  FROM (SELECT v, NTILE(5) OVER (ORDER BY v) AS t FROM vals WHERE kind = 'control' AND v IS NOT NULL) ctl\n),\nbinned AS (\n  SELECT kind,\n         CASE ${metric:sqlstring}\n           WHEN 'moon-phase' THEN LEAST(FLOOR(v / CAST(${step:sqlstring} AS UNSIGNED)), CEIL(360 / CAST(${step:sqlstring} AS UNSIGNED)) - 1)\n           WHEN 'moon-altitude' THEN LEAST(FLOOR((v + 90) / CAST(${step:sqlstring} AS UNSIGNED)), CEIL(180 / CAST(${step:sqlstring} AS UNSIGNED)) - 1)\n           ELSE CASE WHEN v <= e1 THEN 0 WHEN v <= e2 THEN 1 WHEN v <= e3 THEN 2 WHEN v <= e4 THEN 3 ELSE 4 END\n         END AS bin\n  FROM vals CROSS JOIN edges\n  WHERE v IS NOT NULL\n),\ncounts AS (\n  SELECT bin, SUM(kind = 'earthquake') AS q, SUM(kind = 'control') AS c\n  FROM binned GROUP BY bin\n),\nshares AS (\n  SELECT bin, q, c, q / SUM(q) OVER () AS qs, c / SUM(c) OVER () AS cs,\n         (q + c) / (SUM(q) OVER () + SUM(c) OVER ()) AS pooled, SUM(q) OVER () AS nq, SUM(c) OVER () AS nc\n  FROM counts\n)\nSELECT CASE ${metric:sqlstring}\n         WHEN 'moon-phase' THEN CONCAT(bin * CAST(${step:sqlstring} AS UNSIGNED), '…', LEAST(360, (bin + 1) * CAST(${step:sqlstring} AS UNSIGNED)), '°')\n         WHEN 'moon-altitude' THEN CONCAT(bin * CAST(${step:sqlstring} AS UNSIGNED) - 90, '…', LEAST(90, (bin + 1) * CAST(${step:sqlstring} AS UNSIGNED) - 90), '°')\n         ELSE ELT(bin + 1, 'nearest 20 %', '20–40 %', '40–60 %', '60–80 %', 'farthest 20 %')\n       END AS bin,\n       100 * qs AS quakes_pct,\n       100 * cs AS control_pct,\n       100 * (qs / cs - 1) AS diff_pct,\n       q AS quakes,\n       (qs - cs) / SQRT(pooled * (1 - pooled) * (1 / nq + 1 / nc)) AS z\nFROM shares\nORDER BY shares.bin"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "quakes_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Earthquakes"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "control_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Control (same place, random time)"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "diff_pct"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "viz": true,
+                  "legend": true,
+                  "tooltip": false
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "quakes"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "viz": true,
+                  "legend": true,
+                  "tooltip": false
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "z"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "viz": true,
+                  "legend": true,
+                  "tooltip": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "bin",
+        "orientation": "auto",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Correlation finder: numbers (${metric:text}, ${step}° steps)",
+      "gridPos": {
+        "x": 12,
+        "y": 48,
+        "w": 12,
+        "h": 11
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${ds}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${ds}"
+          },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "WITH quakes AS (\n  SELECT e.source_id\n  FROM events e\n  WHERE e.kind = 'earthquake' AND e.sky_computed = 1 AND e.magnitude >= $minmag AND $__timeFilter(e.time_utc)\n    AND (${aftershocks:sqlstring} = 'keep' OR NOT EXISTS (\n      SELECT 1 FROM events s\n      WHERE s.kind = 'earthquake' AND s.id <> e.id\n        AND (s.magnitude > e.magnitude OR (s.magnitude = e.magnitude AND s.time_utc < e.time_utc))\n        AND s.time_utc BETWEEN e.time_utc - INTERVAL 3 DAY AND e.time_utc + INTERVAL 3 DAY\n        AND ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(e.longitude, e.latitude)) <= 300000))\n),\nvals AS (\n  SELECT e.kind,\n         CASE ${metric:sqlstring}\n           WHEN 'moon-phase' THEN e.moon_phase_deg\n           WHEN 'moon-altitude' THEN m.altitude_deg\n           ELSE m.distance_au\n         END AS v\n  FROM events e\n  JOIN quakes q ON q.source_id = IF(e.kind = 'earthquake', e.source_id, e.paired_with)\n  JOIN body_positions m ON m.event_id = e.id AND m.body = 'Moon'\n  WHERE e.sky_computed = 1\n),\nedges AS (\n  -- distance groups: the 5 fifths of the CONTROL events (how close the Moon is by chance)\n  SELECT MAX(CASE WHEN t = 1 THEN v END) AS e1, MAX(CASE WHEN t = 2 THEN v END) AS e2,\n         MAX(CASE WHEN t = 3 THEN v END) AS e3, MAX(CASE WHEN t = 4 THEN v END) AS e4\n  FROM (SELECT v, NTILE(5) OVER (ORDER BY v) AS t FROM vals WHERE kind = 'control' AND v IS NOT NULL) ctl\n),\nbinned AS (\n  SELECT kind,\n         CASE ${metric:sqlstring}\n           WHEN 'moon-phase' THEN LEAST(FLOOR(v / CAST(${step:sqlstring} AS UNSIGNED)), CEIL(360 / CAST(${step:sqlstring} AS UNSIGNED)) - 1)\n           WHEN 'moon-altitude' THEN LEAST(FLOOR((v + 90) / CAST(${step:sqlstring} AS UNSIGNED)), CEIL(180 / CAST(${step:sqlstring} AS UNSIGNED)) - 1)\n           ELSE CASE WHEN v <= e1 THEN 0 WHEN v <= e2 THEN 1 WHEN v <= e3 THEN 2 WHEN v <= e4 THEN 3 ELSE 4 END\n         END AS bin\n  FROM vals CROSS JOIN edges\n  WHERE v IS NOT NULL\n),\ncounts AS (\n  SELECT bin, SUM(kind = 'earthquake') AS q, SUM(kind = 'control') AS c\n  FROM binned GROUP BY bin\n),\nshares AS (\n  SELECT bin, q, c, q / SUM(q) OVER () AS qs, c / SUM(c) OVER () AS cs,\n         (q + c) / (SUM(q) OVER () + SUM(c) OVER ()) AS pooled, SUM(q) OVER () AS nq, SUM(c) OVER () AS nc\n  FROM counts\n)\nSELECT CASE ${metric:sqlstring}\n         WHEN 'moon-phase' THEN CONCAT(bin * CAST(${step:sqlstring} AS UNSIGNED), '…', LEAST(360, (bin + 1) * CAST(${step:sqlstring} AS UNSIGNED)), '°')\n         WHEN 'moon-altitude' THEN CONCAT(bin * CAST(${step:sqlstring} AS UNSIGNED) - 90, '…', LEAST(90, (bin + 1) * CAST(${step:sqlstring} AS UNSIGNED) - 90), '°')\n         ELSE ELT(bin + 1, 'nearest 20 %', '20–40 %', '40–60 %', '60–80 %', 'farthest 20 %')\n       END AS bin,\n       100 * qs AS quakes_pct,\n       100 * cs AS control_pct,\n       100 * (qs / cs - 1) AS diff_pct,\n       q AS quakes,\n       (qs - cs) / SQRT(pooled * (1 - pooled) * (1 / nq + 1 / nc)) AS z\nFROM shares\nORDER BY shares.bin"
+        }
+      ],
+      "description": "Is a Moon position more common at earthquakes than at control events (same place, random time)? \"Difference\" = how many % more or fewer quakes than chance. z = distance from chance: |z| ≥ 2 happens by chance in 1 of 20 bins, |z| ≥ 3 in 1 of 370, so with many bins a single |z| of 2 means little. Choose a time range to find an effect, then check it in another. Aftershocks: \"Main shocks only\" drops a quake if a stronger one was within 3 days and 300 km. Only the Moon: the controls lie in the 2 years before each quake, a fair baseline only for things that repeat often in that time. Full analysis with p-values and a search over everything: npm run korrelation.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "quakes_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Earthquakes"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "control_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Control (same place, random time)"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bin"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Range"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "quakes_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "control_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "displayName",
+                "value": "Control"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "diff_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Difference"
+              },
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "quakes"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Quakes"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "z"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "range",
+                    "options": {
+                      "from": 3,
+                      "to": null,
+                      "result": {
+                        "color": "red",
+                        "index": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "range",
+                    "options": {
+                      "from": null,
+                      "to": -3,
+                      "result": {
+                        "color": "red",
+                        "index": 1
+                      }
+                    }
+                  },
+                  {
+                    "type": "range",
+                    "options": {
+                      "from": 2,
+                      "to": 3,
+                      "result": {
+                        "color": "orange",
+                        "index": 2
+                      }
+                    }
+                  },
+                  {
+                    "type": "range",
+                    "options": {
+                      "from": -3,
+                      "to": -2,
+                      "result": {
+                        "color": "orange",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "transparent",
+                      "value": null
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
               }
             ]
           }

@@ -28,7 +28,8 @@ Die Tabellen stehen in [db/schema.sql](../../db/schema.sql).
 │ PK id                    │        │ PK,FK event_id            │
 │    kind (earthquake/     │        │ PK    body (Sun, Moon …)  │
 │          control)        │        │       zodiac_sign         │
-│ UQ source_id             │        │       altitude_deg …      │
+│ UQ source_id             │        │       altitude_deg,       │
+│                          │        │       helio_dist_au …     │
 │    time_utc, latitude,   │        └───────────────────────────┘
 │    longitude, magnitude  │ 1    n ┌───────────────────────────┐
 │    moon_phase_deg        │────────│ aspects                   │
@@ -39,6 +40,11 @@ Die Tabellen stehen in [db/schema.sql](../../db/schema.sql).
                                     │       orb_deg             │
                                     └───────────────────────────┘
 ```
+**Eigene Tabellen pro Person:** Im Unterricht teilen sich alle **eine** Datenbank, aber jede:r bekommt eigene
+Tabellen mit dem Namen davor: `anna_events`, `anna_body_positions`, `anna_aspects`. Der Setup-Assistent setzt den
+Präfix in jede Abfrage ein ([shared/tables.js](../../shared/tables.js)). Nur die Plattengrenzen (`plates`,
+`plate_points`) sind für alle gleich. In den Übungen hier heißen die Tabellen ohne Präfix.
+
 | Begriff | Bedeutung | Im Projekt |
 |---|---|---|
 | **Primärschlüssel (PK)** | eindeutige Kennung jeder Zeile | `events.id`, automatisch hochgezählt (`AUTO_INCREMENT`) |
@@ -126,6 +132,12 @@ Nützlich: `SHOW TABLES;`, `DESCRIBE events;`, `SELECT * FROM events LIMIT 3;`
    Der Test führt deine Abfrage und die Musterlösung gegen die echte Datenbank aus und vergleicht
    die Ergebnisse. Er liest nur, er ändert nichts. Dafür muss die Docker-Umgebung laufen und mit Daten
    gefüllt sein (Backfill); den Zugang regelt [verbindung.js](../verbindung.js).
+3. **Eigene Tabellen schreiben:** Im Setup-Assistenten bei der Datenbank „Tabellen: **selbst schreiben (Übung)**“
+   wählen. Er zeigt, welche Spalten und Schlüssel `events`, `body_positions` und `aspects` brauchen, aber nicht das
+   SQL. Schreibe die `CREATE TABLE`-Befehle, führe sie im Feld „Dein SQL“ aus und klicke „Tabellen prüfen“. Die
+   Prüfung erklärt jeden fehlenden Punkt und schlägt ein `ALTER TABLE` vor. Achte besonders auf die Fallen, die
+   Node-RED später stillschweigend lahmlegen würden: `UNIQUE` auf `source_id`, `DEFAULT 0` bei `sky_computed`,
+   Spalten, die `NULL` erlauben müssen. Musterlösung: „kopieren und einfügen“ bzw. [db/schema.sql](../../db/schema.sql).
 
 ## So erklärst du es
 > „Die Datenbank ist wie ein Aktenschrank mit drei Schubladen. In der ersten liegt eine Karteikarte pro Beben.

@@ -55,6 +55,11 @@ Es braucht eine plausible Erklärung. Physikalisch plausibel sind nur die **Geze
 von Beben. Die Anziehung der Planeten auf die Erde ist dagegen milliardenfach schwächer.
 Darum sind Mondphase, Mondentfernung und Mondhöhe die sinnvollsten Messgrößen im Projekt.
 
+**Unfaire Kontrollen.** Die Kontroll-Events liegen in den 2 Jahren **vor** dem Beben. Das ist nur fair für
+Dinge, die sich in dieser Zeit oft wiederholen (Mondphase: alle 29,5 Tage). Saturn braucht 29 Jahre für eine
+Runde: Beben und Kontrollen sähen Saturn einfach in verschiedenen Jahren, und jeder „Effekt“ wäre nur das.
+Faustregel: Die Daten müssen mindestens **4 Durchläufe** abdecken.
+
 ## 4. Fallbeispiel aus echten Daten (Stand: 19.11.2026, 2146 Beben aus 2025/2026)
 
 Deine Zahlen sehen anders aus: je nachdem, welche Jahre du per Backfill geladen hast, und weil die Kontroll-Zeiten
@@ -99,6 +104,19 @@ Der Effekt verschwindet vollständig.
    ```
    Vergleiche die Ergebnisse mit dem Fallbeispiel. Lade dann in Node-RED ein anderes Jahr (Backfill) und
    prüfe: Bleibt es bei „nicht auffällig“?
+3. Der **Korrelations-Finder** macht alles auf einmal: beliebige Winkel und Abstände, Nachbeben nach Zeit und
+   Ort entfernen (≤ 3 Tage, ≤ 300 km), p-Werte mit Korrektur für viele Tests, Gegenprobe in der zweiten
+   Hälfte der Daten, und er weigert sich bei unfairen Vergleichen:
+   ```
+   npm run korrelation -- --minmag 5                                   # Mondphase in 30°-Schritten
+   npm run korrelation -- --metrik sun-angle --koerper Moon --schritt 15
+   npm run korrelation -- --metrik altitude --koerper Moon             # Mond über/unter dem Bebengebiet
+   npm run korrelation -- --suche --minmag 5                           # alles durchprobieren
+   npm run korrelation -- --minmag 5 --mit-nachbeben                   # zum Vergleich: mit Nachbeben
+   ```
+   Im Dashboard gibt es dasselbe für den Mond: unten „Correlation finder“ mit „Correlation“, „Step“ und
+   „Aftershocks“ oben. Schalte „Aftershocks“ auf „All quakes“ und sieh zu, wie aus Zufall ein „Effekt“ wird.
+   Die Rechnung steht in [src/correlation.js](../../src/correlation.js).
 
 ## So erklärst du es
 > „Wenn ich wissen will, ob es bei Vollmond mehr Beben gibt, reicht es nicht, Beben bei Vollmond zu zählen.
