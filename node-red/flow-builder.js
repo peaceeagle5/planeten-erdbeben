@@ -2,7 +2,7 @@
 // Used by the setup wizard (deploys it via the Node-RED admin API) and by
 // `node node-red/flow-builder.js`, which writes flow-import.json for manual import.
 const { readAsset } = require('../shared/assets');
-const { normalizePrefix, withPrefix, tableNames } = require('../shared/tables');
+const { normalizePrefix, tableNames } = require('../shared/tables');
 
 const TAB = 'peb_tab';
 const OWNER_PREFIX = 'Eingerichtet von: ';
@@ -15,10 +15,6 @@ function ownerFromInfo(info) {
 const DB = 'peb_mysql';
 const PLATES_URL = 'https://raw.githubusercontent.com/fraxen/tectonicplates/refs/heads/master/GeoJSON/PB2002_plates.json';
 
-const PENDING_SQL = (prefix) => withPrefix(
-  "SELECT id, latitude, longitude, " +
-  "CONCAT(DATE_FORMAT(time_utc, '%Y-%m-%dT%H:%i:%s.'), LPAD(FLOOR(MICROSECOND(time_utc) / 1000), 3, '0'), 'Z') AS time_iso " +
-  "FROM events WHERE sky_computed = 0 ORDER BY id LIMIT 600", prefix);
 
 /** src/planets.js turned into plain function-node code (Astronomy comes from the node's libs). */
 function planetsCode() {
@@ -31,7 +27,9 @@ function planetsCode() {
  * @param {{dbHost:string, dbPort:number|string, dbName:string, owner?:string, tablePrefix?:string}} opts
  *   dbHost/dbPort as seen from the Node-RED server (not from the wizard's PC).
  *   tablePrefix: e.g. "anna_" -> tables anna_events, ... (shared/tables.js). It is stored as the
- *   tab's environment variable TABLE_PREFIX, which the function nodes read with env.get().
+ *   tab's environment variable TABLE_PREFIX, which every function node that names a table reads with
+ *   env.get() (no table name is fixed anywhere else). So an imported flow-import.json only needs the
+ *   prefix set on the tab.
  *   owner is written into the tab description, so the wizard can warn before overwriting
  *   someone else's Node-RED.
  * @returns {{id:string, label:string, info:string, nodes:object[], configs:object[]}}
@@ -65,23 +63,23 @@ function buildFlowTab({ dbHost, dbPort, dbName, owner, tablePrefix }) {
     fnNode('peb_backfill_url', 'USGS-Abfrage bauen', fnCode('backfill-url.js'), 350, 160, [['peb_usgs_query']]),
     httpNode('peb_usgs_query', 'USGS Katalog', '', 560, 160, [['peb_split']]),
     fnNode('peb_split', 'Beben + Kontrollen -> SQL', fnCode('split-usgs.js'), 780, 100, [['peb_db_insert']]),
-    mysqlNode('peb_db_insert', `INSERT ${T.events}`, 1000, 100),
+    mysqlNode('peb_db_insert', 'INSERT Beben', 1000, 100),
 
     // 2. Enrich
     base('peb_c2', 'comment', '2. Planetenpositionen berechnen (jede Minute)', 250, 240, []),
-    inject('peb_poll', 'jede Minute', 130, 300, [['peb_db_pending']],
-      { repeat: '60', once: true, onceDelay: 15, topic: PENDING_SQL(prefix), payload: '[]', payloadType: 'json' }),
-    mysqlNode('peb_db_pending', 'SELECT offene', 330, 300, [['peb_split_pending']]),
-    fnNode('peb_split_pending', 'eine Nachricht pro Event', fnCode('split-pending.js'), 540, 300, [['peb_rate']]),
-    base('peb_rate', 'delay', '20 / s', 730, 300, [['peb_sky']], {
+    inject('peb_poll', 'jede Minute', 110, 300, [['peb_pending_sql']], { repeat: '60', once: true, onceDelay: 15 }),
+    fnNode('peb_pending_sql', 'offene Events abfragen', fnCode('pending-sql.js'), 290, 300, [['peb_db_pending']]),
+    mysqlNode('peb_db_pending', 'SELECT offene', 480, 300, [['peb_split_pending']]),
+    fnNode('peb_split_pending', 'eine Nachricht pro Event', fnCode('split-pending.js'), 670, 300, [['peb_rate']]),
+    base('peb_rate', 'delay', '20 / s', 850, 300, [['peb_sky']], {
       pauseType: 'rate', timeout: '5', timeoutUnits: 'seconds', rate: '20', nbRateUnits: '1',
       rateUnits: 'second', randomFirst: '1', randomLast: '5', randomUnits: 'seconds',
       drop: false, allowrate: false, outputs: 1,
     }),
     fnNode('peb_sky', 'Himmel berechnen -> SQL',
       `${planetsCode()}\n// ---------------------------------------------------------------\n${fnCode('compute-sky.js')}`,
-      920, 300, [['peb_db_write']], [{ var: 'Astronomy', module: 'astronomy-engine' }]),
-    mysqlNode('peb_db_write', 'WRITE Positionen', 1130, 300),
+      1030, 300, [['peb_db_write']], [{ var: 'Astronomy', module: 'astronomy-engine' }]),
+    mysqlNode('peb_db_write', 'WRITE Positionen', 1240, 300),
 
     // 3. Tectonic plates
     base('peb_c3', 'comment', '3. Plattengrenzen holen (beim Start, dann jede Woche)', 260, 480, []),
@@ -108,7 +106,8 @@ function buildFlowTab({ dbHost, dbPort, dbName, owner, tablePrefix }) {
     env: [{ name: 'TABLE_PREFIX', value: prefix, type: 'str' }],
     info: (owner ? `${OWNER_PREFIX}${owner} (${new Date().toISOString().slice(0, 10)})\n\n` : '') +
       `Tabellen: ${Object.values(T).join(', ')} (Präfix "${prefix}" in der Tab-Umgebungsvariable TABLE_PREFIX; ` +
-      'plates und plate_points sind für alle gemeinsam).\n\n' +
+      'plates und plate_points sind für alle gemeinsam).\n' +
+      'Eigene Tabellen nach einem Import: Doppelklick auf den Tab → Umgebungsvariablen → TABLE_PREFIX, z. B. anna_.\n\n' +
       'Erstellt vom Planeten-Erdbeben-Setup.\n\n1. Holt Erdbeben von USGS (+ Kontroll-Events: gleicher Ort, zufällige Zeit) in die Datenbank.\n2. Berechnet für jedes Event die Positionen von Sonne, Mond und Planeten.\n3. Holt die Grenzen der tektonischen Platten (PB2002) in die Tabellen plates und plate_points.\n\nBackfill: Knopf links am Knoten "Backfill" klicken. Jahr per Doppelklick ändern.',
     nodes,
     configs,

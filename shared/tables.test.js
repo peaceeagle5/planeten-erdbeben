@@ -57,15 +57,32 @@ test('schema: personal tables, foreign keys and constraint names get the prefix'
   assert.match(readAsset('db/schema.sql'), /CONSTRAINT fk_pos_event/);
 });
 
-test('Node-RED: prefix in the tab variable and in the pending query', () => {
+test('Node-RED: prefix in the tab variable; no table name is fixed in a node', () => {
   const tab = buildFlowTab({ dbHost: 'db', dbPort: 3306, dbName: 'planeten_erdbeben', owner: 'Anna', tablePrefix: 'anna_' });
   assert.deepEqual(tab.env, [{ name: 'TABLE_PREFIX', value: 'anna_', type: 'str' }]);
-  const poll = tab.nodes.find((n) => n.id === 'peb_poll');
-  assert.match(poll.topic, /FROM anna_events WHERE sky_computed = 0/);
   assert.match(tab.info, /anna_events/);
   const legacy = buildFlowImport({ dbHost: 'db', dbPort: 3306, dbName: 'planeten_erdbeben' });
   assert.deepEqual(legacy[0].env, [{ name: 'TABLE_PREFIX', value: '', type: 'str' }]);
-  assert.match(legacy.find((n) => n.id === 'peb_poll').topic, /FROM events WHERE/);
+  // every table name comes from env.get('TABLE_PREFIX'): none is written into an inject or other node
+  for (const n of [...tab.nodes, ...legacy]) {
+    if (n.type === 'tab') continue; // its description names the tables for people, on purpose
+    if (n.type === 'function' && !/plates/.test(n.id)) continue;
+    assert.doesNotMatch(JSON.stringify(n), /\b(anna_)?(events|body_positions|aspects)\b(?! von| holen)/i, n.id);
+  }
+  const poll = legacy.find((n) => n.id === 'peb_poll');
+  assert.deepEqual(poll.wires, [['peb_pending_sql']]);
+});
+
+test('imported flow-import.json + TABLE_PREFIX set on the tab = the own tables everywhere', () => {
+  const flow = buildFlowImport({ dbHost: '127.0.0.1', dbPort: 3306, dbName: 'planeten_erdbeben' }); // as in the repo
+  const code = (id) => flow.find((n) => n.id === id).func;
+  const env = { TABLE_PREFIX: 'anna_' };
+  const pending = runFunction(code('peb_pending_sql'), {}, env);
+  assert.match(pending.topic, /FROM anna_events WHERE sky_computed = 0 ORDER BY id LIMIT 600$/);
+  assert.deepEqual(pending.payload, []);
+  assert.match(runFunction(code('peb_pending_sql'), {}, {}).topic, /FROM events WHERE/);
+  const usgs = { payload: { features: [{ id: 'us9', properties: { type: 'earthquake', mag: 5.2, time: Date.UTC(2026, 0, 3), place: 'X' }, geometry: { coordinates: [1, 2, 3] } }] } };
+  for (const m of runFunction(code('peb_split'), usgs, env)[0]) assert.match(m.topic, /INTO anna_events /);
 });
 
 /** Runs a function node's code like Node-RED does (msg, node, env). */
