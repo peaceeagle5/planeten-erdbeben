@@ -3,7 +3,7 @@
     "id": "peb_tab",
     "type": "tab",
     "label": "Planeten & Erdbeben",
-    "info": "Tabellen: events, body_positions, aspects (Präfix \"\" in der Tab-Umgebungsvariable TABLE_PREFIX; plates und plate_points sind für alle gemeinsam).\n\nErstellt vom Planeten-Erdbeben-Setup.\n\n1. Holt Erdbeben von USGS (+ Kontroll-Events: gleicher Ort, zufällige Zeit) in die Datenbank.\n2. Berechnet für jedes Event die Positionen von Sonne, Mond und Planeten.\n3. Holt die Grenzen der tektonischen Platten (PB2002) in die Tabellen plates und plate_points.\n\nBackfill: Knopf links am Knoten \"Backfill\" klicken. Jahr per Doppelklick ändern.",
+    "info": "Tabellen: events, body_positions, aspects (Präfix \"\" in der Tab-Umgebungsvariable TABLE_PREFIX; plates und plate_points sind für alle gemeinsam).\nEigene Tabellen nach einem Import: Doppelklick auf den Tab → Umgebungsvariablen → TABLE_PREFIX, z. B. anna_.\n\nErstellt vom Planeten-Erdbeben-Setup.\n\n1. Holt Erdbeben von USGS (+ Kontroll-Events: gleicher Ort, zufällige Zeit) in die Datenbank.\n2. Berechnet für jedes Event die Positionen von Sonne, Mond und Planeten.\n3. Holt die Grenzen der tektonischen Platten (PB2002) in die Tabellen plates und plate_points.\n\nBackfill: Knopf links am Knoten \"Backfill\" klicken. Jahr per Doppelklick ändern.",
     "env": [
       {
         "name": "TABLE_PREFIX",
@@ -172,7 +172,7 @@
     "id": "peb_db_insert",
     "type": "mysql",
     "z": "peb_tab",
-    "name": "INSERT events",
+    "name": "INSERT Beben",
     "x": 1000,
     "y": 100,
     "wires": [
@@ -194,11 +194,11 @@
     "type": "inject",
     "z": "peb_tab",
     "name": "jede Minute",
-    "x": 130,
+    "x": 110,
     "y": 300,
     "wires": [
       [
-        "peb_db_pending"
+        "peb_pending_sql"
       ]
     ],
     "props": [
@@ -214,16 +214,36 @@
     "crontab": "",
     "once": true,
     "onceDelay": 15,
-    "topic": "SELECT id, latitude, longitude, CONCAT(DATE_FORMAT(time_utc, '%Y-%m-%dT%H:%i:%s.'), LPAD(FLOOR(MICROSECOND(time_utc) / 1000), 3, '0'), 'Z') AS time_iso FROM events WHERE sky_computed = 0 ORDER BY id LIMIT 600",
-    "payload": "[]",
-    "payloadType": "json"
+    "topic": "",
+    "payload": "",
+    "payloadType": "date"
+  },
+  {
+    "id": "peb_pending_sql",
+    "type": "function",
+    "z": "peb_tab",
+    "name": "offene Events abfragen",
+    "x": 290,
+    "y": 300,
+    "wires": [
+      [
+        "peb_db_pending"
+      ]
+    ],
+    "func": "// Builds the query for events that still need their sky computed (sky_computed = 0).\n// The table comes from the tab's environment variable TABLE_PREFIX (double-click the tab),\n// e.g. \"anna_\" -> anna_events. So an imported flow works after setting the prefix there.\n// time_iso: the time as an ISO string with milliseconds, in UTC (the database session runs in UTC).\nconst T = env.get('TABLE_PREFIX') || '';\nmsg.topic = 'SELECT id, latitude, longitude, ' +\n  \"CONCAT(DATE_FORMAT(time_utc, '%Y-%m-%dT%H:%i:%s.'), LPAD(FLOOR(MICROSECOND(time_utc) / 1000), 3, '0'), 'Z') AS time_iso \" +\n  `FROM ${T}events WHERE sky_computed = 0 ORDER BY id LIMIT 600`;\nmsg.payload = [];\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
   },
   {
     "id": "peb_db_pending",
     "type": "mysql",
     "z": "peb_tab",
     "name": "SELECT offene",
-    "x": 330,
+    "x": 480,
     "y": 300,
     "wires": [
       [
@@ -237,7 +257,7 @@
     "type": "function",
     "z": "peb_tab",
     "name": "eine Nachricht pro Event",
-    "x": 540,
+    "x": 670,
     "y": 300,
     "wires": [
       [
@@ -257,7 +277,7 @@
     "type": "delay",
     "z": "peb_tab",
     "name": "20 / s",
-    "x": 730,
+    "x": 850,
     "y": 300,
     "wires": [
       [
@@ -282,7 +302,7 @@
     "type": "function",
     "z": "peb_tab",
     "name": "Himmel berechnen -> SQL",
-    "x": 920,
+    "x": 1030,
     "y": 300,
     "wires": [
       [
@@ -307,7 +327,7 @@
     "type": "mysql",
     "z": "peb_tab",
     "name": "WRITE Positionen",
-    "x": 1130,
+    "x": 1240,
     "y": 300,
     "wires": [
       []

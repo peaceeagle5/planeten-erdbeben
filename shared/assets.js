@@ -33,6 +33,7 @@ const ASSET_FILES = [
   'node-red/functions/split-usgs.js',
   'node-red/functions/backfill-url.js',
   'node-red/functions/split-pending.js',
+  'node-red/functions/pending-sql.js',
   'node-red/functions/compute-sky.js',
   'node-red/functions/plates-sql.js',
   'setup-wizard/ui.html',
